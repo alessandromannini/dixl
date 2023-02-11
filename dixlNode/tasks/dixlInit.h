@@ -1,9 +1,10 @@
-/*
+/**
  * dxilInit.h
+ * 
+ * Initialization task
  *
- *  Created on: Jan 10, 2023
- *  Author: Alessandro Mannini <alessandro.mannini@gmail.com>
- *  Description: Initialization task
+ * @author: Alessandro Mannini <alessandro.mannini@gmail.com>
+ * @date: Jan 10, 2023
  */
 
 #ifndef DXILINIT_H_

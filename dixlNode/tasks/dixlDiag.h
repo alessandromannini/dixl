@@ -1,8 +1,10 @@
-/*
+/**
  * dxilDiag.h
  *
- *  Created on: Jan 10, 2023
- *  Author: Alessandro Mannini <alessandro.mannini@gmail.com>
+ * Diagnostic task
+ * 
+ * @author: Alessandro Mannini <alessandro.mannini@gmail.com>
+ * @date: Jan 10, 2023
  */
 
 #ifndef DXILDIAG_H_

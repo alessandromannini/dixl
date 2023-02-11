@@ -1,29 +1,25 @@
-
-/*
+/**
  * globals.h
  * 
  * Globals variable and constants
  *
- *  Created on: Jan 10, 2023
- *  Author: Alessandro Mannini <alessandro.mannini@gmail.com>
- *
+ * @author: Alessandro Mannini <alessandro.mannini@gmail.com>
+ * @date: Jan 10, 2023
  */
+
 /* includes */
-#include <msgQLib.h>
 
 #ifndef GLOBALS_H_
 #define GLOBALS_H_
+#include <msgQLib.h>
 
-
-/***************************************************
- *  Return codes
- ***************************************************/
-enum returnCode {
-	rcOK					= 0,		// OK, no errors
-	rcINQUEUE_INITERR		= 101,		// IN queue initialization error
-};
-typedef enum returnCode returnCode;
-
+#include "datatypes/dataTypes.h"
+/**
+ * Node parameters
+ */
+extern MACAddress MAC;				// MAC address of the node
+extern IPv4Address IPv4;			// IPv4 of the node
+extern IPv4String IPv4s;			// IPv4s (string) of the node
 
 /***************************************************
  *  Task IDs
@@ -46,8 +42,7 @@ extern 	TASK_ID 	taskSwitchId;		// Switch  task ID
 extern 	MSG_Q_ID 	msgQInitId;			// Init task IN queue Id
 extern 	MSG_Q_ID 	msgQCommTxId;		// Comm Tx task IN Queue Id
 extern 	MSG_Q_ID 	msgQCtrlId;			// Ctrl task IN Queue Id
-extern 	MSG_Q_ID 	msgQLogId;			// Log  task IN Queue Id
+extern 	MSG_Q_ID 	msgQLogId;			// Log  task IN Queue Id	
 
-		
 #endif /* GLOBALS_H_ */
  

@@ -1,8 +1,10 @@
-/*
+/**
  * dxilCtrl.h
  *
- *  Created on: Jan 10, 2023
- *  Author: Alessandro Mannini <alessandro.mannini@gmail.com>
+ * Control logic task
+ * 
+ * @author: Alessandro Mannini <alessandro.mannini@gmail.com>
+ * @date: Jan 10, 2023
  */
 
 #ifndef DXILCTRL_H_

@@ -1,24 +1,59 @@
-/*
+/**
  * utils.h
  * 
- * Globals utlities and macro
+ * Globals utlities and macros
  *
- *  Created on: Jan 10, 2023
- *  Author: Alessandro Mannini <alessandro.mannini@gmail.com>
+ * @author: Alessandro Mannini <alessandro.mannini@gmail.com>
+ * @date: Jan 10, 2023
  */
+
 #include <stdio.h>
 #include <stdbool.h>
-#include <logLib.h>
 #include <taskLib.h>
 
 /* MACROs */
-#define 	LOGMSG(fmt)									NOWAIT_LOG6(fmt, 0, 0 ,0, 0, 0, 0)
-#define     LOGMSG1(fmt,arg1)       					NOWAIT_LOG6(fmt, arg1, 0, 0, 0 , 0, 0 )
-#define     LOGMSG2(fmt,arg1,arg2)       				NOWAIT_LOG6(fmt, arg1, arg2, 0, 0 , 0, 0 )
-#define     LOGMSG3(fmt,arg1,arg2,arg3)       			NOWAIT_LOG6(fmt, arg1, arg2, arg3, 0 , 0, 0)
-#define     LOGMSG4(fmt,arg1,arg2,arg3,arg4)       		NOWAIT_LOG6(fmt, arg1, arg2, arg3, arg4, 0, 0)
-#define     LOGMSG5(fmt,arg1,arg2,arg3,arg4,arg5)       NOWAIT_LOG6(fmt, arg1, arg2, arg3, arg4 , arg5, 0)
-#define     LOGMSG6(fmt,arg1,arg2,arg3,arg4,arg5,arg6) 	NOWAIT_LOG6(fmt, arg1, arg2, arg3, arg4 , arg5, arg6)
 
 /* FUNCTIONS helpers */
-bool taskShutdown(TASK_ID tId, char *message);
+
+/**
+ * Inizialize the message Queue of the task
+ * @return TRUE if queue initialization is OK, else FALSE
+ */
+MSG_Q_ID msgQ_Initialize(char *pMsgQMem, size_t maxMsgs, size_t maxMsgLength, int options);
+
+/**
+ * Receive a message from a Queue
+ * 
+ * @param msgQId
+ * @param buffer
+ * @param maxNBytes
+ * @param msTimeout
+ * @return
+ */
+BOOL msgQ_Receive(MSG_Q_ID msgQId, char *buffer, size_t  maxNBytes, int32_t msTimeout);
+
+/**
+ * Send a message to a Queue
+ * @param msgQId
+ * @param buffer
+ * @param nBytes
+ * @return
+ */
+BOOL msgQ_Send(MSG_Q_ID msgQId, char *buffer, size_t  nBytes);
+
+/**
+ * Wait the task with taskId ID become not ready, each test is made after a delay
+ * @param taskId	: ID of the task to wait notReady  statefor
+ * @param retryDelay: delay between each retry/test 
+ * @param finalDelay: delay after the closing is detected
+ * @return
+ */
+void task_wait4notReady(TASK_ID taskId, int retryDelay, int finalDelay);
+
+/**
+ * Shutdown a task logging messages
+ * @param tId		: TASK_ID of the task to shutDwon
+ * @param tName		: task name
+ * @return			: TRUE if OK, else FALSE
+ */
+bool task_shutdown(TASK_ID tId, char *tName);
