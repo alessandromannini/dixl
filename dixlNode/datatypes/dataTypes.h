@@ -70,7 +70,7 @@ typedef struct MACAddress {
 typedef struct IPv4Address {		// IPv4 packet	
 	unsigned char bytes[4];			
 } IPv4Address;
-typedef char IPv4String[16];		// IPv4 string
+typedef char IPv4String[17];		// IPv4 string (16 characters + \0)
 typedef IPv4Address nodeId;			// Node ID is the IP (packed)
 
 // Route

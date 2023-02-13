@@ -55,10 +55,12 @@ void dixlCtrl() {
 	msgQCtrlId = msgQ_Initialize(msgQCtrlName, MSGQCTRLMESSAGESMAX, MSGQCTRLMESSAGESLENGTH, MSG_Q_FIFO);
 
 	// Wait for messages and execute FSM
-	message message;
 	FOREVER {
-		// Wait a message ... FOREVER
-		msgQReceive(msgQInitId, (char *  ) &message, sizeof(message), WAIT_FOREVER);
+		message message;
+		
+		// Clean the 
+		// Wait a message from the Queue ... FOREVER
+		msgQReceive(msgQCtrlId, (char *  ) &message, sizeof(message), WAIT_FOREVER);
 		
 		// CONFIGRESET e CONFIGSET messages processed right here (Init can send them at any time), other passed to the current FSM
 		switch (message.header.type) {

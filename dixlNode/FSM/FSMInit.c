@@ -8,13 +8,10 @@
  */
 
 /* includes */
-#include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
 
-#include <vxWorks.h>
 #include <syslog.h>
-
 
 #include "FSMInit.h"
 #include "../config.h"

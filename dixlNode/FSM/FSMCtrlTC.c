@@ -8,13 +8,10 @@
  */
 
 /* includes */
-#include <stdlib.h>
 #include <stdio.h>
 #include <stdbool.h>
 
-#include <vxWorks.h>
 #include <syslog.h>
-
 
 #include "FSMCtrlTC.h"
 #include "../config.h"
@@ -155,10 +152,10 @@ static void WaitAckExit(eventData *pEventData) {
 			message.iHeader.type = IMSGTYPE_ROUTETRAINNOK;
 			message.routeITrainNOk.destination = pCurrentNodeState->pCurrentRoute->prev;
 			message.routeITrainNOk.requestRouteId = pCurrentNodeState->pCurrentRoute->id;
-			size += sizeof(msgIRouteTRAINOK);
+			size += sizeof(msgIRouteTRAINNOK);
 			
 			// Log
-			syslog(LOG_INFO, "Received NACK for route (%i) sending back TRAINNOK to host", pCurrentNodeState->pCurrentRoute->id);			
+			syslog(LOG_INFO, "Received NACK for route (%i) sending back TRAINNOK to host node", pCurrentNodeState->pCurrentRoute->id);			
 		} else {
 			message.iHeader.type = IMSGTYPE_ROUTENACK;
 			message.routeINAck.destination = pCurrentNodeState->pCurrentRoute->prev;
@@ -197,7 +194,7 @@ static void WaitCommitExit(eventData *pEventData) {
 	// Get original message
 	message *pInMessage = pEventData->pMessage;
 
-	// If exit due to DISAGREE, send forward to next node (if present)
+	// If exit due to DISAGREE, forward to next node (if present)
 	if (pInMessage->header.type == MSGTYPE_ROUTEDISAGREE) {
 		
 		// Not last node? Send to next node
@@ -255,10 +252,10 @@ static void WaitAgreeExit(eventData *pEventData) {
 			message.iHeader.type = IMSGTYPE_ROUTETRAINNOK;
 			message.routeITrainNOk.destination = pCurrentNodeState->pCurrentRoute->prev;
 			message.routeITrainNOk.requestRouteId = pCurrentNodeState->pCurrentRoute->id;
-			size += sizeof(msgIRouteTRAINOK);
+			size += sizeof(msgIRouteTRAINNOK);
 			
 			// Log
-			syslog(LOG_INFO, "Received DISAGREE for route (%i) sending back TRAINNOK to host", pCurrentNodeState->pCurrentRoute->id);			
+			syslog(LOG_INFO, "Received DISAGREE for route (%i) sending back TRAINNOK to host node", pCurrentNodeState->pCurrentRoute->id);			
 		} else {
 			message.iHeader.type = IMSGTYPE_ROUTEDISAGREE;
 			message.routeIDisagree.destination = pCurrentNodeState->pCurrentRoute->prev;
@@ -326,7 +323,7 @@ static void ReservedExit(eventData *pEventData) {
  */
 static void TrainInTransitionState(eventData *pEventData) {
 	// Only if FIRST node
-	// Prepare IROUTETRAINOKmessage for dixlCommTx
+	// Prepare IROUTETRAINOK message for dixlCommTx
 	if (pCurrentNodeState->pCurrentRoute->position == NODEPOS_FIRST) {
 		message message;
 		message.iHeader.type = IMSGTYPE_ROUTETRAINOK;
@@ -336,18 +333,18 @@ static void TrainInTransitionState(eventData *pEventData) {
 		message.routeITrainOk.requestRouteId = pCurrentNodeState->pCurrentRoute->id;
 	
 		// Log
-		syslog(LOG_INFO, "Route request (%i) Train OK reached sending back to host node", pCurrentNodeState->pCurrentRoute->id);
+		syslog(LOG_INFO, "Route request (%i) TRAIN OK reached sending back to host node", pCurrentNodeState->pCurrentRoute->id);
 		
 		//Send to dixlCommTx task queue
 		msgQ_Send(msgQCommTxId, (char *) &message, sizeof(msgIHeader) + sizeof(msgIRouteTRAINOK));
 	} else
 		// Log
-		syslog(LOG_INFO, "Route request (%i) Train OK reached no sending back (not first)", pCurrentNodeState->pCurrentRoute->id);
+		syslog(LOG_INFO, "Route request (%i) TRAIN OK reached not sending back (not first)", pCurrentNodeState->pCurrentRoute->id);
 		
 };
 static void TrainInTransitionExit(eventData *pEventData) {
 	// Log
-	syslog(LOG_INFO, "Route request (%i) Sensor OFF received", pCurrentNodeState->pCurrentRoute->id);
+	syslog(LOG_INFO, "Route request (%i) SENSOR OFF received", pCurrentNodeState->pCurrentRoute->id);
 };
 
 static StateMapItem StateMap[] = {
@@ -573,7 +570,8 @@ void FSMCtrlSWEvent_NewMessage(message *pMessage) {
 					if (pMessage->routeCommit.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
 						// Go to next state depending on node position FIRST or MIDDLE (in the current requested route)
 						switch (pCurrentNodeState->pCurrentRoute->position) {
-							case NODEPOS_FIRST:
+						// TODO Eliminare questo caso???? Passare sempre da reserved?	
+						case NODEPOS_FIRST:
 								newState = StateTrainInTransition;
 								break;
 								
@@ -608,6 +606,7 @@ void FSMCtrlSWEvent_NewMessage(message *pMessage) {
 			// Accept only current requested route id (for DISAGREE)
 			// Accept only SENSORON or DISAGREE messages, discard others
 			switch (pMessage->header.type) {
+			// TODO SensorON check
 				case IMSGTYPE_SENSORON:						
 					newState = StateTrainInTransition;
 					condition = TRUE;
@@ -616,7 +615,7 @@ void FSMCtrlSWEvent_NewMessage(message *pMessage) {
 				case MSGTYPE_ROUTEDISAGREE:
 					if (pMessage->routeIDisagree.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
 						// Not necessary to test NodePosition
-						// Exit send DISAGREE to next node or TRAINNOK to host
+						// Exit send DISAGREE to next node
 						newState = StateNotReserved;
 						condition = TRUE;
 					} else
@@ -632,6 +631,7 @@ void FSMCtrlSWEvent_NewMessage(message *pMessage) {
 			
 		case StateTrainInTransition:
 			// Accept only SENSOROFF
+			// TODO SensorOFF
 			if (pMessage->iHeader.type == IMSGTYPE_SENSOROFF) {
 				newState = StateNotReserved;
 				condition = TRUE;

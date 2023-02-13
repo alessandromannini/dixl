@@ -212,6 +212,8 @@ typedef struct message {
 				msgRouteCOMMIT     	routeCommit;
 				msgRouteAGREE      	routeAgree;
 				msgRouteDISAGREE    routeDisagree;
+				msgRouteTRAINOK     routeTrainOk;
+				msgRouteTRAINNOK    routeTrainNOk;				
 			};
 		};
 		struct {
