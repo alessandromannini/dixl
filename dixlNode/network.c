@@ -24,7 +24,6 @@
 #include "globals.h" 
 
 /* FUNCTIONS helpers */
-/* create a socket */
 int socket_create(int domain, int type, int proto) {
 
     int fd = socket(domain, type, proto); 
@@ -36,7 +35,6 @@ int socket_create(int domain, int type, int proto) {
     return fd;
 }
 
-/* bind socket to addr:port */
 int socket_bind(int fd, char *bind_address, int port) {
     int ret;
     struct sockaddr_in addr;
@@ -66,6 +64,28 @@ int socket_listen(int fd) {
     	close(fd);
         syslog(LOG_ERR, "Listen socket error %i: %s", err, strerror(err));
     }
+    return ret;
+}
+
+int socket_Connect(int fd, char *bind_address, int port) {
+    int ret;
+    struct sockaddr_in server;
+
+    /* the addr specifies the address family , IP address and port
+     for the socket that is being bound */
+    memset (&server, 0, sizeof(server));
+    server.sin_family = AF_INET;
+    server.sin_addr.s_addr = inet_addr(bind_address); /* the local address */
+    server.sin_port = htons(port);
+    server.sin_len = sizeof(server);
+
+    /* bind the socket */
+    if ((ret = connect(fd, (struct sockaddr*)&server, sizeof(server))) == SOCK_ERROR) {
+    	int err = errno;
+    	close(fd);
+        syslog(LOG_ERR, "Connect socket error %i: %s", err, strerror(err));
+    }
+    
     return ret;
 }
 
@@ -102,13 +122,26 @@ ssize_t socket_recv(int fd, void *buffer, size_t buffer_size) {
 	ssize_t ret;
 
 	/* receive data into the buffer */
-	if (( ret = recv(fd, buffer, buffer_size, 0)) == SOCK_ERROR) {
+	if ((ret = recv(fd, buffer, buffer_size, 0)) == SOCK_ERROR) {
 		// Error
 		int err=errno;
         syslog(LOG_ERR, "Receive socket error %i: %s", err, strerror(err));
 	}
 	
 	return ret;
+}
+
+size_t socket_send(int fd, void *buffer, size_t buffer_size) {
+    int ret;
+
+	if ((ret = send(fd, buffer, buffer_size, 0) == SOCK_ERROR)) {
+	    // Error	  
+		int err=errno;
+		syslog(LOG_ERR, "Send socket error: %s", err, strerror(err));
+	} else if (ret != buffer_size) {
+		syslog (LOG_ERR, "Send socket error: %i bytes sent istead of %i", ret, buffer_size);
+	}
+	return ret;	
 }
 
 STATUS network_get_if_params(char *ifname, IPv4Address *IPv4, MACAddress *MAC) {

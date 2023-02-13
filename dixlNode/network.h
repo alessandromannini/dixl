@@ -42,6 +42,14 @@ int socket_bind(int fd, char *address, int port);
 int socket_listen(int fd);
 
 /**
+ * connect the socket to a server
+ *  @param fd: file descriptor of a opened socket
+ *  @param address: server address to connect the socket to
+ *  @param port: port to connect the socket to
+ */
+int socket_connect(int fd, char *bind_address, int port);
+
+/**
  *  accept a connection on the socket and return a new socket to manage it
  *  @param fd: file descriptor of the socket
  */
@@ -60,6 +68,14 @@ int socket_close(int fd);
  *  @param buffer_size: size of the buffer
  */
 ssize_t socket_recv(int fd, void *buffer, size_t buffer_size);
+
+/**
+ *  send a message into the socket
+ *  @param fd: file descriptor of the socket
+ *  @param buffer: char buffer where data to send is stored
+ *  @param buffer_size: size of the buffer
+ */
+size_t socket_send(int fd, void *buffer, size_t buffer_size);
 
 /**
  *  get the name of the first interface excluding loopback

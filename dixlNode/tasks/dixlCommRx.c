@@ -42,7 +42,7 @@ int bufferLen = 0;
  * - get message length (msgLen) from first byte
  * - if msgLen <= bufferLen then move (removing from buffer) data in msg struct and process it
  */
-bool process_message(char *stream, ssize_t streamLen) {
+static bool process_message(char *stream, ssize_t streamLen) {
 	
 	// If chunk is empty, nothing to do
 	if (streamLen <=0) return FALSE;
@@ -128,17 +128,19 @@ void dixlCommRx() {
 			exit(rcSOCKET_ACCEPTERR);		
 		}
 
-		// Initialize buffern length
+		// Initialize buffer length
 		bufferLen = 0;
 		
 		// Receive and process messages until connection close
 		FOREVER {
 			// Receive data from TCP stream: max message length bytes
+			// Max a message longest message at time, data gathered in the buffer area until at lesat a complete message is received
+			// Multiple shorter messages can be received and processed at each socket_recv
 			char stream[MSG_MAXLENGTH];
 			ssize_t streamLen = 0;
 
 			if (( streamLen = socket_recv(receiveSocket, (char *) &stream, sizeof(stream))) == SOCK_ERROR || streamLen == 0) {
-				// if ERROR don't exit or NO DATA:
+				// if ERROR or NO DATA don't exit the task:
 				// - close the client socket
 				// - wait for a new connection
 				break;
