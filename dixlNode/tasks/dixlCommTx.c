@@ -85,6 +85,19 @@ static BOOL process_message(const message *inMessage, message *outMessage) {
 			size += sizeof(msgRouteTRAINNOK);
 			break;
 			
+		case IMSGTYPE_LOGSEND:
+			outMessage->header.destination = inMessage->routeITrainNOk.destination;
+			outMessage->logISend.currentLine = inMessage->logISend.currentLine;
+			outMessage->logISend.totalLines = inMessage->logISend.totalLines;
+			outMessage->logISend.line = inMessage->logISend.line;
+			size += sizeof(msgLogSEND);
+			break;
+			
+		case IMSGTYPE_LOGDELACK:
+			outMessage->header.destination = inMessage->routeITrainNOk.destination;
+			size += sizeof(msgLogDELACK);
+			break;
+			
 		default:			
 			return FALSE;
 			
@@ -151,9 +164,9 @@ void dixlCommTx() {
 			case IMSGTYPE_ROUTEDISAGREE:
 			case IMSGTYPE_ROUTETRAINOK:
 			case IMSGTYPE_ROUTETRAINNOK:
+			case IMSGTYPE_LOGSEND:
 				// Process the message preparing it for External delivery
-				if (process_message(&inMessage, &extMessage))
-				    
+				if (process_message(&inMessage, &extMessage))				    
 					// Delivery it to the destination through the socket
 					send_message(&extMessage);
 				break;

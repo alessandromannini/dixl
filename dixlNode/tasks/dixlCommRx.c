@@ -19,6 +19,7 @@
 #include <syslog.h>
 
 #include "dixlComm.h"
+#include "dixlLog.h"
 #include "../config.h"
 #include "../datatypes/messages.h"
 #include "../network.h"
@@ -77,18 +78,22 @@ static bool process_message(char *stream, ssize_t streamLen) {
 				break;
 				
 			// LOG Messages
-			case MSGTYPE_LOGDEL:
-			case MSGTYPE_LOGDELACK:
 			case MSGTYPE_LOGREQ:
 			case MSGTYPE_LOGSEND:			
+			case MSGTYPE_LOGDEL:
+				// Send to dixlLog task queue
+				msgQ_Send(msgQLogId, (char *) &message, messageLen);	
 				break;
 	
 			// ROUTE Messages
-			case MSGTYPE_ROUTEACK:
-			case MSGTYPE_ROUTEAGREE:
-			case MSGTYPE_ROUTECOMMIT:
-			case MSGTYPE_ROUTEDISAGREE:
 			case MSGTYPE_ROUTEREQ:
+			case MSGTYPE_ROUTEACK:
+			case MSGTYPE_ROUTENACK:
+			case MSGTYPE_ROUTECOMMIT:
+			case MSGTYPE_ROUTEAGREE:
+			case MSGTYPE_ROUTEDISAGREE:				
+				// Send to dixlCtrl task queue
+				msgQ_Send(msgQCtrlId, (char *) &message, messageLen);					
 				break;
 				
 			// UNKNOWN Messages	
@@ -120,6 +125,8 @@ void dixlCommRx() {
 	syslog(LOG_INFO, "Listening on %03d.%03d.%03d.%03d:%d ...",IPv4.bytes[0], IPv4.bytes[1], IPv4.bytes[2], IPv4.bytes[3], COMMSOCKPORT);
 
 	FOREVER {
+		// TODO log
+		logger_log(LOGTYPE_REQ, (routeId) 0, (nodeId) {0,0,0,0});
 		
 		// Waiting for a connection
 		int receiveSocket = 0;			/* The new socket created to receive data for each connection */			
@@ -128,6 +135,7 @@ void dixlCommRx() {
 			exit(rcSOCKET_ACCEPTERR);		
 		}
 
+		
 		// Initialize buffer length
 		bufferLen = 0;
 		

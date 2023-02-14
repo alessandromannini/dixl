@@ -69,7 +69,7 @@ static NodeState *pCurrentNodeState = NULL;
 /**
  *  Functions implementation 
  */
-static BOOL setRoute(routeId requestedRouteId) {
+static BOOL setRoute(nodeId source, routeId requestedRouteId) {
 	// Search for the requested route
 	pCurrentNodeState->pCurrentRoute = NULL;
 	
@@ -83,6 +83,8 @@ static BOOL setRoute(routeId requestedRouteId) {
 		
 	// Not found, return FALSE
 	syslog(LOG_ERR, "Requested route id (%i) not found", requestedRouteId);
+	logger_log(LOGTYPE_REQ, pCurrentNodeState->pCurrentRoute->id, source );
+	logger_log(LOGTYPE_DISAGREE, pCurrentNodeState->pCurrentRoute->id, NodeNULL );	
 	return FALSE;
 }
 
@@ -112,19 +114,29 @@ void FSMCtrlSW(NodeState *pState) {
 /**
  * STATENOTRESERVED
  */
-static void NotReservedState(eventData *pEventData) {
+static void NotReservedEntry(eventData *pEventData) {
 	// Clean current request
 	pCurrentNodeState->pCurrentRoute = NULL;
 	
 	// Log
 	syslog(LOG_INFO, "Request cleaned");	
 	
-};
+}
+static void NotReservedState(eventData *pEventData) {
+}
+static void NotReservedExit(eventData *pEventData) {
+	// Get original message
+	message *pInMessage = pEventData->pMessage;
+	
+	// Log
+	syslog(LOG_INFO, "Request cleaned");	
+	logger_log(LOGTYPE_REQ, pCurrentNodeState->pCurrentRoute->id, pInMessage->header.source );	
+}
 
 /**
  * STATEWAITACK
  */
-static void WaitAckState(eventData *pEventData) {
+static void WaitAckEntry(eventData *pEventData) {
 	// Prepare IROUTEREQ message for dixlCommTx
 	message message;
 	message.iHeader.type = IMSGTYPE_ROUTEREQ;
@@ -138,7 +150,10 @@ static void WaitAckState(eventData *pEventData) {
 		
 	//Send to dixlCommTx task queue
 	msgQ_Send(msgQCommTxId, (char *) &message, sizeof(msgIHeader) + sizeof(msgIRouteREQ));
-};
+}
+static void WaitAckState(eventData *pEventData) {
+
+}
 static void WaitAckExit(eventData *pEventData) {
 	// Get original message
 	message *pInMessage = pEventData->pMessage;
@@ -168,16 +183,19 @@ static void WaitAckExit(eventData *pEventData) {
 			syslog(LOG_INFO, "Received NACK for route (%i) sending back NACK to previous node", pCurrentNodeState->pCurrentRoute->id);
 		}
 		
+		// Log
+		logger_log(LOGTYPE_DISAGREE, pCurrentNodeState->pCurrentRoute->id, NodeNULL );
+		
 		//Send to dixlCommTx task queue
 		msgQ_Send(msgQCommTxId, (char *) &message, size);
 	}
-};
+}
 
 
 /**
  * STATEWAITCOMMIT
  */
-static void WaitCommitState(eventData *pEventData) {
+static void WaitCommitEntry(eventData *pEventData) {
 	// Prepare IROUTEACK message for dixlCommTx
 	message message;
 	message.iHeader.type = IMSGTYPE_ROUTEACK;
@@ -191,7 +209,9 @@ static void WaitCommitState(eventData *pEventData) {
 	
 	//Send to dixlCommTx task queue
 	msgQ_Send(msgQCommTxId, (char *) &message, sizeof(msgIHeader) + sizeof(msgIRouteACK));
-};
+}
+static void WaitCommitState(eventData *pEventData) {
+}
 static void WaitCommitExit(eventData *pEventData) {
 	// Get original message
 	message *pInMessage = pEventData->pMessage;
@@ -216,15 +236,18 @@ static void WaitCommitExit(eventData *pEventData) {
 			msgQ_Send(msgQCommTxId, (char *) &message, size);
 		} else 
 			// Log
-			syslog(LOG_INFO, "Received DISAGREE for route (%i) not forwarding (last)", pCurrentNodeState->pCurrentRoute->id);			
+			syslog(LOG_INFO, "Received DISAGREE for route (%i) not forwarding (last)", pCurrentNodeState->pCurrentRoute->id);	
+		
+		// Log
+		logger_log(LOGTYPE_DISAGREE, pCurrentNodeState->pCurrentRoute->id, NodeNULL );
 	}
-};
+}
 
 
 /**
  * STATEWAITAGREE
  */
-static void WaitAgreeState(eventData *pEventData) {
+static void WaitAgreeEntry(eventData *pEventData) {
 	// Prepare IROUTECOMMIT message for dixlCommTx
 	message message;
 	message.iHeader.type = IMSGTYPE_ROUTECOMMIT;
@@ -238,7 +261,9 @@ static void WaitAgreeState(eventData *pEventData) {
 	
 	//Send to dixlCommTx task queue
 	msgQ_Send(msgQCommTxId, (char *) &message, sizeof(msgIHeader) + sizeof(msgIRouteCOMMIT));
-};
+}
+static void WaitAgreeState(eventData *pEventData) {
+}
 static void WaitAgreeExit(eventData *pEventData) {
 	// Get original message
 	message *pInMessage = pEventData->pMessage;
@@ -268,10 +293,13 @@ static void WaitAgreeExit(eventData *pEventData) {
 			syslog(LOG_INFO, "Received DISAGREE for route (%i) sending back DISAGREE to previous node", pCurrentNodeState->pCurrentRoute->id);
 		}		
 		
+		// Log
+		logger_log(LOGTYPE_DISAGREE, pCurrentNodeState->pCurrentRoute->id, NodeNULL );
+		
 		//Send to dixlCommTx task queue
 		msgQ_Send(msgQCommTxId, (char *) &message, size);
 	}
-};
+}
 
 
 /**
@@ -279,7 +307,7 @@ static void WaitAgreeExit(eventData *pEventData) {
  */
 static void PositioningState(eventData *pEventData) {
 	// TODO Positioning State
-};
+}
 static void PositioningExit(eventData *pEventData) {
 	// TODO Positioning Exit altre azioni?
 	// Get original message
@@ -305,21 +333,24 @@ static void PositioningExit(eventData *pEventData) {
 			msgQ_Send(msgQCommTxId, (char *) &message, size);
 		} else 
 			// Log
-			syslog(LOG_INFO, "Received DISAGREE for route (%i) not forwarding (last)", pCurrentNodeState->pCurrentRoute->id);			
+			syslog(LOG_INFO, "Received DISAGREE for route (%i) not forwarding (last)", pCurrentNodeState->pCurrentRoute->id);	
+
+		// Log
+		logger_log(LOGTYPE_DISAGREE, pCurrentNodeState->pCurrentRoute->id, NodeNULL );
 	}
-};
+}
 
 /**
  * STATEMALFUNCTION
  */
 static void MalfunctionState(eventData *pEventData) {
 	// TODO Malfunction State
-};
+}
 
 /**
  * STATERESERVED
  */
-static void ReservedState(eventData *pEventData) {
+static void ReservedEntry(eventData *pEventData) {
 	// Prepare IROUTEAGREE message for dixlCommTx
 	message message;
 	message.iHeader.type = IMSGTYPE_ROUTEAGREE;
@@ -332,8 +363,11 @@ static void ReservedState(eventData *pEventData) {
 	syslog(LOG_INFO, "Route request (%i) AGREEed sending back AGREE to prev node", pCurrentNodeState->pCurrentRoute->id);
 	
 	//Send to dixlCommTx task queue
-	msgQ_Send(msgQCommTxId, (char *) &message, sizeof(msgIHeader) + sizeof(msgIRouteAGREE));	
-};
+	msgQ_Send(msgQCommTxId, (char *) &message, sizeof(msgIHeader) + sizeof(msgIRouteAGREE));
+	logger_log(LOGTYPE_RESERVED, pCurrentNodeState->pCurrentRoute->id, NodeNULL );			
+}
+static void ReservedState(eventData *pEventData) {	
+}
 static void ReservedExit(eventData *pEventData) {
 	// Get original message
 	message *pInMessage = pEventData->pMessage;
@@ -358,9 +392,12 @@ static void ReservedExit(eventData *pEventData) {
 			msgQ_Send(msgQCommTxId, (char *) &message, size);
 		} else 
 			// Log
-			syslog(LOG_INFO, "Received DISAGREE for route (%i) not forwarding (last)", pCurrentNodeState->pCurrentRoute->id);					
+			syslog(LOG_INFO, "Received DISAGREE for route (%i) not forwarding (last)", pCurrentNodeState->pCurrentRoute->id);	
+		
+		// Log
+		logger_log(LOGTYPE_DISAGREE, pCurrentNodeState->pCurrentRoute->id, NodeNULL );
 	}
-};
+}
 
 /**
  * STATEINTRANSITION
@@ -385,29 +422,29 @@ static void TrainInTransitionState(eventData *pEventData) {
 		// Log
 		syslog(LOG_INFO, "Route request (%i) TRAIN OK reached not sending back (not first)", pCurrentNodeState->pCurrentRoute->id);
 		
-};
+}
 static void TrainInTransitionExit(eventData *pEventData) {
 	// Log
 	syslog(LOG_INFO, "Route request (%i) SENSOR OFF received", pCurrentNodeState->pCurrentRoute->id);
-};
+}
 
 static StateMapItem StateMap[] = {
 		// StateDummy
 		{ NULL,						NULL, 				NULL},
 		// StateNotReserved
-		{ NotReservedState, 		NULL, 				NULL},
+		{ NotReservedState, 		NotReservedEntry, 	NotReservedExit},
 		// StateWaitAck
-		{ WaitAckState,				NULL,				WaitAckExit},
+		{ WaitAckState,				WaitAckEntry,		WaitAckExit},
 		// StateWaitCommit
-		{ WaitCommitState, 			NULL, 				WaitCommitExit},
+		{ WaitCommitState, 			WaitCommitEntry, 	WaitCommitExit},
 		// StateWaitAgree
-		{ WaitAgreeState,			NULL,				WaitAgreeExit},
+		{ WaitAgreeState,			WaitAgreeEntry,		WaitAgreeExit},
 		// StatePositioning
 		{ PositioningState,			NULL,				PositioningExit},
 		// StateMalfunction
 		{ MalfunctionState,			NULL,				NULL},
 		// StateReserved
-		{ ReservedState,			NULL,				ReservedExit},
+		{ ReservedState,			ReservedEntry,		ReservedExit},
 		// StateTrainInTransition
 		{ TrainInTransitionState,	NULL,				TrainInTransitionExit},
 };
@@ -510,7 +547,7 @@ void FSMCtrlTCEvent_NewMessage(message *pMessage) {
 			// Accept only ROUTEREQ messages, discard others			
 			if (pMessage->header.type == MSGTYPE_ROUTEREQ) {
 				// Set information of the requested route or fail
-				if (!setRoute(pMessage->routeReq.requestRouteId))
+				if (!setRoute(pMessage->header.source, pMessage->routeReq.requestRouteId))
 					condition = FALSE;
 				else {
 					// Go to next state depending on node position (in the current requested route)

@@ -10,6 +10,7 @@
 #ifndef MESSAGES_H_
 #define MESSAGES_H_
 #include "dataTypes.h"
+#include "../tasks/dixlLog.h"
 /**
  *  Defines
  */
@@ -65,8 +66,10 @@ typedef enum {
 	IMSGTYPE_SENSORON			= 150,   // Track Circuit Sensor ON
 	IMSGTYPE_SENSOROFF			= 155,   // Track Circuit Sensor ON
 	
-	// Log messages - TODO
+	// Log messages
 	IMSGTYPE_LOG 				= 180,	// Log a message
+	IMSGTYPE_LOGSEND			= 182,	// Send current  log lines to the host
+	IMSGTYPE_LOGDELACK		    = 184,	// Ack log lines deletion to the host
 
 } eMsgType;
 
@@ -137,7 +140,18 @@ typedef struct msgRouteTRAINNOK {
 	routeId requestRouteId;			// Requested route Id
 } msgRouteTRAINNOK;
 
-
+/**  message LOG types */
+typedef struct msgLOGREQ {
+} msgLogREQ;
+typedef struct msgLOGSEND {
+	uint32_t currentLine;			// Current line of the log
+	uint32_t totalLines;			// Total number of lines
+	logMessage line;
+} msgLogSEND;
+typedef struct msgLOGDEL {
+} msgLogDEL;
+typedef struct msgLOGDELACK {
+} msgLogDELACK;
 
 /***************************************
  * INTERNAL MESSAGES and TYPES
@@ -191,6 +205,18 @@ typedef struct msgISENSORON {
 typedef struct msgISENSOROFF {
 } msgISensorOFF;
 
+/** message LOG types */
+typedef struct msgILOG {
+	logMessage message;
+} msgILog;
+typedef struct msgILOGSEND {
+	nodeId destination;
+	uint32_t currentLine;			// Current line of the log
+	uint32_t totalLines;			// Total number of lines
+	logMessage line;
+} msgILogSEND;
+typedef struct msgILOGACK {
+} msgILogDELACK;
 
 /**
  *  message GENERIC 
@@ -213,7 +239,11 @@ typedef struct message {
 				msgRouteAGREE      	routeAgree;
 				msgRouteDISAGREE    routeDisagree;
 				msgRouteTRAINOK     routeTrainOk;
-				msgRouteTRAINNOK    routeTrainNOk;				
+				msgRouteTRAINNOK    routeTrainNOk;	
+				
+				//LOG
+				msgLogSEND 			logSend;
+				msgLogDELACK		logDelAck;
 			};
 		};
 		struct {
@@ -233,9 +263,14 @@ typedef struct message {
 				msgIRouteTRAINOK    routeITrainOk;
 				msgIRouteTRAINNOK   routeITrainNOk;
 
-				// ROUTE
-				msgISensorON        sensorON;			
-				msgISensorOFF       sensorOFF;			
+				// SENSOR
+				msgISensorON        sensorION;			
+				msgISensorOFF       sensorIOFF;		
+				
+				// LOG
+				msgILog 			logILog;
+				msgILogSEND 		logISend;
+				msgILogDELACK 		logIDelAck;
 			};
 		};
 	};

@@ -41,6 +41,7 @@
 #define TASKLOGDESC  			"Logger"			/* Task Logger description */
 #define	TASKLOGPRIO 			100					/* Task Logger prio */
 #define	TASKLOGSTACKSIZE 		20480				/* Task Logger stack Size */
+#define TASKLOGMAXLINES			1024				/* Task Logger: maximum lines that can be stored */
 
 /* Task dixlCtrl */
 #define TASKCTRLNAME  			"tDixlCtrl"			/* Task Ctrl name */

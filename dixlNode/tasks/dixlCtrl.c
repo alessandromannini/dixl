@@ -58,7 +58,6 @@ void dixlCtrl() {
 	FOREVER {
 		message message;
 		
-		// Clean the 
 		// Wait a message from the Queue ... FOREVER
 		msgQReceive(msgQCtrlId, (char *  ) &message, sizeof(message), WAIT_FOREVER);
 		
