@@ -67,7 +67,7 @@ int socket_listen(int fd) {
     return ret;
 }
 
-int socket_Connect(int fd, char *bind_address, int port) {
+int socket_connect(int fd, char *bind_address, int port) {
     int ret;
     struct sockaddr_in server;
 

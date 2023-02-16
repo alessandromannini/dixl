@@ -132,7 +132,7 @@ static void InitState(eventData *pEventData) {
 	
 	// Pass to next (Idle) state
 	FSMEvent_Internal(StateIdle, pEventData);
-};
+}
 
 /**
  * STATEIDLE
@@ -146,11 +146,11 @@ static void IdleState(eventData *pEventData) {
 	syslog(LOG_INFO, "CONFIG cleaned");
 	
 	// TODO Spawn SSDP client task
-};
+}
 
 static void IdleExit(eventData *pEventData) {
 	// TODO Delete SSDP client task
-};
+}
 
 
 /**
@@ -193,7 +193,7 @@ static void ConfiguringState(eventData *pEventData) {
 			FSMEvent_Internal(StateConfigured, pEventData);	
 	}
 
-};
+}
 
 /**
  * STATECONFIGURED
@@ -216,7 +216,7 @@ static void ConfiguredState(eventData *pEventData) {
 		// CONFIG ok, Send to dixlCtrl task queue
 		msgQ_Send(msgQCtrlId, (char *) &message, sizeof(msgIHeader) + sizeof(msgICtrlCONFIGSET));
 	}
-};
+}
 static void ConfiguredExit(eventData *pEventData) {
 	// Prepare CONFIG RESET message for dixlCtrl
 	message message;
@@ -224,9 +224,7 @@ static void ConfiguredExit(eventData *pEventData) {
 	
 	// Send to dixlCtrl task queue
 	msgQ_Send(msgQCtrlId, (char *) &message, sizeof(msgIHeader) + sizeof(msgICtrlCONFIGSET));		
-};
-
-
+}
 
 static StateMapItem StateMap[] = {
 		// StateDummy
@@ -368,7 +366,7 @@ void FSMInitEvent_NewMessage(message *pMessage) {
 			} else {				
 				// Discard other message type
 				condition = FALSE;
-			};
+			}
 			break;
 			
 		case StateConfigured:
@@ -379,7 +377,7 @@ void FSMInitEvent_NewMessage(message *pMessage) {
 				condition = TRUE;
 			}
 			break;
-	};
+	}
 	
 	// If the condition is passed, the new state is served
 	if (condition) {

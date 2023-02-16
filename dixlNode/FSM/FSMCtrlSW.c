@@ -734,7 +734,7 @@ void FSMCtrlTCEvent_NewMessage(message *pMessage) {
 			}
 			break;
 						
-	};
+	}
 	
 	// If the condition is passed, the new state is served
 	if (condition) {

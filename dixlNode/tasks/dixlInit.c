@@ -14,9 +14,9 @@
 #include <string.h>
 #include "net/if.h"
 
-#include <vxWorks.h>
 #include <taskLib.h>
 #include <msgQLib.h>
+#include <sysLib.h>
 #include <syslog.h>
 
 #include "../globals.h"
@@ -66,11 +66,12 @@ void welcomeBanner() {
 	syslog(LOG_INFO, "******************************************************");
 	
 	syslog(LOG_INFO, "> Node informations");
-	syslog(LOG_INFO, "> --------------------------------------------");
-	syslog(LOG_INFO, "> Interface     : %s", ifName);
-	syslog(LOG_INFO, "> MAC           : %02x:%02x:%02x:%02x:%02x:%02x", MAC.bytes[0], MAC.bytes[1], MAC.bytes[2], MAC.bytes[3], MAC.bytes[4], MAC.bytes[5]);
-	syslog(LOG_INFO, "> IP address    : %03d.%03d.%03d.%03d", IPv4.bytes[0], IPv4.bytes[1], IPv4.bytes[2], IPv4.bytes[3]);
-	syslog(LOG_INFO, "> --------------------------------------------");
+	syslog(LOG_INFO, "> -----------------------------------------------");
+	syslog(LOG_INFO, "> Clock tick rate (hz) : %d", sysClkRateGet());	
+	syslog(LOG_INFO, "> Interface            : %s", ifName);
+	syslog(LOG_INFO, "> MAC                  : %02x:%02x:%02x:%02x:%02x:%02x", MAC.bytes[0], MAC.bytes[1], MAC.bytes[2], MAC.bytes[3], MAC.bytes[4], MAC.bytes[5]);
+	syslog(LOG_INFO, "> IP address           : %03d.%03d.%03d.%03d", IPv4.bytes[0], IPv4.bytes[1], IPv4.bytes[2], IPv4.bytes[3]);
+	syslog(LOG_INFO, "> -----------------------------------------------");
 }
 
 /*
@@ -101,9 +102,9 @@ void dixlInit() {
 	FSMInit();
 	
 	// Wait for messages and execute FSM
-	message message;
 	FOREVER {
 		// Wait a message ... FOREVER
+		message message;
 		msgQReceive(msgQInitId, (char *  ) &message, sizeof(message), WAIT_FOREVER);
 		
 		// Notify the new message to the FSM

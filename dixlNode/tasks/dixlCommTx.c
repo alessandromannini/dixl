@@ -122,14 +122,14 @@ static BOOL send_message(const message *message) {
 		close(fd);
 		// if connection fail, close it, return FALSE but don't exit the task
 		return FALSE;
-	};
+	}
 		
 	// Connection ok, send data
 	if (socket_send(fd, (void *) message, message->header.lentgh) == SOCK_ERROR) {
 		close(fd);
 		// if send fail, close the socket and return FALSE but don't exit the task
 		return FALSE;
-	};
+	}
 	
 	// Close the socket
 	socket_close(fd);
@@ -171,18 +171,12 @@ void dixlCommTx() {
 					send_message(&extMessage);
 				break;
 				
-			// Service messages - Init task
-			case IMSGTYPE_NODECONFIGSET:
-			case IMSGTYPE_NODECONFIGRESET:
-
-			// Sensors messages
+			// TOOOSensors messages
 			case IMSGTYPE_SENSORON:
 			case IMSGTYPE_SENSOROFF:
-				
-			// Log messages
-			case IMSGTYPE_LOG:
+
 								
-			// Other messages passed to the FSM (if configured)
+			// Other messages discarded
 			default:
 				syslog(LOG_ERR, "Unattended message type (%d). Should not be send to Comm TX and will be ignored", inMessage.iHeader.type);
 				break;

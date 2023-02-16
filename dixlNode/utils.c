@@ -88,7 +88,7 @@ void task_wait4notReady(TASK_ID taskId, int retryDelay, int finalDelay) {
 	// Delay while task is Ready
 	while (taskIsReady(taskId)) {
 		taskDelay(retryDelay);
-	};
+	}
 	taskDelay(finalDelay);
 }
 
@@ -108,4 +108,7 @@ bool task_shutdown(TASK_ID tId, char *tName) {
 	}	
 }
 
+int math_ceil(int num, int den) {
+ 	 return ((num / den) + ((num % den)==0 ?  0 : 1));
+}
 

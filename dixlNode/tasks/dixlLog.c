@@ -29,7 +29,7 @@ TASK_ID     taskLogId;
 // Input message queue
 MSG_Q_ID 	msgQLogId;
 VX_MSG_Q(msgQLogName, MSGQLOGMESSAGESMAX, MSGQLOGMESSAGESLENGTH);
-nodeId nodeNULL = {0 ,0 ,0 ,0};		
+nodeId NodeNULL = {0 ,0 ,0 ,0};
 
 // Log data
 static logMessage logLines[TASKLOGMAXLINES];		// Storage area for log lines

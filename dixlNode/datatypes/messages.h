@@ -37,20 +37,23 @@ typedef enum {
 	MSGTYPE_ROUTETRAINOK 		= 36,	// 2PhaseCommit Train OK
 	MSGTYPE_ROUTETRAINNOK 		= 37,	// 2PhaseCommit Train NOK
 
-	// Log messages - TODO
+	// Log messages
 	MSGTYPE_LOGREQ				= 81,	// Request current log messages
 	MSGTYPE_LOGSEND				= 82,	// Response current log messages
 	MSGTYPE_LOGDEL				= 83,	// Ack messages were received and ask to delete
 	MSGTYPE_LOGDELACK			= 84,	// Ack messages were deleted
 
-	// Diagnostic messages - TODO
+	// Diagnostic messages
 	MSGTYPE_NODEDIAG 			= 90,	// Communication diagnostic request
 	MSGTYPE_NODEDIAGACK 		= 91,	// Communication diagnostic request Ack
 	
+	// Switch requests  
+	MSGTYPE_SWITCHMALFUNC   	= 95,   // Switch set malfunction state	
+	
 	/** INTERNAL TYPES */
 	// Service messages - Init task
-	IMSGTYPE_NODECONFIGSET       = 111,   // Set config in dixlCtrl task
-	IMSGTYPE_NODECONFIGRESET     = 112,   // Reset config in dixlCtrl task	
+	IMSGTYPE_NODECONFIGSET      = 111,   // Set config in dixlCtrl task
+	IMSGTYPE_NODECONFIGRESET    = 112,   // Reset config in dixlCtrl task	
 	
 	// Route messages internal request to send to
 	IMSGTYPE_ROUTEREQ 			= 130,	// Route request
@@ -70,6 +73,10 @@ typedef enum {
 	IMSGTYPE_LOG 				= 180,	// Log a message
 	IMSGTYPE_LOGSEND			= 182,	// Send current  log lines to the host
 	IMSGTYPE_LOGDELACK		    = 184,	// Ack log lines deletion to the host
+
+	// Switch requests  
+	IMSGTYPE_SWITCHPOS			= 195,   // Switch position request
+	IMSGTYPE_SWITCHNOTIFY		= 196,   // Switch position or malfunction notify
 
 } eMsgType;
 
@@ -140,6 +147,10 @@ typedef struct msgRouteTRAINNOK {
 	routeId requestRouteId;			// Requested route Id
 } msgRouteTRAINNOK;
 
+/**  message SWITCH types */
+typedef struct msgSWITCHMALFUNC {
+} msgSwitchMalfunc;
+
 /**  message LOG types */
 typedef struct msgLOGREQ {
 } msgLogREQ;
@@ -205,6 +216,16 @@ typedef struct msgISENSORON {
 typedef struct msgISENSOROFF {
 } msgISensorOFF;
 
+/** message SWITCH types */
+typedef struct msgISWITCHPOS {
+	struct timespec requestTimestamp;	// Timestamp of the request as notch
+	eNodePosition requestedPosition;	// Requested switch position
+} msgISwitchPOS;
+typedef struct msgISWITCHNOTIFY {
+	struct timespec requestTimestamp;	// Timestamp of the request as notch
+	eNodePosition currentPosition;		// Current switch position
+} msgISwitchNOTIFY;
+
 /** message LOG types */
 typedef struct msgILOG {
 	logMessage message;
@@ -241,6 +262,9 @@ typedef struct message {
 				msgRouteTRAINOK     routeTrainOk;
 				msgRouteTRAINNOK    routeTrainNOk;	
 				
+				//SWITCH MALFUNCTION
+				msgSwitchMalfunc    switchMalfunc;
+
 				//LOG
 				msgLogSEND 			logSend;
 				msgLogDELACK		logDelAck;
@@ -266,6 +290,10 @@ typedef struct message {
 				// SENSOR
 				msgISensorON        sensorION;			
 				msgISensorOFF       sensorIOFF;		
+				
+				// SWITCH
+				msgISwitchPOS		switchIPosition;
+				msgISwitchNOTIFY	switchINotify;
 				
 				// LOG
 				msgILog 			logILog;

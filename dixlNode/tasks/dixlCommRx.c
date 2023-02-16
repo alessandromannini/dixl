@@ -124,10 +124,7 @@ void dixlCommRx() {
 		exit(rcSOCKET_LISTENERR);	
 	syslog(LOG_INFO, "Listening on %03d.%03d.%03d.%03d:%d ...",IPv4.bytes[0], IPv4.bytes[1], IPv4.bytes[2], IPv4.bytes[3], COMMSOCKPORT);
 
-	FOREVER {
-		// TODO log
-		logger_log(LOGTYPE_REQ, (routeId) 0, (nodeId) {0,0,0,0});
-		
+	FOREVER {		
 		// Waiting for a connection
 		int receiveSocket = 0;			/* The new socket created to receive data for each connection */			
 		if (( receiveSocket = socket_accept(dixlCommRxSocket)) == SOCK_ERROR) {

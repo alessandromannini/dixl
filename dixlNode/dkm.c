@@ -44,7 +44,7 @@ uint_t start(void) {
 /*
  *  Description: Shutdown
  */
-uint_t dixlShutdown(void) {
+uint_t stop(void) {
 	
 	// Shutting down
 	syslog(LOG_INFO, "Shutting down dixlNode...");

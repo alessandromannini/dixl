@@ -14,6 +14,8 @@
 #ifndef CONFIG_H_
 #define CONFIG_H_
 
+#define C
+
 /**
  *  tasks parameters
  *		
@@ -60,6 +62,12 @@
 #define TASKSWITCHDESC  		"Switch Simulator"	/* Task Switch  description */
 #define	TASKSWITCHPRIO 			100					/* Task Switch prio */
 #define	TASKSWITCHSTACKSIZE		20480				/* Task Switch stack Size */
+#define TASKSWITCHTRANSTIME     3                   /* Task Switch time to switch between straight and diverge position */
+
+#define TASKSWITCHWKRNAME 		"tDixlSwitch"				/* Task Switch name */
+#define TASKSWITCHWKRDESC  		"Switch Simulator Worker"	/* Task Switch  description */
+#define	TASKSWITCHWKRPRIO 		80							/* Task Switch prio */
+#define	TASKSWITCHWKRSTACKSIZE	20480						/* Task Switch stack Size */
 
 /**
  *  Messages queues specifications

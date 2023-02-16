@@ -188,7 +188,7 @@ static void WaitAckExit(eventData *pEventData) {
 		//Send to dixlCommTx task queue
 		msgQ_Send(msgQCommTxId, (char *) &message, size);
 	}
-};
+}
 
 
 /**
@@ -239,7 +239,7 @@ static void WaitCommitExit(eventData *pEventData) {
 		
 		logger_log(LOGTYPE_DISAGREE, pCurrentNodeState->pCurrentRoute->id, NodeNULL );
 	}
-};
+}
 
 
 /**
@@ -375,11 +375,11 @@ static void TrainInTransitionState(eventData *pEventData) {
 		// Log
 		syslog(LOG_INFO, "Route request (%i) TRAIN OK reached not sending back (not first)", pCurrentNodeState->pCurrentRoute->id);
 		
-};
+}
 static void TrainInTransitionExit(eventData *pEventData) {
 	// Log
 	syslog(LOG_INFO, "Route request (%i) SENSOR OFF received", pCurrentNodeState->pCurrentRoute->id);
-};
+}
 
 static StateMapItem StateMap[] = {
 		// StateDummy
@@ -675,7 +675,7 @@ void FSMCtrlSWEvent_NewMessage(message *pMessage) {
 			}
 			break;
 			
-	};
+	}
 	
 	// If the condition is passed, the new state is served
 	if (condition) {

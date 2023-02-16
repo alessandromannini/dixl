@@ -57,3 +57,9 @@ void task_wait4notReady(TASK_ID taskId, int retryDelay, int finalDelay);
  * @return			: TRUE if OK, else FALSE
  */
 bool task_shutdown(TASK_ID tId, char *tName);
+
+/**
+ * Compute ceil of num / den
+ */
+int math_ceil(int num, int den);
+

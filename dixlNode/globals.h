@@ -22,7 +22,6 @@ extern IPv4Address IPv4;			// IPv4 of the node
 extern IPv4String IPv4s;			// IPv4s (string) of the node
 extern nodeId NodeNULL;				// NULL node
 
-
 /***************************************************
  *  Task IDs
  ***************************************************/

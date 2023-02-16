@@ -56,8 +56,9 @@ typedef enum {
 
 /* Switch position */
 typedef enum {
+	SWITCHPOS_UNDEFINED			= -1,	// Undefined / Fault position
 	SWITCHPOS_STRAIGHT 			= 0,	// Stright direction switch
-	SWITCHPOS_DIVERGING			= 1 	// DIverging direction switch
+	SWITCHPOS_DIVERGING			= 50 	// Diverging direction switch
 } eSwitchPosition;
 
 /**
