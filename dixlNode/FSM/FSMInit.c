@@ -22,7 +22,7 @@
 #include "../tasks/dixlDiag.h"
 #include "../tasks/dixlLog.h"
 #include "../tasks/dixlCtrl.h"
-#include "../tasks/dixlSwitch.h"
+#include "../tasks/dixlPoint.h"
 
 /* Private definitions */
 /* Enums and types */
@@ -87,9 +87,9 @@ static void spawnCoreTasks() {
 	syslog(LOG_INFO, "Spawning Logger task...");
 	taskLogId = taskSpawn(TASKLOGNAME, TASKLOGPRIO, 0, TASKLOGSTACKSIZE, (FUNCPTR) dixlLog, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
-	// Spawning dixlSwitch
-	syslog(LOG_INFO, "Spawning Switch Simulator task...");
-	taskSwitchId = taskSpawn(TASKSWITCHNAME, TASKSWITCHPRIO, 0, TASKSWITCHSTACKSIZE, (FUNCPTR) dixlSwitch, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+	// Spawning dixlPoint
+	syslog(LOG_INFO, "Spawning Point Simulator task...");
+	taskPointId = taskSpawn(TASKPOINTNAME, TASKPOINTPRIO, 0, TASKPOINTSTACKSIZE, (FUNCPTR) dixlPoint, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
 	// Spawning dixlCtrl
 	syslog(LOG_INFO, "Spawning Control Logic task...");
@@ -184,7 +184,7 @@ static void ConfiguringState(eventData *pEventData) {
 	
 		// Log received CONFIG
 		if (configCurrentSequence == 0)	
-			syslog(LOG_INFO, "Received CONFIG NodeType %s, Total routes %i", ( configNodeType == NODETYPE_TC ) ? "TrackCircuit" : "Switch", configTotalSegments);
+			syslog(LOG_INFO, "Received CONFIG NodeType %s, Total routes %i", ( configNodeType == NODETYPE_TRACKCIRCUIT ) ? "TrackCircuit" : "Point", configTotalSegments);
 		else
 			syslog(LOG_INFO, "Received CONFIG route %i of %i", configCurrentSequence, configTotalSegments);
 		
@@ -209,7 +209,7 @@ static void ConfiguredState(eventData *pEventData) {
 	if (configTotalSegments <= 0) {
 		syslog(LOG_ERR, "Wrong CONFIG number of segments (%i): going back to Idle state", configTotalSegments);
 		FSMEvent_Internal(StateIdle, pEventData);
-	} else if ( configNodeType != NODETYPE_TC && configNodeType != NODETYPE_SW) {
+	} else if ( configNodeType != NODETYPE_TRACKCIRCUIT && configNodeType != NODETYPE_POINT) {
 		syslog(LOG_ERR, "Wrong CONFIG node type: going back to Idle state");
 		FSMEvent_Internal(StateIdle, pEventData);
 	} else {		

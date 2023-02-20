@@ -1,14 +1,14 @@
 /**
- * FSMCtrlSW.h
+ * FSMCtrlTC.h
  * 
- * Finite State Machine controlling Ctrl task (Switch node type)
+ * Finite State Machine controlling Ctrl task (Track Circuit node type)
  *
  * @author: Alessandro Mannini <alessandro.mannini@gmail.com>
  * @date: Jan 10, 2023
  */
 
-#ifndef FSMCTRLSW_H_
-#define FSMCTRLSW_H_
+#ifndef FSMCTRLTC_H_
+#define FSMCTRLTC_H_
 /* includes */
 #include "../datatypes/messages.h"
 
@@ -18,7 +18,7 @@
 /**
  * FSM Initialization
  */
-void FSMCtrlSW();
+void FSMCtrlTRACKCIRCUIT();
 
 /*
  * (Public) External Events
@@ -27,12 +27,12 @@ void FSMCtrlSW();
  * Notify a new message Event
  * @param message: pointer to the message received
  */
-void FSMCtrlSWEvent_NewMessage(message *message);
+void FSMCtrlTRACKCIRCUITEvent_NewMessage(message *message);
 
 /**
  * Notify the timer is expired
  * @param message: pointer to the message received
  */
-void FSMCtrlSWEvent_TimerExpired();
+void FSMCtrlTRACKCIRCUITEvent_TimerExpired();
 
-#endif /* FSMCTRLSW_H_ */
+#endif /* FSMCTRLTC_H_ */

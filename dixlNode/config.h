@@ -57,17 +57,17 @@
 #define	TASKDIAGPRIO 			100					/* Task Diag prio */
 #define	TASKDIAGSTACKSIZE 		20480				/* Task Diag stack Size */
 
-/* Task dixlSWITCH */
-#define TASKSWITCHNAME 			"tDixlSwitch"		/* Task Switch name */
-#define TASKSWITCHDESC  		"Switch Simulator"	/* Task Switch  description */
-#define	TASKSWITCHPRIO 			100					/* Task Switch prio */
-#define	TASKSWITCHSTACKSIZE		20480				/* Task Switch stack Size */
-#define TASKSWITCHTRANSTIME     3                   /* Task Switch time to switch between straight and diverge position */
+/* Task dixlPOINT */
+#define TASKPOINTNAME 			"tDixlPoint"		/* Task Point name */
+#define TASKPOINTDESC  			"Point Simulator"	/* Task Point description */
+#define	TASKPOINTPRIO 			100					/* Task Point prio */
+#define	TASKPOINTSTACKSIZE		20480				/* Task Point stack Size */
+#define TASKPOINTTRANSTIME      3                   /* Task Point time to switch between straight and diverge position */
 
-#define TASKSWITCHWKRNAME 		"tDixlSwitch"				/* Task Switch name */
-#define TASKSWITCHWKRDESC  		"Switch Simulator Worker"	/* Task Switch  description */
-#define	TASKSWITCHWKRPRIO 		80							/* Task Switch prio */
-#define	TASKSWITCHWKRSTACKSIZE	20480						/* Task Switch stack Size */
+#define TASKPOINTWKRNAME 		"tDixlPointWrk"				/* Task Point worker name */
+#define TASKPOINTWKRDESC  		"Point Simulator Worker"	/* Task Point worker  description */
+#define	TASKPOINTWKRPRIO 		80							/* Task Point worker prio */
+#define	TASKPOINTWKRSTACKSIZE	20480						/* Task Point worker stack Size */
 
 /**
  *  Messages queues specifications
@@ -97,9 +97,9 @@
 #define MSGQDIAGMESSAGESMAX  		1024					/* Max number of the messages accepted */
 #define MSGQDIAGMESSAGESLENGTH 		MSG_MAXLENGTH			/* Max length of the messages */
 		
-/* TODO serve? dxilSwitch task IN Queue */
-#define MSGQSWITCHMESSAGESMAX  		1024					/* Max number of the messages accepted */
-#define MSGQSWITCHMESSAGESLENGTH 	MSG_MAXLENGTH			/* Max length of the messages */
+/* dxilPoint task IN Queue */
+#define MSGQPOINTMESSAGESMAX  		1024					/* Max number of the messages accepted */
+#define MSGQPOINTMESSAGESLENGTH 	MSG_MAXLENGTH			/* Max length of the messages */
 		
 
 /**

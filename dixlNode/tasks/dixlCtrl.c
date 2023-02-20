@@ -21,8 +21,8 @@
 #include "../utils.h"
 #include "dixlCtrl.h"
 #include "dixlComm.h"
-#include "../FSM/FSMCtrlSW.h"
-#include "../FSM/FSMCtrlTC.h"
+#include "../FSM/FSMCtrlPOINT.h"
+#include "../FSM/FSMCtrlTRACKCIRCUIT.h"
 
 /* types */
 /* FSM generic manage functions  */
@@ -92,18 +92,18 @@ void dixlCtrl() {
 				nodeState.nodeType = message.ctrlIConfigSet.nodeType;
 				
 				// Set FSM function pointers and initialize it
-				if (nodeState.nodeType == NODETYPE_TC) {
+				if (nodeState.nodeType == NODETYPE_TRACKCIRCUIT) {
 					// Track Circuit Node
-					FSMCtrl = FSMCtrlTC;
-					FSMNewMessage = FSMCtrlTCEvent_NewMessage;
-					FSMTimeout = FSMCtrlTCEvent_TimerExpired;
+					FSMCtrl = FSMCtrlTRACKCIRCUIT;
+					FSMNewMessage = FSMCtrlTRACKCIRCUITEvent_NewMessage;
+					FSMTimeout = FSMCtrlTRACKCIRCUITEvent_TimerExpired;
 					syslog(LOG_INFO, "Node configured for Track Circuit logic");
 				} else {
-					// Switch Node
-					FSMCtrl = FSMCtrlSW;
-					FSMNewMessage = FSMCtrlSWEvent_NewMessage;
-					FSMTimeout = FSMCtrlSWEvent_TimerExpired;
-					syslog(LOG_INFO, "Node configured for Switch logic");
+					// Point Node
+					FSMCtrl = FSMCtrlPOINT;
+					FSMNewMessage = FSMCtrlPOINTEvent_NewMessage;
+					FSMTimeout = FSMCtrlPOINTEvent_TimerExpired;
+					syslog(LOG_INFO, "Node configured for Point logic");
 				}
 						
 				// FSM Initialize function passing NodeState pointer

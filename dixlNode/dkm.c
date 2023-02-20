@@ -56,8 +56,8 @@ uint_t stop(void) {
 		if (task_shutdown(taskDiagId, TASKDIAGDESC)) taskDiagId=0;
 	if (taskCtrlId) 
 		if (task_shutdown(taskCtrlId, TASKCTRLDESC)) taskCtrlId=0;
-	if (taskSwitchId) 
-		if (task_shutdown(taskSwitchId, TASKSWITCHDESC)) taskSwitchId=0;
+	if (taskPointId) 
+		if (task_shutdown(taskPointId, TASKPOINTDESC)) taskPointId=0;
 	if (taskLogId) 
 		if (task_shutdown(taskLogId, TASKLOGDESC)) taskLogId=0;
 	if (taskCommRxId) 

@@ -1,7 +1,7 @@
 /**
- * FSMCtrlSW.c
+ * FSMCtrlPOINT.c
  * 
- * Finite State Machine controlling Ctrl task (Switch node type)
+ * Finite State Machine controlling Ctrl task (Point node type)
  *
  * @author: Alessandro Mannini <alessandro.mannini@gmail.com>
  * @date: Jan 10, 2023
@@ -13,7 +13,7 @@
 
 #include <syslog.h>
 
-#include "FSMCtrlSW.h"
+#include "FSMCtrlPOINT.h"
 #include "../config.h"
 #include "../datatypes/messages.h"
 #include "../globals.h"
@@ -97,7 +97,7 @@ static void StateEngine();
 /**
  * STATEDUMMY
  */
-void FSMCtrlSW(NodeState *pState) {
+void FSMCtrlPOINT(NodeState *pState) {
 	// Get pointer to NodeState
 	pCurrentNodeState = pState;
 	
@@ -526,7 +526,7 @@ static void FSMEvent_Internal(eStates newState, eventData *pEventData) {
  * - newState
  * @param message: message received
  */
-void FSMCtrlTCEvent_NewMessage(message *pMessage) {	
+void FSMCtrlPOINTEvent_NewMessage(message *pMessage) {	
 	
 	// Result of the precondition evaluation to pass to new state
 	BOOL condition = TRUE;

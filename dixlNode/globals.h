@@ -34,7 +34,7 @@ extern 	TASK_ID 	taskCommTxId;		// Comm Tx task ID
 extern 	TASK_ID 	taskCtrlId;			// Ctrl task ID
 extern 	TASK_ID 	taskLogId;			// Log  task ID
 extern 	TASK_ID 	taskDiagId;			// Diag  task ID
-extern 	TASK_ID 	taskSwitchId;		// Switch  task ID
+extern 	TASK_ID 	taskPointId;		// Point  task ID
 
 /***************************************************
  *  Messages queues

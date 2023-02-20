@@ -43,8 +43,8 @@ typedef enum returnCode returnCode;
  ***************************************************/
 /* Node type */
 typedef enum {
-	NODETYPE_SW 				= 10,	// Switch (Deviatoio)
-	NODETYPE_TC 				= 20	// Track Circuit (Cdb o Circuito di Binario)
+	NODETYPE_POINT 				= 10,	// Point (Deviatoio)
+	NODETYPE_TRACKCIRCUIT 		= 20	// Track Circuit (Cdb o Circuito di Binario)
 } eNodeType;
 
 /* Node position */
@@ -54,12 +54,12 @@ typedef enum {
 	NODEPOS_LAST				= 127,  // Last node of the route
 } eNodePosition;
 
-/* Switch position */
+/* Point position */
 typedef enum {
-	SWITCHPOS_UNDEFINED			= -1,	// Undefined / Fault position
-	SWITCHPOS_STRAIGHT 			= 0,	// Stright direction switch
-	SWITCHPOS_DIVERGING			= 50 	// Diverging direction switch
-} eSwitchPosition;
+	POINTPOS_UNDEFINED			= -1,	// Undefined / Fault position
+	POINTPOS_STRAIGHT 			= 0,	// Stright direction
+	POINTPOS_DIVERGING			= 50 	// Diverging direction
+} ePointPosition;
 
 /**
  *  Data types
@@ -80,14 +80,14 @@ typedef struct route {
 	nodeId prev;					// Previous node in the route (can be the host)
 	nodeId next;					// Next node in the route (can be NULL)
 	int8_t position;				// Node position in the route
-	uint8_t requestedPosition;		// Requested position (if type is Switch)
+	uint8_t requestedPosition;		// Requested position (if type is Point)
 } route;
 
 typedef struct NodeState {
 	uint8_t nodeType;				// Type of the node ( => behaviour)
 	uint32_t numRoutes;				// Total number (N) of segments in the configuration
 	route *pRouteList;				// Array of route in the configuration received
-	route *pCurrentRoute;			// CUrrent requested route
+	route *pCurrentRoute;			// Current requested route
 } NodeState;
 
 #endif /* DATATYPES_H_ */

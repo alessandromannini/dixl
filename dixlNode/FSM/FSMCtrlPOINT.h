@@ -1,14 +1,14 @@
 /**
- * FSMCtrlTC.h
+ * FSMCtrlPOINT.h
  * 
- * Finite State Machine controlling Ctrl task (Track Circuit node type)
+ * Finite State Machine controlling Ctrl task (Point node type)
  *
  * @author: Alessandro Mannini <alessandro.mannini@gmail.com>
  * @date: Jan 10, 2023
  */
 
-#ifndef FSMCTRLTC_H_
-#define FSMCTRLTC_H_
+#ifndef FSMCTRLPOINT_H_
+#define FSMCTRLPOINT_H_
 /* includes */
 #include "../datatypes/messages.h"
 
@@ -18,7 +18,7 @@
 /**
  * FSM Initialization
  */
-void FSMCtrlTC();
+void FSMCtrlPOINT();
 
 /*
  * (Public) External Events
@@ -27,12 +27,12 @@ void FSMCtrlTC();
  * Notify a new message Event
  * @param message: pointer to the message received
  */
-void FSMCtrlTCEvent_NewMessage(message *message);
+void FSMCtrlPOINTEvent_NewMessage(message *message);
 
 /**
  * Notify the timer is expired
  * @param message: pointer to the message received
  */
-void FSMCtrlTCEvent_TimerExpired();
+void FSMCtrlPOINTEvent_TimerExpired();
 
-#endif /* FSMCTRLTC_H_ */
+#endif /* FSMCTRLPOINT_H_ */

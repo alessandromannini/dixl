@@ -13,7 +13,7 @@
 
 #include <syslog.h>
 
-#include "FSMCtrlTC.h"
+#include "FSMCtrlTRACKCIRCUIT.h"
 #include "../config.h"
 #include "../datatypes/messages.h"
 #include "../tasks/dixlLog.h"
@@ -97,7 +97,7 @@ static void StateEngine();
 /**
  * STATEDUMMY
  */
-void FSMCtrlTC(NodeState *pState) {
+void FSMCtrlTRACKCIRCUIT(NodeState *pState) {
 	// Get pointer to NodeState
 	pCurrentNodeState = pState;
 	
@@ -475,7 +475,7 @@ static void FSMEvent_Internal(eStates newState, eventData *pEventData) {
  * - newState
  * @param message: message received
  */
-void FSMCtrlSWEvent_NewMessage(message *pMessage) {	
+void FSMCtrlTRACKCIRCUITEvent_NewMessage(message *pMessage) {	
 	
 	// Result of the precondition evaluation to pass to new state
 	BOOL condition = TRUE;
