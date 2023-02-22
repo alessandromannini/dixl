@@ -81,6 +81,7 @@ typedef struct route {
 	nodeId next;					// Next node in the route (can be NULL)
 	int8_t position;				// Node position in the route
 	uint8_t requestedPosition;		// Requested position (if type is Point)
+	uint8_t padding[2];				// Padding to 32bit
 } route;
 
 typedef struct NodeState {

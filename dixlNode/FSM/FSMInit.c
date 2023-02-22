@@ -184,7 +184,7 @@ static void ConfiguringState(eventData *pEventData) {
 	
 		// Log received CONFIG
 		if (configCurrentSequence == 0)	
-			syslog(LOG_INFO, "Received CONFIG NodeType %s, Total routes %i", ( configNodeType == NODETYPE_TRACKCIRCUIT ) ? "TrackCircuit" : "Point", configTotalSegments);
+			syslog(LOG_INFO, "Receiving CONFIG NodeType %s, Total routes %i", ( configNodeType == NODETYPE_TRACKCIRCUIT ) ? "TrackCircuit" : "Point", configTotalSegments);
 		else
 			syslog(LOG_INFO, "Received CONFIG route %i of %i", configCurrentSequence, configTotalSegments);
 		
@@ -193,6 +193,14 @@ static void ConfiguringState(eventData *pEventData) {
 			FSMEvent_Internal(StateConfigured, pEventData);	
 	}
 
+}
+static void ConfiguringExit(eventData *pEventData) {
+	// Get message pointer
+	message *pMessage = pEventData->pMessage;
+	
+	if (pMessage->header.type == MSGTYPE_NODERESET)
+		// Log RESET
+		syslog(LOG_ERR, "Config RESET received");
 }
 
 /**
@@ -222,6 +230,9 @@ static void ConfiguredExit(eventData *pEventData) {
 	message message;
 	message.iHeader.type = IMSGTYPE_NODECONFIGRESET;
 	
+	// Log RESET
+	syslog(LOG_ERR, "Config RESET received");
+	
 	// Send to dixlCtrl task queue
 	msgQ_Send(msgQCtrlId, (char *) &message, sizeof(msgIHeader) + sizeof(msgICtrlCONFIGSET));		
 }
@@ -234,7 +245,7 @@ static StateMapItem StateMap[] = {
 		// StateIdle
 		{ IdleState,		NULL,				IdleExit},
 		// StateConfiguring
-		{ ConfiguringState, ConfiguringEntry, 	NULL},
+		{ ConfiguringState, ConfiguringEntry, 	ConfiguringExit},
 		// StateConfigured
 		{ ConfiguredState,	NULL,				ConfiguredExit},
 };
@@ -358,11 +369,15 @@ void FSMInitEvent_NewMessage(message *pMessage) {
 			break;
 			
 		case StateConfiguring:		
-			// Accept CONFIG message					
-			if (pMessage->header.type == MSGTYPE_NODERESET) {
-				// continue checking (if ok and last) and configuring 
-				newState = StateConfiguring;
+			// Accept CONFIG or RESET message					
+			if (pMessage->header.type == MSGTYPE_NODECONFIG) {
+				// continue checking and configuring 
+				newState = StateConfiguring;				
 				condition = TRUE;
+			} else if (pMessage->header.type == MSGTYPE_NODERESET) {
+					// Reset config going back to Idle
+					newState = StateIdle;
+					condition = TRUE;
 			} else {				
 				// Discard other message type
 				condition = FALSE;

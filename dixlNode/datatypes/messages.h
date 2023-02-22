@@ -89,17 +89,18 @@ typedef enum {
 typedef struct msgHeader {
 	uint8_t lentgh;					// Message length
 	uint8_t type;					// Type of message (eMsgType)
+	uint8_t paddin[2];				// Padding to allign to 32bit
 	nodeId source;					// Source node Id
 	nodeId destination;				// Destination node Id
-	uint8_t paddin[2];				// Padding to allign to 32bit
+	uint8_t padding[4];				// Padding to 64bit	
 } msgHeader;
 /**
  *  INT message HEADER
  */
 typedef struct msgIHeader {
-	uint8_t paddingLeft[1];				// Padding to allign to EXT header
+	uint8_t paddingLeft[1];			// Padding to allign to EXT header
 	uint8_t type;					// Type of message (eIMsgType)
-	uint8_t paddingRight[2];				// Padding to allign to 32bit
+	uint8_t padding[14];			// Padding to 64bit	
 } msgIHeader;
 
 /**
@@ -170,6 +171,7 @@ typedef struct msgLOGDELACK {
 /** message CTRL types */ 
 typedef struct msgICtrlCONFIGSET {
 	uint8_t nodeType;				// Type of the node ( => behaviour)
+	uint8_t padding[3];	
 	uint32_t numRoutes;				// Total number (N) of segments in the configuration
 	route *pRoute;					// Pointer to array of routes
 } msgICtrlCONFIGSET;
@@ -303,4 +305,5 @@ typedef struct message {
 		};
 	};
 } message;
+
 #endif /* MESSAGES_H_ */
