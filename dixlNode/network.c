@@ -134,7 +134,7 @@ ssize_t socket_recv(int fd, void *buffer, size_t buffer_size) {
 size_t socket_send(int fd, void *buffer, size_t buffer_size) {
     int ret;
 
-	if ((ret = send(fd, buffer, buffer_size, 0) == SOCK_ERROR)) {
+	if ((ret = send(fd, buffer, buffer_size, 0)) == SOCK_ERROR) {
 	    // Error	  
 		int err=errno;
 		syslog(LOG_ERR, "Send socket error: %s", err, strerror(err));

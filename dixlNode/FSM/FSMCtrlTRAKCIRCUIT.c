@@ -1,5 +1,5 @@
 /**
- * FSMCtrlTC.c
+ * FSMCtrlTRACKCIRCUIT.c
  * 
  * Finite State Machine controlling Ctrl task (Track Circuit node type)
  *
@@ -83,8 +83,8 @@ static BOOL setRoute(nodeId source,routeId requestedRouteId) {
 		
 	// Not found, return FALSE
 	syslog(LOG_ERR, "Requested route id (%i) not found", requestedRouteId);
-	logger_log(LOGTYPE_REQ, pCurrentNodeState->pCurrentRoute->id, source );			
-	logger_log(LOGTYPE_DISAGREE, pCurrentNodeState->pCurrentRoute->id, NodeNULL );			
+	logger_log(LOGTYPE_REQ, requestedRouteId, source );			
+	logger_log(LOGTYPE_DISAGREE, requestedRouteId, NodeNULL );			
 	return FALSE;
 }
 
@@ -94,22 +94,6 @@ static BOOL setRoute(nodeId source,routeId requestedRouteId) {
 static void FSMEvent_Internal(eStates newState, eventData *pEventData);
 static void StateEngine();
 
-/**
- * STATEDUMMY
- */
-void FSMCtrlTRACKCIRCUIT(NodeState *pState) {
-	// Get pointer to NodeState
-	pCurrentNodeState = pState;
-	
-	// Force first (Init) State
-	FSMEvent_Internal(StateNotReserved, NULL);
-	
-	// and process it
-	StateEngine();
-	
-	// Log
-	syslog(LOG_INFO, "FSM initialized");	
-}
 
 /**
  * STATENOTRESERVED
@@ -406,6 +390,25 @@ static FiniteStateMachine FSM =  {
 	FALSE,
 	NULL
 };
+
+/**
+ * STATEDUMMY
+ */
+void FSMCtrlTRACKCIRCUIT(NodeState *pState) {
+	// Get pointer to NodeState
+	pCurrentNodeState = pState;
+	
+	// Force first (Init) State
+	FSM.currentState = StateDummy;	
+	FSMEvent_Internal(StateNotReserved, NULL);
+
+	
+	// and process it
+	StateEngine();
+	
+	// Log
+	syslog(LOG_INFO, "FSM initialized");	
+}
 
 /**
  * The state engine execute until events are generated

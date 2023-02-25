@@ -1,5 +1,5 @@
 /**
- * FSMCtrlTC.h
+ * FSMCtrlTRACKCIRCUIT.h
  * 
  * Finite State Machine controlling Ctrl task (Track Circuit node type)
  *

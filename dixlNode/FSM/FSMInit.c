@@ -10,6 +10,7 @@
 /* includes */
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include <syslog.h>
 
@@ -70,7 +71,7 @@ static nodeId destination = {0, 0, 0, 0};
 static int configPreviousSegment = -1;
 static int configTotalSegments = -1;
 static eNodeType configNodeType;
-static route *configuration[CONFIGMAXROUTES];
+static route configuration[CONFIGMAXROUTES];
 
 /**
  *  Functions implementation 
@@ -109,19 +110,6 @@ static void spawnCoreTasks() {
  */
 static void FSMEvent_Internal(eStates newState, eventData *pEventData);
 static void StateEngine();
-
-/**
- * STATEDUMMY
- */
-void FSMInit() {
-	// Force first (Init) State
-	FSMEvent_Internal(StateInit, NULL);
-	
-	// and process it
-	StateEngine();
-	
-	syslog(LOG_INFO, "FSM initialized");
-}
 
 /**
  * STATEINIT
@@ -177,16 +165,17 @@ static void ConfiguringState(eventData *pEventData) {
 		syslog(LOG_INFO, "Wrong CONFIG sequence going back to idle state");
 		FSMEvent_Internal(StateIdle, pEventData);
 	} else {
-		// Sequence OK
-		// Store current sequence 
-		configuration[configCurrentSequence] = &(pMessage->initConfig.route);
+		// Sequence OK (stpre fpr next iteration
 		configPreviousSegment = configCurrentSequence;
-	
+
 		// Log received CONFIG
 		if (configCurrentSequence == 0)	
 			syslog(LOG_INFO, "Receiving CONFIG NodeType %s, Total routes %i", ( configNodeType == NODETYPE_TRACKCIRCUIT ) ? "TrackCircuit" : "Point", configTotalSegments);
-		else
+		else {
+			// Store current sequence excluding 0 used to send nodeType 
+			memcpy(&configuration[configCurrentSequence - 1], &(pMessage->initConfig.route),  sizeof(route));		
 			syslog(LOG_INFO, "Received CONFIG route %i of %i", configCurrentSequence, configTotalSegments);
+		}
 		
 		//If last go to next State (Configured) without need for events
 		if (configCurrentSequence == configTotalSegments)
@@ -210,7 +199,7 @@ static void ConfiguredState(eventData *pEventData) {
 	// Prepare CONFIG SET message for dixlCtrl
 	message message;
 	message.iHeader.type = IMSGTYPE_NODECONFIGSET;
-	message.ctrlIConfigSet.pRoute = configuration[0];
+	message.ctrlIConfigSet.pRoute = configuration;
 	message.ctrlIConfigSet.numRoutes = configTotalSegments;
 	message.ctrlIConfigSet.nodeType = (uint8_t) configNodeType;
 	// Check CONFIG
@@ -318,6 +307,23 @@ void FSMEvent_Internal(eStates newState, eventData *pEventData) {
     FSM.eventGenerated = TRUE;
     FSM.newState = newState;
 }
+
+/**
+ * STATEDUMMY
+ */
+void FSMInit() {
+	// Current State to dummy
+	FSM.currentState = StateDummy;
+	
+	// Force first (Init) State
+	FSMEvent_Internal(StateInit, NULL);
+	
+	// and process it
+	StateEngine();
+	
+	syslog(LOG_INFO, "FSM initialized");
+}
+
 
 /**
  * Event Functions

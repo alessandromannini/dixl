@@ -10,6 +10,7 @@
 /* includes */
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include <msgQLib.h>
 #include <taskLib.h>
@@ -32,60 +33,68 @@ VX_MSG_Q(msgQCommTxName, MSGQCOMMTXMESSAGESMAX, MSGQCOMMTXMESSAGESLENGTH);
 /* Implementation functions */
 static BOOL process_message(const message *inMessage, message *outMessage) {
 	// Common part
-	outMessage->header.type = inMessage->iHeader.type;
 	outMessage->header.source = IPv4;
 	uint8_t size = sizeof(msgHeader);
 	
 	switch (inMessage->iHeader.type) {
 		case IMSGTYPE_ROUTEREQ:
+			outMessage->header.type = MSGTYPE_ROUTEREQ;
 			outMessage->header.destination = inMessage->routeIReq.destination;
 			outMessage->routeReq.requestRouteId = inMessage->routeIReq.requestRouteId;
 			size += sizeof(msgRouteREQ);
 			break;
 			
 		case IMSGTYPE_ROUTEACK:
+			outMessage->header.type = MSGTYPE_ROUTEACK;
 			outMessage->header.destination = inMessage->routeIAck.destination;
 			outMessage->routeAck.requestRouteId = inMessage->routeIAck.requestRouteId;
 			size += sizeof(msgRouteACK);
 			break;
 			
 		case IMSGTYPE_ROUTENACK:
+			outMessage->header.type = MSGTYPE_ROUTENACK;
 			outMessage->header.destination = inMessage->routeINAck.destination;
 			outMessage->routeNAck.requestRouteId = inMessage->routeINAck.requestRouteId;
 			size += sizeof(msgRouteNACK);
 			break;
 			
 		case IMSGTYPE_ROUTECOMMIT:	
+			outMessage->header.type = MSGTYPE_ROUTECOMMIT;			
 			outMessage->header.destination = inMessage->routeICommit.destination;
 			outMessage->routeCommit.requestRouteId = inMessage->routeICommit.requestRouteId;
 			size += sizeof(msgRouteCOMMIT);
 			break;
 			
 		case IMSGTYPE_ROUTEAGREE:
+			outMessage->header.type = MSGTYPE_ROUTEAGREE;			
 			outMessage->header.destination = inMessage->routeIAgree.destination;
 			outMessage->routeAgree.requestRouteId = inMessage->routeIAgree.requestRouteId;
 			size += sizeof(msgRouteAGREE);
 			break;
 			
 		case IMSGTYPE_ROUTEDISAGREE:
+			outMessage->header.type = MSGTYPE_ROUTEDISAGREE;			
 			outMessage->header.destination = inMessage->routeIDisagree.destination;
 			outMessage->routeDisagree.requestRouteId = inMessage->routeIDisagree.requestRouteId;
 			size += sizeof(msgRouteDISAGREE);
 			break;
 			
 		case IMSGTYPE_ROUTETRAINOK:
+			outMessage->header.type = MSGTYPE_ROUTETRAINOK;			
 			outMessage->header.destination = inMessage->routeITrainOk.destination;
 			outMessage->routeTrainOk.requestRouteId = inMessage->routeITrainOk.requestRouteId;
 			size += sizeof(msgRouteTRAINOK);
 			break;
 			
 		case IMSGTYPE_ROUTETRAINNOK:
+			outMessage->header.type = MSGTYPE_ROUTETRAINNOK;			
 			outMessage->header.destination = inMessage->routeITrainNOk.destination;
 			outMessage->routeTrainNOk.requestRouteId = inMessage->routeITrainNOk.requestRouteId;
 			size += sizeof(msgRouteTRAINNOK);
 			break;
 			
 		case IMSGTYPE_LOGSEND:
+			outMessage->header.type = MSGTYPE_LOGSEND;			
 			outMessage->header.destination = inMessage->routeITrainNOk.destination;
 			outMessage->logISend.currentLine = inMessage->logISend.currentLine;
 			outMessage->logISend.totalLines = inMessage->logISend.totalLines;
@@ -94,6 +103,7 @@ static BOOL process_message(const message *inMessage, message *outMessage) {
 			break;
 			
 		case IMSGTYPE_LOGDELACK:
+			outMessage->header.type = MSGTYPE_LOGDELACK;			
 			outMessage->header.destination = inMessage->routeITrainNOk.destination;
 			size += sizeof(msgLogDELACK);
 			break;
@@ -150,6 +160,10 @@ void dixlCommTx() {
 		message inMessage;
 		message extMessage;
 		
+		// Clear memory
+		memset(&inMessage, 0, sizeof(inMessage));
+		memset(&extMessage, 0, sizeof(extMessage));
+				
 		// Wait a message from the Queue ... FOREVER
 		msgQReceive(msgQCommTxId, (char *) &inMessage, sizeof(inMessage), WAIT_FOREVER);
 		

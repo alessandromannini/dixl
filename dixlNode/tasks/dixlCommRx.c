@@ -132,7 +132,6 @@ void dixlCommRx() {
 			exit(rcSOCKET_ACCEPTERR);		
 		}
 
-		
 		// Initialize buffer length
 		bufferLen = 0;
 		
