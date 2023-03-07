@@ -1,0 +1,18 @@
+{% extends 'base.html' %}
+
+{% block title %}About{% endblock%}
+
+{% block content %}
+<main id="main" class="row full-height justify-content-center about" >
+    <div id="content" class="col-sm-12 col-lg-10 col-xl-8 full-height">        
+        <img src="{{ url_for('static', filename='logo_unifi.png') }}" alt="logo UniFi" class="logo_unifi">
+        <h1>Implementazione sperimentale mediante una rete di controllori Raspberry di un sistema distribuito di segnalmento ferroviario</h1>
+        <h3>Relatore</h3>
+        <h4>Alessandro Fantechi</h4>
+        <h3>Candidato</h3>
+        <h4>Alessandro Mannini</h4>
+        <br>
+        <h4>Anno Accademico 2021/2022</h4>
+    </div>
+</main>    
+{% endblock %}

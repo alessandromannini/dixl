@@ -1,0 +1,104 @@
+{% extends 'base.html' %}
+
+{% block title %}Home{% endblock%}
+
+{% block content %}
+<main id="main" class="row full-height" >
+    <aside id="routes" class="d-flex flex-column col col-sm-6 col-lg-3 col-xl-2 full-height"> 
+        <div class="row sticky-top bg-dark">
+            <div class="col flex-column">
+                <h2 class="bg-secondary">Routes</h2>      
+                <div class="routes-tools d-flex">   
+                    <a href="#" class="btn btn-light route-button"  role="button" data-function="add">Add</a>
+                    <a href="#" class="btn btn-light me-auto route-button"  role="button" data-function="add">Del</a>
+                    <a href="#" class="btn btn-primary route-button" role="button" data-function="edit">Edit</a>
+                </div>
+            </div>
+        </div>    
+        <div class="row overflow-scroll-y full-height">
+            <div class="col">
+                <ol id="routes-list"  class="routes-list list-group">
+                    <li class="list-group-item list-group-item-action d-flex flex-column" data-id="123">
+                        <div class="d-flex flex-row">
+                            <div class="me-auto"><span class="route-name fs-6 fw-bold me-auto">Left-to-right straight</span></div>
+                            <div><span class="route-id small">#123</span></div>
+                        </div>
+                        <div class="d-flex">
+                            <a href="#" class="btn btn-secondary btn-sm me-auto route-button"  role="button" data-function="rename">Rename</a>
+                            <a href="#" class="btn btn-primary btn-sm route-button" role="button" data-function="request">Request</a>
+                        </div>
+                    </li>   
+                    <li class="list-group-item list-group-item-action d-flex flex-column" data-id="123">
+                        <div class="d-flex flex-row">
+                            <div class="me-auto"><span class="route-name fs-6 fw-bold me-auto">Left-to-right diverged</span></div>
+                            <div><span class="route-id small">#123</span></div>
+                        </div>
+                        <div class="d-flex">
+                            <a href="#" class="btn btn-secondary btn-sm me-auto route-button"  role="button" data-function="rename">Rename</a>
+                            <a href="#" class="btn btn-primary btn-sm route-button" role="button" data-function="request">Request</a>
+                        </div>
+                    </li>   
+                </ol>                 
+            </div>
+        </div>
+    </aside>
+    <section id="layout" class="col-lg-5 col-xl-7 d-none d-lg-block bg-dark full-height">
+text
+    </section>
+    <aside id="nodes" class="d-flex flex-column col col-sm-6 col-lg-4 col-xl-3 d-none d-sm-flex full-height">   
+        <div class="row sticky-top bg-dark">
+            <div class="col">
+                <h2 class="bg-secondary">Nodes</h2>   
+                <div class="nodes-tools d-flex justify-content-around">
+                    <a href="#" class="btn btn-primary node-button"  role="button" data-function="discovery">Discovery</a>
+                    <a href="#" class="btn btn-primary node-button" role="button" data-function="check">Check</a>
+                </div>
+            </div>
+        </div>    
+        <div class="row overflow-scroll-y full-height">
+            <div class="col">  
+                <div id="nodes-list"  class="list-group">
+                    <li class="list-group-item list-group-item-action d-flex flex-column" data-id="123">
+                        <div class="d-flex flex-row align-items-center">
+                            <div class="me-auto"><span class="route-name fs-6 fw-bold me-auto">Node 1 Florence</span></div>
+                            <div><span class="route-id small">#123</span></div>
+                            <div class="status-light_status fail"></div>
+                        </div>
+                        <div class="d-flex">
+                            <span class="small">IP: 192.168.200.80 (7a:7a:c0:a8:ad:50)</span>
+                        </div>
+                        <div class="d-flex">
+                            <a href="#" class="btn btn-secondary btn-sm node-button"  role="button" data-function="rename">Rename</a>
+                            <a href="#" class="btn btn-secondary btn-sm me-auto node-button"  role="button" data-function="log">Log</a>
+                            <a href="#" class="btn btn-primary btn-sm node-button" role="button" data-function="reset">Reset</a>
+                            <a href="#" class="btn btn-primary btn-sm node-button" role="button" data-function="config">Config</a>
+                        </div>
+                    </li>   
+                    <li class="list-group-item list-group-item-action d-flex flex-column" data-id="123">
+                        <div class="d-flex flex-row align-items-center">
+                            <div class="me-auto"><span class="route-name fs-6 fw-bold me-auto">Node 2 Florence</span></div>
+                            <div><span class="route-id small">#123</span></div>
+                            <div class="status-light_status"></div>
+                        </div>
+                        <div class="d-flex">
+                            <span class="small">IP: 192.168.200.90 (7a:7a:c0:a8:ad:5a)</span>
+                        </div>
+                        <div class="d-flex">
+                            <a href="#" class="btn btn-secondary btn-sm node-button"  role="button" data-function="rename">Rename</a>
+                            <a href="#" class="btn btn-secondary btn-sm me-auto node-button"  role="button" data-function="log">Log</a>
+                            <a href="#" class="btn btn-primary btn-sm node-button" role="button" data-function="reset">Reset</a>
+                            <a href="#" class="btn btn-primary btn-sm node-button" role="button" data-function="config">Config</a>
+                        </div>
+                    </li>   
+                </div>                 
+            </div>
+        </div>                
+    </aside>
+</main>    
+{% endblock %}
+
+{% block script %}
+<script src="https://code.jquery.com/jquery-3.6.3.min.js" integrity="sha256-pvPw+upLPUjgMXY0G+8O0xUf+/Im1MZjXxxgOcBQBXU=" crossorigin="anonymous"></script>
+<script src="{{ url_for('static', filename='common.js')}}"></script>
+<script src="{{ url_for('static', filename='home.js')}}"></script>
+{% endblock %}

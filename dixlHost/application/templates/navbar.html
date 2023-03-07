@@ -1,0 +1,37 @@
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark" aria-label="Navbar">
+    <div class="container-fluid">
+        <a class="navbar-brand" href="/">dixlHost</a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain" aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navbarMain">
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+            <li class="nav-item">
+            <a class="nav-link" aria-current="page" href="/">Home</a>
+            </li>
+            <li class="nav-item">
+            <a class="nav-link" href="/about">About</a>
+            </li>
+
+        </ul>
+        <ul class="navbar-nav me-auto mb-2 mb-lg-0"> 
+            <form class="nav-item">
+                <select id="layout-selector" class="form-select" aria-label="Default select example" disabled>
+                    <option selected disabled>Select a layout or create a new one</option>
+                    <option value="1" selected>Layout 1 - Base test</option>
+                    <option value="2">Layout 2 - Complex test</option>
+                    <option value="3">Layout 3 - Real scenario Florence</option>
+                  </select>
+            </form>
+            <div class="nav-tools d-flex">
+                <a id="nav-lock" href="#" class="btn btn-secondary node-button "  role="button" data-function="lock"><i class="bi bi-lock-fill"></i></a>
+                <a href="#" class="btn btn-secondary node-button disabled"  role="button" data-function="add">Add</a>
+                <a href="#" class="btn btn-secondary me-auto node-button disabled"  role="button" data-function="rename">Rename</a>
+                <a href="#" class="btn btn-secondary me-auto node-button disabled"  role="button" data-function="delete">Delete</a>
+                <a href="#" class="btn btn-primary node-button disabled" role="button" data-function="activate">Activate</a>
+            </div>
+        </ul>
+        </div>        
+    </div>
+</nav>
