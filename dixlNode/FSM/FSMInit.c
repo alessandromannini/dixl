@@ -336,7 +336,7 @@ void FSMInit() {
 void FSMInitEvent_NewMessage(message *pMessage) {	
 	
 	// Result of the precondition evaluation to pass to new state
-	BOOL condition = TRUE;
+	BOOL condition = FALSE;
 	// Event data
 	eventData eventData;
 	eventData.pMessage = pMessage;
@@ -396,7 +396,8 @@ void FSMInitEvent_NewMessage(message *pMessage) {
 				// Reset config going back to Idle
 				newState = StateIdle;
 				condition = TRUE;
-			}
+			} else
+				condition = FALSE;
 			break;
 	}
 	

@@ -111,9 +111,18 @@ static void NotReservedExit(eventData *pEventData) {
 	// Get original message
 	message *pInMessage = pEventData->pMessage;
 	
+	// Last node ?
+	if (pCurrentNodeState->pCurrentRoute->position != NODEPOS_LAST) {
+		// Log
+		nodeId *destNode = &(pCurrentNodeState->pCurrentRoute->next);
+		syslog(LOG_INFO, "Received route request (%i) propagating to next node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);
+	} else 
+		// Log
+		syslog(LOG_INFO, "Received route request (%i) not propagating (last)", pCurrentNodeState->pCurrentRoute->id);
+
 	// Log
-	syslog(LOG_INFO, "Request cleaned");	
-	logger_log(LOGTYPE_REQ, pCurrentNodeState->pCurrentRoute->id, pInMessage->header.source );	
+	logger_log(LOGTYPE_REQ, pCurrentNodeState->pCurrentRoute->id, pInMessage->header.source );
+	
 }
 
 /**
@@ -125,7 +134,8 @@ static void WaitAckEntry(eventData *pEventData) {
 	message.iHeader.type = IMSGTYPE_ROUTEREQ;
 	
 	// Log
-	syslog(LOG_INFO, "Received route request (%i) propagating to next node", pCurrentNodeState->pCurrentRoute->id);
+	nodeId *destNode = &(pCurrentNodeState->pCurrentRoute->next);
+	syslog(LOG_INFO, "Received route request (%i) propagating to next node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);
 	
 	// Send REQ to next node
 	message.routeIReq.destination = pCurrentNodeState->pCurrentRoute->next;
@@ -155,7 +165,8 @@ static void WaitAckExit(eventData *pEventData) {
 			size += sizeof(msgIRouteTRAINNOK);
 			
 			// Log
-			syslog(LOG_INFO, "Received NACK for route (%i) sending back TRAINNOK to host node", pCurrentNodeState->pCurrentRoute->id);			
+			nodeId *destNode = &(pCurrentNodeState->pCurrentRoute->prev);
+			syslog(LOG_INFO, "Received NACK for route (%i) sending back TRAINNOK to host node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);
 		} else {
 			message.iHeader.type = IMSGTYPE_ROUTENACK;
 			message.routeINAck.destination = pCurrentNodeState->pCurrentRoute->prev;
@@ -163,7 +174,8 @@ static void WaitAckExit(eventData *pEventData) {
 			size += sizeof(msgIRouteNACK);
 
 			// Log
-			syslog(LOG_INFO, "Received NACK for route (%i) sending back NACK to previous node", pCurrentNodeState->pCurrentRoute->id);
+			nodeId *destNode = &(pCurrentNodeState->pCurrentRoute->prev);
+			syslog(LOG_INFO, "Received NACK for route (%i) sending back NACK to previous node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);
 		}
 		
 		// Log
@@ -173,7 +185,6 @@ static void WaitAckExit(eventData *pEventData) {
 		msgQ_Send(msgQCommTxId, (char *) &message, size);
 	}
 }
-
 
 /**
  * STATEWAITCOMMIT
@@ -188,7 +199,8 @@ static void WaitCommitEntry(eventData *pEventData) {
 	message.routeIAck.requestRouteId = pCurrentNodeState->pCurrentRoute->id;
 
 	// Log
-	syslog(LOG_INFO, "Route request (%i) ACKed sending back ACK to previous node", pCurrentNodeState->pCurrentRoute->id);
+	nodeId *destNode = &(pCurrentNodeState->pCurrentRoute->prev);
+	syslog(LOG_INFO, "Route request (%i) ACKed sending back ACK to previous node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);
 	
 	//Send to dixlCommTx task queue
 	msgQ_Send(msgQCommTxId, (char *) &message, sizeof(msgIHeader) + sizeof(msgIRouteACK));
@@ -213,7 +225,8 @@ static void WaitCommitExit(eventData *pEventData) {
 			size += sizeof(msgIRouteDISAGREE);
 			
 			// Log
-			syslog(LOG_INFO, "Received DISAGREE for route (%i) forwarding DISAGREE to next node", pCurrentNodeState->pCurrentRoute->id);			
+			nodeId *destNode = &(pCurrentNodeState->pCurrentRoute->next);
+			syslog(LOG_INFO, "Received DISAGREE for route (%i) forwarding DISAGREE to next node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);
 		
 			//Send to dixlCommTx task queue
 			msgQ_Send(msgQCommTxId, (char *) &message, size);
@@ -240,7 +253,8 @@ static void WaitAgreeEntry(eventData *pEventData) {
 	message.routeICommit.requestRouteId = pCurrentNodeState->pCurrentRoute->id;
 
 	// Log
-	syslog(LOG_INFO, "Route request (%i) COMMITed forwarding COMMIT to next node", pCurrentNodeState->pCurrentRoute->id);
+	nodeId *destNode = &(pCurrentNodeState->pCurrentRoute->next);
+	syslog(LOG_INFO, "Route request (%i) COMMITed forwarding COMMIT to next node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);				
 	
 	//Send to dixlCommTx task queue
 	msgQ_Send(msgQCommTxId, (char *) &message, sizeof(msgIHeader) + sizeof(msgIRouteCOMMIT));
@@ -265,7 +279,8 @@ static void WaitAgreeExit(eventData *pEventData) {
 			size += sizeof(msgIRouteTRAINNOK);
 			
 			// Log
-			syslog(LOG_INFO, "Received DISAGREE for route (%i) sending back TRAINNOK to host node", pCurrentNodeState->pCurrentRoute->id);			
+			nodeId *destNode = &(pCurrentNodeState->pCurrentRoute->prev);
+			syslog(LOG_INFO, "Received DISAGREE for route (%i) sending back TRAINNOK to host node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);			
 		} else {
 			message.iHeader.type = IMSGTYPE_ROUTEDISAGREE;
 			message.routeIDisagree.destination = pCurrentNodeState->pCurrentRoute->prev;
@@ -273,7 +288,8 @@ static void WaitAgreeExit(eventData *pEventData) {
 			size += sizeof(msgIRouteDISAGREE);
 
 			// Log
-			syslog(LOG_INFO, "Received DISAGREE for route (%i) sending back DISAGREE to previous node", pCurrentNodeState->pCurrentRoute->id);
+			nodeId *destNode = &(pCurrentNodeState->pCurrentRoute->prev);
+			syslog(LOG_INFO, "Received DISAGREE for route (%i) sending back DISAGREE to previous node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);			
 		}		
 		
 		// Log
@@ -310,7 +326,8 @@ static void PositioningExit(eventData *pEventData) {
 			size += sizeof(msgIRouteDISAGREE);
 			
 			// Log
-			syslog(LOG_INFO, "Received DISAGREE for route (%i) forwarding DISAGREE to next node", pCurrentNodeState->pCurrentRoute->id);			
+			nodeId *destNode = &(pCurrentNodeState->pCurrentRoute->next);
+			syslog(LOG_INFO, "Received DISAGREE for route (%i) forwarding DISAGREE to next node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);			
 		
 			//Send to dixlCommTx task queue
 			msgQ_Send(msgQCommTxId, (char *) &message, size);
@@ -343,7 +360,8 @@ static void ReservedEntry(eventData *pEventData) {
 	message.routeIAgree.requestRouteId = pCurrentNodeState->pCurrentRoute->id;
 
 	// Log
-	syslog(LOG_INFO, "Route request (%i) AGREEed sending back AGREE to prev node", pCurrentNodeState->pCurrentRoute->id);
+	nodeId *destNode = &(pCurrentNodeState->pCurrentRoute->prev);
+	syslog(LOG_INFO, "Route request (%i) AGREEed sending back AGREE to prev node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);			
 	
 	//Send to dixlCommTx task queue
 	msgQ_Send(msgQCommTxId, (char *) &message, sizeof(msgIHeader) + sizeof(msgIRouteAGREE));
@@ -369,7 +387,8 @@ static void ReservedExit(eventData *pEventData) {
 			size += sizeof(msgIRouteDISAGREE);
 
 			// Log
-			syslog(LOG_INFO, "Received DISAGREE for route (%i) forwarding DISAGREE to next node", pCurrentNodeState->pCurrentRoute->id);
+			nodeId *destNode = &(pCurrentNodeState->pCurrentRoute->next);
+			syslog(LOG_INFO, "Received DISAGREE for route (%i) forwarding DISAGREE to next node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);			
 
 			//Send to dixlCommTx task queue
 			msgQ_Send(msgQCommTxId, (char *) &message, size);
@@ -397,7 +416,8 @@ static void TrainInTransitionState(eventData *pEventData) {
 		message.routeITrainOk.requestRouteId = pCurrentNodeState->pCurrentRoute->id;
 	
 		// Log
-		syslog(LOG_INFO, "Route request (%i) TRAIN OK reached sending back to host node", pCurrentNodeState->pCurrentRoute->id);
+		nodeId *destNode = &(pCurrentNodeState->pCurrentRoute->prev);
+		syslog(LOG_INFO, "Route request (%i) TRAIN OK reached sending back to host node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);					
 		
 		//Send to dixlCommTx task queue
 		msgQ_Send(msgQCommTxId, (char *) &message, sizeof(msgIHeader) + sizeof(msgIRouteTRAINOK));
@@ -530,7 +550,7 @@ static void FSMEvent_Internal(eStates newState, eventData *pEventData) {
 void FSMCtrlPOINTEvent_NewMessage(message *pMessage) {	
 	
 	// Result of the precondition evaluation to pass to new state
-	BOOL condition = TRUE;
+	BOOL condition = FALSE;
 	// Event data
 	eventData eventData;
 	eventData.pMessage = pMessage;

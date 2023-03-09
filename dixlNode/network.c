@@ -132,7 +132,7 @@ ssize_t socket_recv(int fd, void *buffer, size_t buffer_size) {
 }
 
 size_t socket_send(int fd, void *buffer, size_t buffer_size) {
-    int ret;
+    ssize_t ret;
 
 	if ((ret = send(fd, buffer, buffer_size, 0)) == SOCK_ERROR) {
 	    // Error	  
@@ -202,20 +202,8 @@ STATUS network_get_if_params(char *ifname, IPv4Address *IPv4, MACAddress *MAC) {
 	return ERROR;
 }
 
-void network_IPv4_to_str(const IPv4Address *IPv4, char *str) {
-	int i=0;
-	int r=0;
-	char temp[4];
-	
-	for(i=0;i<4;i++) {
-		snprintf(temp, 4, "%d", IPv4->bytes[i]);
-		int j=0;
-		while (temp[j]) 
-			str[r++]=temp[j++];
-		if (i<3) str[r++]='.';
-	}
-	
-	str[r]='\00';
+void network_IPv4_to_str(const IPv4Address *IPv4, char *str) {	
+	snprintf(str, 16, "%d.%d.%d.%d", IPv4->bytes[0], IPv4->bytes[1], IPv4->bytes[2], IPv4->bytes[3]);	
 }
 
 void network_n_to_IPv4(struct sockaddr_in *sa, IPv4Address *IPv4) {
