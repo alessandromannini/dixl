@@ -51,6 +51,10 @@ typedef enum {
 	MSGTYPE_POINTMALFUNC   		= 95,   // Point set malfunction state	
 	
 	/** INTERNAL TYPES */
+	// Config messages - ComTx task
+	IMSGTYPE_COMMTXCONFIGSET    = 101,   // Set config in dixlCommTx task
+	IMSGTYPE_COMMTXCONFIGRESET  = 102,   // Reset config in dixlCommTx task	
+
 	// Service messages - Init task
 	IMSGTYPE_NODECONFIGSET      = 111,   // Set config in dixlCtrl task
 	IMSGTYPE_NODECONFIGRESET    = 112,   // Reset config in dixlCtrl task	
@@ -168,6 +172,13 @@ typedef struct msgLOGDELACK {
 /***************************************
  * INTERNAL MESSAGES and TYPES
  ***************************************/
+/** message COMMTX types */ 
+typedef struct msgICommTxCONFIGSET {
+	nodeId hostNode;				// Address of the host
+} msgICommTxCONFIGSET;
+typedef struct msgICommTxCONFIGRESET {
+} msgICommTxCONFIGRESET;
+
 /** message CTRL types */ 
 typedef struct msgICtrlCONFIGSET {
 	uint8_t nodeType;				// Type of the node ( => behaviour)
@@ -275,32 +286,36 @@ typedef struct message {
 		struct {
 			msgIHeader iHeader;				// Common INT message header
 			union {
+				// COMMTX
+				msgICommTxCONFIGSET   	commTxIConfigSet;
+				msgICommTxCONFIGRESET 	commTxIConfigReset;
+
 				// CTRL
-				msgICtrlCONFIGSET   ctrlIConfigSet;
-				msgICtrlCONFIGRESET ctrlIConfigReset;
+				msgICtrlCONFIGSET   	ctrlIConfigSet;
+				msgICtrlCONFIGRESET 	ctrlIConfigReset;
 				
 				// ROUTE
-				msgIRouteREQ        routeIReq;
-				msgIRouteACK        routeIAck;
-				msgIRouteNACK       routeINAck;
-				msgIRouteCOMMIT     routeICommit;
-				msgIRouteAGREE      routeIAgree;
-				msgIRouteDISAGREE   routeIDisagree;
-				msgIRouteTRAINOK    routeITrainOk;
-				msgIRouteTRAINNOK   routeITrainNOk;
+				msgIRouteREQ        	routeIReq;
+				msgIRouteACK        	routeIAck;
+				msgIRouteNACK       	routeINAck;
+				msgIRouteCOMMIT     	routeICommit;
+				msgIRouteAGREE      	routeIAgree;
+				msgIRouteDISAGREE   	routeIDisagree;
+				msgIRouteTRAINOK    	routeITrainOk;
+				msgIRouteTRAINNOK   	routeITrainNOk;
 
 				// SENSOR
-				msgISensorON        sensorION;			
-				msgISensorOFF       sensorIOFF;		
+				msgISensorON        	sensorION;			
+				msgISensorOFF       	sensorIOFF;		
 				
 				// POINT
-				msgIPointPOS		pointIPosition;
-				msgIPointNOTIFY	pointINotify;
+				msgIPointPOS			pointIPosition;
+				msgIPointNOTIFY			pointINotify;
 				
 				// LOG
-				msgILog 			logILog;
-				msgILogSEND 		logISend;
-				msgILogDELACK 		logIDelAck;
+				msgILog 				logILog;
+				msgILogSEND 			logISend;
+				msgILogDELACK 			logIDelAck;
 			};
 		};
 	};

@@ -197,11 +197,17 @@ static void ConfiguringExit(eventData *pEventData) {
  */
 static void ConfiguredState(eventData *pEventData) {
 	// Prepare CONFIG SET message for dixlCtrl
-	message message;
+	message message, message2;
+	
 	message.iHeader.type = IMSGTYPE_NODECONFIGSET;
 	message.ctrlIConfigSet.pRoute = configuration;
 	message.ctrlIConfigSet.numRoutes = configTotalSegments;
 	message.ctrlIConfigSet.nodeType = (uint8_t) configNodeType;
+
+	// Prepare CONFIG SET message for dixlCommTx
+	message2.iHeader.type = IMSGTYPE_COMMTXCONFIGSET;
+	message2.commTxIConfigSet.hostNode = source;
+	
 	// Check CONFIG
 	if (configTotalSegments <= 0) {
 		syslog(LOG_ERR, "Wrong CONFIG number of segments (%i): going back to Idle state", configTotalSegments);
@@ -212,18 +218,25 @@ static void ConfiguredState(eventData *pEventData) {
 	} else {		
 		// CONFIG ok, Send to dixlCtrl task queue
 		msgQ_Send(msgQCtrlId, (char *) &message, sizeof(msgIHeader) + sizeof(msgICtrlCONFIGSET));
+		
+		// Send host address to tCommTx
+		msgQ_Send(msgQCommTxId, (char *) &message2, sizeof(msgIHeader) + sizeof(msgICommTxCONFIGSET));		
 	}
 }
 static void ConfiguredExit(eventData *pEventData) {
-	// Prepare CONFIG RESET message for dixlCtrl
-	message message;
+	// Prepare CONFIG RESET message for dixlCtrl and dixlCommTx
+	message message, message2;
 	message.iHeader.type = IMSGTYPE_NODECONFIGRESET;
+	message2.iHeader.type = IMSGTYPE_COMMTXCONFIGRESET;
 	
 	// Log RESET
-	syslog(LOG_ERR, "Config RESET received");
+	syslog(LOG_ERR, "CONFIG RESET received");
 	
 	// Send to dixlCtrl task queue
-	msgQ_Send(msgQCtrlId, (char *) &message, sizeof(msgIHeader) + sizeof(msgICtrlCONFIGSET));		
+	msgQ_Send(msgQCtrlId, (char *) &message, sizeof(msgIHeader) + sizeof(msgICtrlCONFIGRESET));		
+
+	// Send to dixlComTx task queue
+	msgQ_Send(msgQCommTxId, (char *) &message2, sizeof(msgIHeader) + sizeof(msgICommTxCONFIGRESET));		
 }
 
 static StateMapItem StateMap[] = {

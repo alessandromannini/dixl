@@ -30,12 +30,50 @@ TASK_ID     taskCommTxId;
 MSG_Q_ID 	msgQCommTxId;
 VX_MSG_Q(msgQCommTxName, MSGQCOMMTXMESSAGESMAX, MSGQCOMMTXMESSAGESLENGTH);
 
+// Host node address for direct communication
+nodeId hostNode = {0, 0, 0, 0};
+
 /* Implementation functions */
-static BOOL process_message(const message *inMessage, message *outMessage) {
-	// Common part
+/** 
+ * Acquire the configuration parameters
+ * @param inMessage
+ * @return
+ */
+static void set_config(const message *inMessage) {
+	// Host node address
+	hostNode = inMessage->commTxIConfigSet.hostNode;
+	
+	// Log
+	syslog(LOG_INFO, "Host node address set to %d.%d.%d.%d", hostNode.bytes[0], hostNode.bytes[1], hostNode.bytes[2], hostNode.bytes[3]);
+}
+	
+/** 
+ * Reset the configuration parameters
+ * @param inMessage
+ * @return
+ */
+static void reset_config(const message *inMessage) {
+	// Host node address
+	memset(&hostNode, 0, sizeof(hostNode));
+	
+	// Log
+	syslog(LOG_INFO, "Host node address resetted");	
+}
+	
+	
+/**
+ * Process received message preparing the message to send
+ * @param inMessage: received message
+ * @param outMessage: messeage to send
+ * @return
+ */
+static BOOL process_message(const message *inMessage, message *outMessage) {	
+	// Common section
 	outMessage->header.source = IPv4;
 	uint8_t size = sizeof(msgHeader);
 	
+	
+	// Type specific section
 	switch (inMessage->iHeader.type) {
 		case IMSGTYPE_ROUTEREQ:
 			outMessage->header.type = MSGTYPE_ROUTEREQ;
@@ -116,6 +154,12 @@ static BOOL process_message(const message *inMessage, message *outMessage) {
 	
 	return TRUE;
 }
+
+/**
+ * Send the message to destination node using socket
+ * @param message: message to send
+ * @return
+ */
 static BOOL send_message(const message *message) {
 	int fd;					// Send socket file descriptor
 	IPv4String destAddr;	// Destination address of the node
@@ -169,6 +213,15 @@ void dixlCommTx() {
 		
 		// Comm Tx Receive only Internal messages to deliver outside the node
 		switch (inMessage.iHeader.type) {
+			// Internal CONFIG message
+			case IMSGTYPE_COMMTXCONFIGSET:
+				set_config(&inMessage);
+				break;
+				
+			case IMSGTYPE_COMMTXCONFIGRESET:
+				reset_config(&inMessage);
+				break;
+		
 			// Route messages internal request to send to
 			case IMSGTYPE_ROUTEREQ:
 			case IMSGTYPE_ROUTEACK:
@@ -185,7 +238,7 @@ void dixlCommTx() {
 					send_message(&extMessage);
 				break;
 				
-			// TOOOSensors messages
+			// TOOO Sensors messages
 			case IMSGTYPE_SENSORON:
 			case IMSGTYPE_SENSOROFF:
 
