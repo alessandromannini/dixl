@@ -10,8 +10,7 @@
 #include <stdio.h>
 #include <stdbool.h>
 
-#include <sockLib.h>
-
+#include <netinet/in.h>
 #include "globals.h"
 
 /* DEFINEs */

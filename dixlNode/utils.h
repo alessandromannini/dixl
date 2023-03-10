@@ -56,7 +56,7 @@ void task_wait4notReady(TASK_ID taskId, int retryDelay, int finalDelay);
  * @param tName		: task name
  * @return			: TRUE if OK, else FALSE
  */
-bool task_shutdown(TASK_ID tId, char *tName);
+void task_shutdown(TASK_ID *tId, char *tName, MSG_Q_ID *msgQId, int *socket);
 
 /**
  * Compute ceil of num / den

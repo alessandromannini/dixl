@@ -17,11 +17,11 @@
 #include <sockLib.h>
 #include <net/if.h>
 #include <net/if_dl.h>
-#include "network.h"
 #include "ifaddrs.h"
 
 #include "utils.h" 
 #include "globals.h" 
+#include "network.h" 
 
 /* FUNCTIONS helpers */
 int socket_create(int domain, int type, int proto) {
@@ -144,6 +144,22 @@ size_t socket_send(int fd, void *buffer, size_t buffer_size) {
 	return ret;	
 }
 
+void network_IPv4_to_str(const IPv4Address *IPv4, char *str) {	
+	snprintf(str, 16, "%d.%d.%d.%d", IPv4->bytes[0], IPv4->bytes[1], IPv4->bytes[2], IPv4->bytes[3]);	
+}
+
+void network_n_to_IPv4(struct sockaddr_in *sa, IPv4Address *IPv4) {
+    struct in_addr addr = sa->sin_addr;
+    uint32_t value = addr.s_addr;
+    uint32_t mod;
+    
+	for(int i=0; i<40;i++) {
+		mod = value % 256;
+    	IPv4->bytes[i] = (unsigned char) mod;
+    	value /= 256;
+    }
+}
+
 STATUS network_get_if_params(char *ifname, IPv4Address *IPv4, MACAddress *MAC) {
     struct ifaddrs *ifaddrs,*ifaddr;
     struct sockaddr_in *sa;
@@ -202,18 +218,3 @@ STATUS network_get_if_params(char *ifname, IPv4Address *IPv4, MACAddress *MAC) {
 	return ERROR;
 }
 
-void network_IPv4_to_str(const IPv4Address *IPv4, char *str) {	
-	snprintf(str, 16, "%d.%d.%d.%d", IPv4->bytes[0], IPv4->bytes[1], IPv4->bytes[2], IPv4->bytes[3]);	
-}
-
-void network_n_to_IPv4(struct sockaddr_in *sa, IPv4Address *IPv4) {
-    struct in_addr addr = sa->sin_addr;
-    uint32_t value = addr.s_addr;
-    uint32_t mod;
-    
-	for(int i=0; i<40;i++) {
-		mod = value % 256;
-    	IPv4->bytes[i] = (unsigned char) mod;
-    	value /= 256;
-    }
-}

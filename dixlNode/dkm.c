@@ -50,20 +50,13 @@ uint_t stop(void) {
 	syslog(LOG_INFO, "Shutting down dixlNode...");
 
 	// Deleting tasks in reverse order
-	if (taskCommTxId) 
-		if (task_shutdown(taskCommTxId, TASKCOMMTXDESC)) taskCommTxId=0;
-	if (taskDiagId) 
-		if (task_shutdown(taskDiagId, TASKDIAGDESC)) taskDiagId=0;
-	if (taskCtrlId) 
-		if (task_shutdown(taskCtrlId, TASKCTRLDESC)) taskCtrlId=0;
-	if (taskPointId) 
-		if (task_shutdown(taskPointId, TASKPOINTDESC)) taskPointId=0;
-	if (taskLogId) 
-		if (task_shutdown(taskLogId, TASKLOGDESC)) taskLogId=0;
-	if (taskCommRxId) 
-		if (task_shutdown(taskCommRxId, TASKCOMMRXDESC)) taskCommRxId=0;
-	if (taskInitId) 
-		if (task_shutdown(taskInitId, TASKINITDESC)) taskInitId=0;
+	task_shutdown(&taskCommTxId, TASKCOMMTXDESC, &msgQCommTxId, NULL);
+	task_shutdown(&taskDiagId, TASKDIAGDESC, NULL, NULL);
+	task_shutdown(&taskCtrlId, TASKCTRLDESC, &msgQCtrlId, NULL);
+	task_shutdown(&taskPointId, TASKPOINTDESC, &msgQPointId, NULL);
+	task_shutdown(&taskLogId, TASKLOGDESC, &msgQLogId, NULL);
+	task_shutdown(&taskCommRxId, TASKCOMMRXDESC, NULL, &dixlCommRxSocket);
+	task_shutdown(&taskInitId, TASKINITDESC, &msgQInitId, NULL);
 	
 	// Node halted
 	syslog(LOG_INFO, "dixlNode halted");
