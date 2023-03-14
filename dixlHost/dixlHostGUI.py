@@ -6,9 +6,12 @@
 @version        : "1.0.0"
 """
 import tkinter as tk
+from typing_extensions import IntVar
 from dixlHostTest import *
 from threading import *
 import time
+import random
+
 
 blinking = Event()
 
@@ -29,9 +32,23 @@ def request(routeId: int):
             lblRouteStatus.config(bg= "green")
         else:
             lblRouteStatus.config(bg= "red")
-        btnRTRequest.config(state="normal")           
+        btnRTRequest.config(state="normal")     
+
+def malfunction(delay: int):
+    # Send a malfunction message after delay ms
+
+    try:
+        time.sleep(delay / 1000)
+        
+        sendMalfunction2PT()
+
+    except Exception as e:
+        print("Malfunction send error" + repr(e))
 
 def buttonPressed(action: str):
+
+    global chkMalfunction
+
     match action:
         case "TCSendConfig":
             sendConfig2TC()
@@ -61,8 +78,14 @@ def buttonPressed(action: str):
                 blinking.set()
                 lblRouteStatus.after(500, blinkTRAINStatus)         
                 
+                # Start request (wait) in a second thread
                 Thread(target=request, args=[routeId]).start()
 
+                # Get Malfunction checkbox
+                if chkMalfunction.get():
+                    # Random delay (ms)
+                    delay=random.randint(0, 2000)
+                    Thread(target=malfunction, args=[delay]).start()
         case _:
             print("Unexcepted command")
 
@@ -116,8 +139,6 @@ btnTCSendConfig = tk.Button(
 )
 btnTCSendConfig.grid(row=1, column=3, padx=5, pady=5)
 
-
-
 # POINT NODE
 frmPT = tk.Frame(master=wndMain, width=200, height=20,relief=tk.FLAT,  bg="orange")
 frmPT.grid(row=2, column=0)
@@ -161,6 +182,10 @@ valuesVar = tk.StringVar(value=values)
 lstRoute = tk.Listbox(master=frmRTCmds, listvariable=valuesVar, height=2)
 lstRoute.grid(row=5, column=1, sticky="n")
 
+# Malfunction checkbox
+chkMalfunction = tk.IntVar()
+tk.Checkbutton(master=frmRTCmds, text="Malfunction:", bg="lightgray", variable=chkMalfunction).grid(row=5, column=2, padx=5)
+
 # Request route
 btnRTRequest = tk.Button(
     master=frmRTCmds,
@@ -168,11 +193,11 @@ btnRTRequest = tk.Button(
     width=15,
     command=lambda: buttonPressed("RequestRoute")
 )
-btnRTRequest.grid(row=5, column=2, padx=5, pady=5)
+btnRTRequest.grid(row=5, column=3, padx=5, pady=5)
 
 # Route Status
 lblRouteStatus=tk.Label(master=frmRTCmds, text="", width=1, height=1, bg="white")
-lblRouteStatus.grid(row=5, column=3, padx=5, pady=5, sticky="nesw")
+lblRouteStatus.grid(row=5, column=4, padx=5, pady=5, sticky="nesw")
 
 # Wait for events
 wndMain.mainloop()

@@ -54,7 +54,7 @@ class MsgType(Enum):
 	NODEDIAGACK 				= 91	# Communication diagnostic request Ack
 
 	# Point requests - Point task
-	MSGTYPE_POINTMALFUNC   		= 95,   # Point set malfunction state (error simulation request)
+	POINTMALFUNC   				= 95   # Point set malfunction state (error simulation request)
 
 # Node type 
 class NodeType(Enum):
@@ -75,13 +75,14 @@ class PointPosition(Enum):
 
 # Messages defs
 Header = namedtuple("Header", [ "length", "type" , "source", "destination"])
-Route = namedtuple("Route", ["IP", "prev", "next", "position", "requestedPosition"])
+Route = namedtuple("Route", ["ID", "prev", "next", "position", "requestedPosition"])
 MsgInitCONFIGTYPE = namedtuple("MsgHeaderCONFIG", ["header", "sequence", "totalSegments", "nodeType"])
 MsgInitCONFIG = namedtuple("MsgHeaderCONFIG", ["header", "sequence", "totalSegments", "route"])
 MsgRouteREQ = namedtuple("MsgRouteREQ", ["header", "requestRouteId"])
 MsgRouteTRAINOK = namedtuple("MsgRouteTRAINOK", ["header", "requestRouteId"])
 MsgRouteTRAINNOK = namedtuple("MsgRouteTRAINNOK", ["header", "requestRouteId"])
-MsgInitRESET = namedtuple("MsgInitRESET", ["headere"])
+MsgInitRESET = namedtuple("MsgInitRESET", ["header"])
+MsgPointMALFUNCTION = namedtuple("MsgPointMALFUNCTION", ["header"])
 
 # Packed messages formats
 MsgHeaderFormat = "BBxx4s4sxxxx"
@@ -95,6 +96,7 @@ MsgRouteREQFormat = MsgHeaderFormat + MsgRouteRequestFormat
 MsgRouteTRAINOKFormat = MsgHeaderFormat + MsgRouteRequestFormat
 MsgRouteTRAINNOKFormat = MsgHeaderFormat + MsgRouteRequestFormat
 MsgInitRESETFormat = MsgHeaderFormat
+MsgPointMALFUNCTIONFormat = MsgHeaderFormat
 
 # Host and Nodes IDs and IPs
 # TODO Detect MAC and IP of the host
@@ -128,7 +130,7 @@ def sendReset2PT():
 
 	# Send config
 	# Route request
-	messageToSend = getMessageToSend( MsgInitRESET( Header( 0, MsgType.NODERESET, Host["Id"], NodeTrackCircuit["Id"]) ), MsgInitRESETFormat)
+	messageToSend = getMessageToSend( MsgInitRESET( Header( 0, MsgType.NODERESET, Host["Id"], NodePoint["Id"]) ), MsgInitRESETFormat)
 	client_socket.send(messageToSend)
         
 	# Close the socket
@@ -177,6 +179,21 @@ def sendConfig2PT():
 	messageToSend = getMessageToSend( MsgInitCONFIG( Header( 0, MsgType.NODECONFIG, Host["Id"], NodePoint["Id"]), 2, 2, Route( 2, NodeTrackCircuit["Id"], NodeNull["Id"], NodePosition.LAST, PointPosition.STRAIGHT ) ), MsgInitCONFIGFormat)
 	client_socket.send(messageToSend)
 
+	# Close the socket
+	client_socket.shutdown(socket.SHUT_RDWR)
+
+def sendMalfunction2PT():
+	##############################################
+	# Create a client socket to NodePoint        #
+	##############################################
+	client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+	client_socket.connect((NodePoint["IP"], NodeCommPort))
+
+	# Send config
+	# Point malfunction
+	messageToSend = getMessageToSend( MsgPointMALFUNCTION( Header( 0, MsgType.POINTMALFUNC, Host["Id"], NodePoint["Id"]) ), MsgPointMALFUNCTIONFormat)
+	client_socket.send(messageToSend)
+        
 	# Close the socket
 	client_socket.shutdown(socket.SHUT_RDWR)
 
