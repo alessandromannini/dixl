@@ -22,6 +22,7 @@
   │   utils.h                   # General purpose utilities
   │   
   ├───datatypes
+  │   dataHelpers.c             # Data helper functions
   │   dataTypes.h               # Data types definitions
   │   messages.h                # External and internal messages definitions
   │       

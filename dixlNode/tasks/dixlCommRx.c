@@ -95,7 +95,13 @@ static bool process_message(char *stream, ssize_t streamLen) {
 				// Send to dixlCtrl task queue
 				msgQ_Send(msgQCtrlId, (char *) &message, messageLen);					
 				break;
-				
+
+			// LOG Messages
+			case MSGTYPE_POINTMALFUNC:
+				// Send to dixlPoint task queue
+				msgQ_Send(msgQPointId, (char *) &message, messageLen);	
+				break;
+		
 			// UNKNOWN Messages	
 			default:
 				return FALSE;

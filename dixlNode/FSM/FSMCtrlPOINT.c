@@ -51,7 +51,7 @@ typedef struct StateMapItem {
 
 /* Machine Instance */
 typedef struct {
-	// TODO timer	
+	// TODO timer timeout
 	eStates newState;				// New state to pass to
 	eStates currentState;			// Current state
     StateMapItem *stateMap;			// Map to function for each state
@@ -63,8 +63,8 @@ typedef struct {
  *  variables 
  */
 // Node State
-
 static NodeState *pCurrentNodeState = NULL;
+static struct timespec lastPointNonce; 	// Nonce of the last Point position request (the excepted one) 
 
 /**
  *  Functions implementation 
@@ -88,11 +88,92 @@ static BOOL setRoute(nodeId source, routeId requestedRouteId) {
 	return FALSE;
 }
 
+static eNodePosition findPosition(routeId requestedRouteId) {
+	// Search for the requested route
+	route *pCurrentRoute = pCurrentNodeState->pRouteList;
+	
+	for (uint32_t i=0; i < pCurrentNodeState->numRoutes ; i++ ) {
+		 // If found return position
+		if (pCurrentRoute[i].id == requestedRouteId) {
+			return pCurrentRoute[i].position;
+		}
+	}
+		
+	// Not found, return NODEPOS_UNDEFINED
+	syslog(LOG_ERR, "Requested route id (%i) not found", requestedRouteId);
+	return NODEPOS_UNDEFINED;
+}
+
 /**
  *  Forward functions definitions 
  */
 static void FSMEvent_Internal(eStates newState, eventData *pEventData);
 static void StateEngine();
+
+
+/**
+ * Common functions
+ * 
+ * @param pEventData
+ */
+static void rejectRouteRequest(eventData *pEventData) {
+	eNodePosition position;
+	
+	// Get original message
+	message *pInMessage = pEventData->pMessage;
+	nodeId *destNode = &(pInMessage->header.source);
+	message message;
+	size_t size = sizeof(msgIHeader);
+	routeId requestedRouteId = pInMessage->routeIReq.requestRouteId;
+
+	// Reply DISAGREE only to route request
+	switch (pInMessage->header.type) {
+		case MSGTYPE_ROUTEREQ:
+			
+			// Log
+			logger_log(LOGTYPE_REQ, requestedRouteId, *destNode );			
+			logger_log(LOGTYPE_DISAGREE, requestedRouteId, NodeNULL );
+
+			
+			// Prepare  DISAGREE message for source node			
+			position = findPosition(requestedRouteId);
+			
+			// First node? Send to host
+			if (position == NODEPOS_FIRST) {
+				message.header.type = IMSGTYPE_ROUTETRAINNOK;
+				message.routeITrainNOk.destination = *destNode;
+				message.routeITrainNOk.requestRouteId = pInMessage->routeReq.requestRouteId;
+				size += sizeof(msgIRouteTRAINNOK);
+				
+				// Log
+				syslog(LOG_INFO, "Sending TRAINNOK for route (%i) to host node (%d.%d.%d.%d)", pInMessage->routeReq.requestRouteId, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);			
+			} else {
+				message.iHeader.type = IMSGTYPE_ROUTEDISAGREE;
+				message.routeIDisagree.destination = *destNode;
+				message.routeIDisagree.requestRouteId = pInMessage->routeReq.requestRouteId;
+				size += sizeof(msgIRouteDISAGREE);
+	
+				// Log
+				nodeId *destNode = &(pInMessage->header.source);
+				syslog(LOG_INFO, "Sending TRAINNOK for route (%i) to node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);			
+			}		
+			
+			// Log
+			logger_log(LOGTYPE_DISAGREE, pCurrentNodeState->pCurrentRoute->id, *destNode );
+			
+			//Send to dixlCommTx task queue
+			msgQ_Send(msgQCommTxId, (char *) &message, size);
+			break;
+			
+		// Discard (initial message) by which Point notify the malfunction
+		case IMSGTYPE_POINTNOTIFY:
+			break;
+			
+		default:
+			syslog(LOG_INFO, "Received unexcepted message (%i) from node (%d.%d.%d.%d)", pInMessage->header.type, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);
+			break;
+	}
+}
 
 /**
  * STATENOTRESERVED
@@ -304,11 +385,25 @@ static void WaitAgreeExit(eventData *pEventData) {
 /**
  * STATEPOSITIONING
  */
-static void PositioningState(eventData *pEventData) {
-	// TODO Positioning State
+static void PositioningEntry(eventData *pEventData) {			
+	// Prepare  message to request position to Point task	
+	message message;
+	size_t size = sizeof(msgIHeader);
+	message.iHeader.type = IMSGTYPE_POINTPOS;
+	message.pointIPosition.requestedPosition = pCurrentNodeState->pCurrentRoute->requestedPosition;
+	clock_gettime(CLOCK_REALTIME, &lastPointNonce);
+	message.pointIPosition.requestTimestamp = lastPointNonce;
+	size += sizeof(msgIPointPOS);
+	
+	// Log
+	syslog(LOG_INFO, "Route request (%i) AGREEed requesting %s positioning to Point with nonce %i ", pCurrentNodeState->pCurrentRoute->id, pointpos_str(pCurrentNodeState->pCurrentRoute->requestedPosition), lastPointNonce);				
+
+	//Send to dixlPoint task queue
+	msgQ_Send(msgQPointId, (char *) &message, size);	
+}
+static void PositioningState(eventData *pEventData) {	
 }
 static void PositioningExit(eventData *pEventData) {
-	// TODO Positioning Exit altre azioni?
 	// Get original message
 	message *pInMessage = pEventData->pMessage;
 
@@ -343,33 +438,121 @@ static void PositioningExit(eventData *pEventData) {
 /**
  * STATEMALFUNCTION
  */
+static void MalfunctionStateEntry(eventData *pEventData) {
+	// Prepare messagePrev (DISAGREE, TRAINNOK) and messageNext (DISAGREE) for dixlCommTx
+	message messagePrev, messageNext;
+	size_t size;
+	
+	// DISAGREE/TRAINNOK to prev node
+	// If First send TRAINNOK to host otherwise DISAGREE to prev node
+	if (pCurrentNodeState->pCurrentRoute->position == NODEPOS_FIRST) {
+		// Prepare IROUTETRAINOK messagePrev for dixlCommTx
+		messagePrev.iHeader.type = IMSGTYPE_ROUTETRAINNOK;
+		size = sizeof(msgIHeader);
+		
+		// Send TRAINNOK to host node
+		messagePrev.routeITrainNOk.destination = pCurrentNodeState->pCurrentRoute->prev;
+		messagePrev.routeITrainNOk.requestRouteId = pCurrentNodeState->pCurrentRoute->id;
+		size += sizeof(msgIRouteTRAINNOK);
+	
+		// Log
+		nodeId *destNode = &(pCurrentNodeState->pCurrentRoute->prev);
+		syslog(LOG_INFO, "Route request (%i) MALFUNCTION reached sending TRAINNOK to host node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);					
+	} else {
+		// Prepare IROUTEDISAGREE messagePrev for dixlCommTx
+		messagePrev.iHeader.type = IMSGTYPE_ROUTEDISAGREE;
+		size = sizeof(msgIHeader);
+		
+		// Send DISAGREE to prev node
+		messagePrev.routeIDisagree.destination = pCurrentNodeState->pCurrentRoute->prev;
+		messagePrev.routeIDisagree.requestRouteId = pCurrentNodeState->pCurrentRoute->id;
+		size += sizeof(msgIRouteDISAGREE);
+	
+		// Log
+		nodeId *destNode = &(pCurrentNodeState->pCurrentRoute->prev);
+		syslog(LOG_INFO, "Route request (%i) MALFUNCTION reached sending back DISAGREE to prev node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);			
+	}
+
+	// Log	
+	logger_log(LOGTYPE_DISAGREE, pCurrentNodeState->pCurrentRoute->id, NodeNULL );			
+	
+	//Send to dixlCommTx task queue
+	msgQ_Send(msgQCommTxId, (char *) &messagePrev, size);
+
+	// DISAGREE to next node to abort the reservation
+	// If not LAST send DISAGREE to next node
+	if (pCurrentNodeState->pCurrentRoute->position != NODEPOS_LAST) {
+		// Prepare IROUTETRAINOK messagePrev for dixlCommTx
+		messageNext.iHeader.type = IMSGTYPE_ROUTEDISAGREE;
+		size = sizeof(msgIHeader);
+		
+		// Send DISAGREE to prev node
+		messageNext.routeIDisagree.destination = pCurrentNodeState->pCurrentRoute->next;
+		messageNext.routeIDisagree.requestRouteId = pCurrentNodeState->pCurrentRoute->id;
+		size += sizeof(msgIRouteDISAGREE);
+	
+		// Log
+		nodeId *destNode = &(pCurrentNodeState->pCurrentRoute->next);
+		syslog(LOG_INFO, "Route request (%i) MALFUNCTION reached sending DISAGREE to next node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);					
+
+		//Send to dixlCommTx task queue
+		msgQ_Send(msgQCommTxId, (char *) &messageNext, size);
+	} else 
+		// Log
+		syslog(LOG_INFO, "Route request (%i) MALFUNCTION reached not propagating (last)", pCurrentNodeState->pCurrentRoute->id);			
+
+}
 static void MalfunctionState(eventData *pEventData) {
-	// TODO Malfunction State
+	// TODO 
+	// Fail-safe state, reply NACK to all subsequent requests	
+	rejectRouteRequest(pEventData);
 }
 
 /**
  * STATERESERVED
  */
-static void ReservedEntry(eventData *pEventData) {
-	// Prepare IROUTEAGREE message for dixlCommTx
+static void ReservedStateEntry(eventData *pEventData) {
+	// Prepara message for dixlCommTx
 	message message;
-	message.iHeader.type = IMSGTYPE_ROUTEAGREE;
+	size_t size;
 	
-	// Send AGREE to prev node
-	message.routeIAgree.destination = pCurrentNodeState->pCurrentRoute->prev;
-	message.routeIAgree.requestRouteId = pCurrentNodeState->pCurrentRoute->id;
-
+	// If Fist send TRAINOK to host otherwise AGREE to prev node
+	if (pCurrentNodeState->pCurrentRoute->position == NODEPOS_FIRST) {
+		// Prepare IROUTETRAINOK message for dixlCommTx
+		message.iHeader.type = IMSGTYPE_ROUTETRAINOK;
+		size = sizeof(msgIHeader);
+		
+		// Send TRAINOK to host node
+		message.routeITrainOk.destination = pCurrentNodeState->pCurrentRoute->prev;
+		message.routeITrainOk.requestRouteId = pCurrentNodeState->pCurrentRoute->id;
+	
+		// Log
+		nodeId *destNode = &(pCurrentNodeState->pCurrentRoute->prev);
+		syslog(LOG_INFO, "Route request (%i) TRAIN OK reached sending back to host node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);					
+	} else {
+		// Prepare IROUTEAGREE message for dixlCommTx
+		message.iHeader.type = IMSGTYPE_ROUTEAGREE;
+		size = sizeof(msgIHeader);
+		
+		// Send AGREE to prev node
+		message.routeIAgree.destination = pCurrentNodeState->pCurrentRoute->prev;
+		message.routeIAgree.requestRouteId = pCurrentNodeState->pCurrentRoute->id;
+		size += sizeof(msgIRouteAGREE);
+	
+		// Log
+		nodeId *destNode = &(pCurrentNodeState->pCurrentRoute->prev);
+		syslog(LOG_INFO, "Route request (%i) AGREEed sending back AGREE to prev node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);			
+	}
+	
 	// Log
-	nodeId *destNode = &(pCurrentNodeState->pCurrentRoute->prev);
-	syslog(LOG_INFO, "Route request (%i) AGREEed sending back AGREE to prev node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);			
-	
-	//Send to dixlCommTx task queue
-	msgQ_Send(msgQCommTxId, (char *) &message, sizeof(msgIHeader) + sizeof(msgIRouteAGREE));
 	logger_log(LOGTYPE_RESERVED, pCurrentNodeState->pCurrentRoute->id, NodeNULL );			
+
+	//Send to dixlCommTx task queue
+	msgQ_Send(msgQCommTxId, (char *) &message, size);
 }
 static void ReservedState(eventData *pEventData) {	
 }
-static void ReservedExit(eventData *pEventData) {
+static void ReservedStateExit(eventData *pEventData) {
 	// Get original message
 	message *pInMessage = pEventData->pMessage;
 
@@ -405,26 +588,6 @@ static void ReservedExit(eventData *pEventData) {
  * STATEINTRANSITION
  */
 static void TrainInTransitionState(eventData *pEventData) {
-	// Only if FIRST node
-	// Prepare IROUTETRAINOK message for dixlCommTx
-	if (pCurrentNodeState->pCurrentRoute->position == NODEPOS_FIRST) {
-		message message;
-		message.iHeader.type = IMSGTYPE_ROUTETRAINOK;
-		
-		// Send AGREE to prev node
-		message.routeITrainOk.destination = pCurrentNodeState->pCurrentRoute->prev;
-		message.routeITrainOk.requestRouteId = pCurrentNodeState->pCurrentRoute->id;
-	
-		// Log
-		nodeId *destNode = &(pCurrentNodeState->pCurrentRoute->prev);
-		syslog(LOG_INFO, "Route request (%i) TRAIN OK reached sending back to host node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);					
-		
-		//Send to dixlCommTx task queue
-		msgQ_Send(msgQCommTxId, (char *) &message, sizeof(msgIHeader) + sizeof(msgIRouteTRAINOK));
-	} else
-		// Log
-		syslog(LOG_INFO, "Route request (%i) TRAIN OK reached not sending back (not first)", pCurrentNodeState->pCurrentRoute->id);
-		
 }
 static void TrainInTransitionExit(eventData *pEventData) {
 	// Log
@@ -433,23 +596,23 @@ static void TrainInTransitionExit(eventData *pEventData) {
 
 static StateMapItem StateMap[] = {
 		// StateDummy
-		{ NULL,						NULL, 				NULL},
+		{ NULL,						NULL, 					NULL},
 		// StateNotReserved
-		{ NotReservedState, 		NotReservedEntry, 	NotReservedExit},
+		{ NotReservedState, 		NotReservedEntry, 		NotReservedExit},
 		// StateWaitAck
-		{ WaitAckState,				WaitAckEntry,		WaitAckExit},
+		{ WaitAckState,				WaitAckEntry,			WaitAckExit},
 		// StateWaitCommit
-		{ WaitCommitState, 			WaitCommitEntry, 	WaitCommitExit},
+		{ WaitCommitState, 			WaitCommitEntry, 		WaitCommitExit},
 		// StateWaitAgree
-		{ WaitAgreeState,			WaitAgreeEntry,		WaitAgreeExit},
+		{ WaitAgreeState,			WaitAgreeEntry,			WaitAgreeExit},
 		// StatePositioning
-		{ PositioningState,			NULL,				PositioningExit},
+		{ PositioningState,			PositioningEntry,		PositioningExit},
 		// StateMalfunction
-		{ MalfunctionState,			NULL,				NULL},
+		{ MalfunctionState,			MalfunctionStateEntry,	NULL},
 		// StateReserved
-		{ ReservedState,			ReservedEntry,		ReservedExit},
+		{ ReservedState,			ReservedStateEntry,		ReservedStateExit},
 		// StateTrainInTransition
-		{ TrainInTransitionState,	NULL,				TrainInTransitionExit},
+		{ TrainInTransitionState,	NULL,					TrainInTransitionExit},
 };
 
 /* FiniteStateMachine istance object */
@@ -642,7 +805,7 @@ void FSMCtrlPOINTEvent_NewMessage(message *pMessage) {
 								break;
 								
 							case NODEPOS_LAST:
-								newState = StateReserved;
+								newState = StatePositioning;
 								break;
 						}
 						condition = TRUE;
@@ -674,15 +837,8 @@ void FSMCtrlPOINTEvent_NewMessage(message *pMessage) {
 			switch (pMessage->header.type) {
 				case MSGTYPE_ROUTEAGREE:
 					if (pMessage->routeCommit.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
-						// Go to next state depending Switch position, no need to check NodePosition(in the current requested route)
-						// If Switch not in position, go to positioning
-						// TODO Position check
-						if (NULL) {
-							newState = StatePositioning;						
-						} else {
-							// TODO Valutare se necessario passare direttamente a StateInTransition per il FIRST come è nel CtrlTC)
-							newState = StateReserved;
-						}
+						// Go to positionig state to send a message to tPoint task and receive a feedback (message)
+						newState = StatePositioning;						
 						condition = TRUE;
 					} else
 						// Discard
@@ -707,12 +863,51 @@ void FSMCtrlPOINTEvent_NewMessage(message *pMessage) {
 			break;
 			
 		case StatePositioning:
-			// TODO Check position
-			// Accept only 
+			// Accept only POINTNOTIFY and DISAGREE, discard others
+			switch (pMessage->header.type) {
+				case IMSGTYPE_POINTNOTIFY:
+					// Malfunction? 
+					if (pMessage->pointINotify.currentPosition == POINTPOS_UNDEFINED) {
+						newState = StateMalfunction;
+						condition = TRUE;
+					// Check request timestamp request match (if different, discard the message)
+					} else if (pMessage->pointINotify.requestTimestamp.tv_sec == lastPointNonce.tv_sec && pMessage->pointINotify.requestTimestamp.tv_nsec == lastPointNonce.tv_nsec ) {
+						// If the timestamp math but the position doesn't is considered a Malfunction
+						if (pMessage->pointINotify.currentPosition != pCurrentNodeState->pCurrentRoute->requestedPosition) {
+							// Go to Malfunction state
+							newState = StateMalfunction;
+							condition = TRUE;
+						} else {
+							// Go to reserved state to send a message to tPoint task and receive a feedback (message)
+							newState = StateReserved;						
+							condition = TRUE;
+						}
+					} else
+						// Discard
+						condition = FALSE;
+					break;
+				
+				case MSGTYPE_ROUTEDISAGREE:
+					if (pMessage->routeIDisagree.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
+						// Not necessary to test NodePosition
+						// Exit send DISAGREE to prev node or TRAINNOK to host
+						newState = StateNotReserved;
+						condition = TRUE;
+					} else
+						// Discard
+						condition = FALSE;
+					break;
+
+				default:
+					condition = FALSE;
+					break;
+			}						
 			break;
 			
 		case StateMalfunction:
-			// TODO Check Malfuncton
+			// Keep this state (until general dixlCtrlReset)
+			newState = StateMalfunction;
+			condition= TRUE;
 			break;
 			
 		case StateReserved:

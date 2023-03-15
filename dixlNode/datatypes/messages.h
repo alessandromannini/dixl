@@ -79,8 +79,9 @@ typedef enum {
 	IMSGTYPE_LOGDELACK		    = 184,	// Ack log lines deletion to the host
 
 	// Point requests  
-	IMSGTYPE_POINTPOS			= 195,   // Point position request
-	IMSGTYPE_POINTNOTIFY		= 196,   // Point position or malfunction notify
+	IMSGTYPE_POINTRESET			= 195,   // Point position reset
+	IMSGTYPE_POINTPOS			= 196,   // Point position request
+	IMSGTYPE_POINTNOTIFY		= 197,   // Point position or malfunction notify
 
 } eMsgType;
 
@@ -230,6 +231,9 @@ typedef struct msgISENSOROFF {
 } msgISensorOFF;
 
 /** message POINT types */
+typedef struct msgIPOINTRESET {
+	ePointPosition requestedPosition;	// Requested point position
+} msgIPointRESET;
 typedef struct msgIPOINTPOS {
 	struct timespec requestTimestamp;	// Timestamp of the request as notch
 	eNodePosition requestedPosition;	// Requested point position
@@ -309,6 +313,7 @@ typedef struct message {
 				msgISensorOFF       	sensorIOFF;		
 				
 				// POINT
+				msgIPointRESET			pointIReset;
 				msgIPointPOS			pointIPosition;
 				msgIPointNOTIFY			pointINotify;
 				

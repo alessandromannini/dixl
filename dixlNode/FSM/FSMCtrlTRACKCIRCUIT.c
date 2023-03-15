@@ -296,21 +296,44 @@ static void WaitAgreeExit(eventData *pEventData) {
  * STATERESERVED
  */
 static void ReservedEntry(eventData *pEventData) {
-	// Prepare IROUTEAGREE message for dixlCommTx
+	// Prepara message for dixlCommTx
 	message message;
-	message.iHeader.type = IMSGTYPE_ROUTEAGREE;
+	size_t size;
 	
-	// Send AGREE to prev node
-	message.routeIAgree.destination = pCurrentNodeState->pCurrentRoute->prev;
-	message.routeIAgree.requestRouteId = pCurrentNodeState->pCurrentRoute->id;
+	// If Fist send TRAINOK to host otherwise AGREE to prev node
+	if (pCurrentNodeState->pCurrentRoute->position == NODEPOS_FIRST) {
+		// Prepare IROUTETRAINOK message for dixlCommTx
+		message.iHeader.type = IMSGTYPE_ROUTETRAINOK;
+		size = sizeof(msgIHeader);
+		
+		// Send TRAINOK to host node
+		message.routeITrainOk.destination = pCurrentNodeState->pCurrentRoute->prev;
+		message.routeITrainOk.requestRouteId = pCurrentNodeState->pCurrentRoute->id;
+		size += sizeof(msgIRouteTRAINOK);
+	
+		// Log
+		nodeId *destNode = &(pCurrentNodeState->pCurrentRoute->prev);
+		syslog(LOG_INFO, "Route request (%i) TRAIN OK reached sending back to host node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);					
+	} else {
 
-	// Log
-	nodeId *destNode = &(pCurrentNodeState->pCurrentRoute->prev);
-	syslog(LOG_INFO, "Route request (%i) AGREEed sending back AGREE to prev node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);
+		// Prepare IROUTEAGREE message for dixlCommTx
+		message.iHeader.type = IMSGTYPE_ROUTEAGREE;
+		size = sizeof(msgIHeader);
+		
+		// Send AGREE to prev node
+		message.routeIAgree.destination = pCurrentNodeState->pCurrentRoute->prev;
+		message.routeIAgree.requestRouteId = pCurrentNodeState->pCurrentRoute->id;
+		size += sizeof(msgIRouteAGREE);
 	
+		// Log
+		nodeId *destNode = &(pCurrentNodeState->pCurrentRoute->prev);
+		syslog(LOG_INFO, "Route request (%i) AGREEed sending back AGREE to prev node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);			
+		
+		logger_log(LOGTYPE_RESERVED, pCurrentNodeState->pCurrentRoute->id, NodeNULL );			
+	}
+
 	//Send to dixlCommTx task queue
-	msgQ_Send(msgQCommTxId, (char *) &message, sizeof(msgIHeader) + sizeof(msgIRouteAGREE));	
-	logger_log(LOGTYPE_RESERVED, pCurrentNodeState->pCurrentRoute->id, NodeNULL );		
+	msgQ_Send(msgQCommTxId, (char *) &message, size);	
 }
 static void ReservedState(eventData *pEventData) {
 }
@@ -356,7 +379,7 @@ static void TrainInTransitionState(eventData *pEventData) {
 		message message;
 		message.iHeader.type = IMSGTYPE_ROUTETRAINOK;
 		
-		// Send AGREE to prev node
+		// Send TRAINOK to prev node
 		message.routeITrainOk.destination = pCurrentNodeState->pCurrentRoute->prev;
 		message.routeITrainOk.requestRouteId = pCurrentNodeState->pCurrentRoute->id;
 	
@@ -616,17 +639,8 @@ void FSMCtrlTRACKCIRCUITEvent_NewMessage(message *pMessage) {
 			switch (pMessage->header.type) {
 				case MSGTYPE_ROUTEAGREE:
 					if (pMessage->routeCommit.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
-						// Go to next state depending on node position FIRST or MIDDLE (in the current requested route)
-						switch (pCurrentNodeState->pCurrentRoute->position) {
-						// TODO Eliminare questo caso???? Passare sempre da reserved?	
-						case NODEPOS_FIRST:
-								newState = StateTrainInTransition;
-								break;
-								
-							case NODEPOS_MIDDLE:
-								newState = StateReserved;
-								break;
-						}
+						// Go to Reserved state
+						newState = StateReserved;
 						condition = TRUE;
 					} else
 						// Discard

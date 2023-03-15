@@ -1,5 +1,5 @@
 /**
- * datatypes.h
+ * dataTypes.h
  * 
  * Datatypes definitions
  *
@@ -12,6 +12,7 @@
 #define DATATYPES_H_
 
 /* includes */
+#include <stdint.h>
 
 /***************************************************
  *  Return codes
@@ -50,6 +51,7 @@ typedef enum {
 /* Node position */
 typedef enum {
 	NODEPOS_FIRST 				= -128,	// First node of the route
+	NODEPOS_UNDEFINED			= -1,	// Undefined position
 	NODEPOS_MIDDLE				= 0,  	// Node between two other nodes of the route
 	NODEPOS_LAST				= 127,  // Last node of the route
 } eNodePosition;
@@ -80,7 +82,7 @@ typedef struct route {
 	nodeId prev;					// Previous node in the route (can be the host)
 	nodeId next;					// Next node in the route (can be NULL)
 	int8_t position;				// Node position in the route
-	uint8_t requestedPosition;		// Requested position (if type is Point)
+	int8_t requestedPosition;		// Requested position (if type is Point)
 	uint8_t padding[2];				// Padding to 32bit
 } route;
 
@@ -90,6 +92,15 @@ typedef struct NodeState {
 	route *pRouteList;				// Array of route in the configuration received
 	route *pCurrentRoute;			// Current requested route
 } NodeState;
+
+
+/*** HELPER FUNCTIONS ***/
+/**
+ * Return point position as a string
+ * @param pos	: enum value of the position
+ * @return		: corresponding position as string
+ */
+const char *pointpos_str(ePointPosition pos);
 
 #endif /* DATATYPES_H_ */
  

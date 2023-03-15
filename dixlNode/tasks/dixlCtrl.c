@@ -56,7 +56,7 @@ void dixlCtrl() {
 
 	// Wait for messages and execute FSM
 	FOREVER {
-		message message;
+		message message, messagePoint;
 		
 		// Wait a message from the Queue ... FOREVER
 		msgQReceive(msgQCtrlId, (char *  ) &message, sizeof(message), WAIT_FOREVER);
@@ -68,6 +68,14 @@ void dixlCtrl() {
 				// TODO
 				// -reelase resource of/or FSM
 				// - put in fail-safe status
+				
+				// If was configured as POINT propage reset to dixlPoint
+				// Send to dixlPoint task queue (only if previously configured as POINT)
+				if (nodeState.nodeType == NODETYPE_POINT && FSMCtrl) {
+					messagePoint.iHeader.type = IMSGTYPE_POINTRESET;
+					messagePoint.pointIReset.requestedPosition = POINTPOS_STRAIGHT;
+					msgQ_Send(msgQPointId, (char *) &messagePoint, sizeof(msgIHeader) + sizeof(msgIPointRESET));		
+				}
 				
 				// Clean FSM function pointers
 				FSMCtrl = NULL;

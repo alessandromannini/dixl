@@ -224,19 +224,20 @@ static void ConfiguredState(eventData *pEventData) {
 	}
 }
 static void ConfiguredExit(eventData *pEventData) {
-	// Prepare CONFIG RESET message for dixlCtrl and dixlCommTx
-	message message, message2;
-	message.iHeader.type = IMSGTYPE_NODECONFIGRESET;
-	message2.iHeader.type = IMSGTYPE_COMMTXCONFIGRESET;
+	// Prepare CONFIG RESET message for dixlCtrl and dixlCommTx and dixlPOint
+	message messageCtrl, messageCommTx;
+	messageCtrl.iHeader.type = IMSGTYPE_NODECONFIGRESET;
+	messageCommTx.iHeader.type = IMSGTYPE_COMMTXCONFIGRESET;
 	
 	// Log RESET
 	syslog(LOG_ERR, "CONFIG RESET received");
 	
 	// Send to dixlCtrl task queue
-	msgQ_Send(msgQCtrlId, (char *) &message, sizeof(msgIHeader) + sizeof(msgICtrlCONFIGRESET));		
+	msgQ_Send(msgQCtrlId, (char *) &messageCtrl, sizeof(msgIHeader) + sizeof(msgICtrlCONFIGRESET));		
 
-	// Send to dixlComTx task queue
-	msgQ_Send(msgQCommTxId, (char *) &message2, sizeof(msgIHeader) + sizeof(msgICommTxCONFIGRESET));		
+	// Send to dixlCommTx task queue
+	msgQ_Send(msgQCommTxId, (char *) &messageCommTx, sizeof(msgIHeader) + sizeof(msgICommTxCONFIGRESET));		
+
 }
 
 static StateMapItem StateMap[] = {
