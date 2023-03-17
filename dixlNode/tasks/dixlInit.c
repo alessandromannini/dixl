@@ -38,8 +38,6 @@ TASK_ID     taskInitId = 0;
 
 // Input message queue
 MSG_Q_ID 	msgQInitId;
-VX_MSG_Q(msgQInitName, MSGQINITMESSAGESMAX, MSGQINITMESSAGESLENGTH);
-
 
 /** 
  * Get node informations
@@ -96,7 +94,7 @@ void dixlInit() {
 	syslog(LOG_INFO, "Task started Id 0x%jx", taskInitId);	
 
 	// Message queue initialization
-	msgQInitId = msgQ_Initialize(msgQInitName, MSGQINITMESSAGESMAX, MSGQINITMESSAGESLENGTH, MSG_Q_FIFO);
+	msgQInitId = msgQ_Initialize(MSGQINITMESSAGESMAX, MSGQINITMESSAGESLENGTH, MSG_Q_FIFO);
 	
 	// FSM Initialize
 	FSMInit();

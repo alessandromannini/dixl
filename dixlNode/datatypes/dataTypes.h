@@ -63,6 +63,12 @@ typedef enum {
 	POINTPOS_DIVERGING			= 50 	// Diverging direction
 } ePointPosition;
 
+/* Sensor state */
+typedef enum {
+	SENSORSTATE_ON				= 1,	// Sensor ON (train transit)
+	SENSORSTATE_OFF 			= 0,	// Sensor OFF
+} eSensorState;
+
 /**
  *  Data types
  */
@@ -96,11 +102,18 @@ typedef struct NodeState {
 
 /*** HELPER FUNCTIONS ***/
 /**
- * Return point position as a string
+ * Return Point position as a string
  * @param pos	: enum value of the position
  * @return		: corresponding position as string
  */
-const char *pointpos_str(ePointPosition pos);
+const char *pointPosStr(ePointPosition pos);
+
+/**
+ * Return Sensor state as a string
+ * @param state	: enum value of the state
+ * @return		: corresponding state as string
+ */
+const char *sensorStateStr(eSensorState state);
 
 #endif /* DATATYPES_H_ */
  

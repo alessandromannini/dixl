@@ -8,7 +8,7 @@
  */
 #include "dataTypes.h"
 
-const char *pointpos_str(ePointPosition pos) {
+const char *pointPosStr(ePointPosition pos) {
 	switch (pos) {
 	case POINTPOS_DIVERGING:
 		return "diverging";
@@ -17,5 +17,18 @@ const char *pointpos_str(ePointPosition pos) {
 		return "straight";
 	default:
 		return "undefined";
+	}	
+}
+
+const char *sensorStateStr(eSensorState state) {
+	switch (state) {
+		case SENSORSTATE_ON:
+			return "ON";
+			
+		case SENSORSTATE_OFF:
+			return "OFF";
+			
+		default:
+			return "UNDEFINED";
 	}	
 }

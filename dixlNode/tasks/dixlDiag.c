@@ -28,8 +28,6 @@ TASK_ID     taskDiagId;
 
 // Input message queue
 MSG_Q_ID 	msgQDiagId;
-VX_MSG_Q(msgQDiagName, MSGQDIAGMESSAGESMAX, MSGQDIAGMESSAGESLENGTH);
-
 
 void dixlDiag() {
 	
@@ -37,7 +35,7 @@ void dixlDiag() {
 	syslog(LOG_INFO, "Task started Id 0x%jx", taskDiagId);	
 
 	// Message queue initialization
-	msgQDiagId = msgQ_Initialize(msgQDiagName, MSGQDIAGMESSAGESMAX, MSGQDIAGMESSAGESLENGTH, MSG_Q_FIFO);
+	msgQDiagId = msgQ_Initialize(MSGQDIAGMESSAGESMAX, MSGQDIAGMESSAGESLENGTH, MSG_Q_FIFO);
 
 	// TODO 
 	FOREVER {

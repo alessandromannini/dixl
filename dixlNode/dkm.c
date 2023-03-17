@@ -15,6 +15,7 @@
 
 #include "globals.h"
 #include "config.h"
+#include "hw.h"
 #include "utils.h"
 #include "tasks/dixlInit.h"
 /*
@@ -50,14 +51,20 @@ uint_t stop(void) {
 	syslog(LOG_INFO, "Shutting down dixlNode...");
 
 	// Deleting tasks in reverse order
-	task_shutdown(&taskCommTxId, TASKCOMMTXDESC, &msgQCommTxId, NULL);
-	task_shutdown(&taskDiagId, TASKDIAGDESC, NULL, NULL);
-	task_shutdown(&taskCtrlId, TASKCTRLDESC, &msgQCtrlId, NULL);
-	task_shutdown(&taskPointId, TASKPOINTDESC, &msgQPointId, NULL);
-	task_shutdown(&taskLogId, TASKLOGDESC, &msgQLogId, NULL);
-	task_shutdown(&taskCommRxId, TASKCOMMRXDESC, NULL, &dixlCommRxSocket);
-	task_shutdown(&taskInitId, TASKINITDESC, &msgQInitId, NULL);
+	task_shutdown(&taskCommTxId, TASKCOMMTXDESC, &msgQCommTxId, NULL, NULL);
+	task_shutdown(&taskDiagId, TASKDIAGDESC, NULL, NULL, NULL);
+	task_shutdown(&taskCtrlId, TASKCTRLDESC, &msgQCtrlId, NULL, NULL);
+	task_shutdown(&taskPointId, TASKPOINTDESC, &msgQPointId, NULL, &semPosition);
+	task_shutdown(&taskSensorId, TASKSENSORDESC, &msgQSensorId, NULL, &semSensor);
+	task_shutdown(&taskLogId, TASKLOGDESC, &msgQLogId, NULL, NULL);
+	task_shutdown(&taskCommRxId, TASKCOMMRXDESC, NULL, &dixlCommRxSocket, NULL);
+	task_shutdown(&taskInitId, TASKINITDESC, &msgQInitId, NULL, NULL);
 	
+	// GPIO freeing
+	pinFree(GPIO_PIN_BUTTON);
+	pinFree(GPIO_PIN_LED);
+	syslog(LOG_INFO, "GPIO pin freed");
+
 	// Node halted
 	syslog(LOG_INFO, "dixlNode halted");
 	

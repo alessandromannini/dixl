@@ -8,6 +8,7 @@
  */
 
 /* includes */
+#include <assert.h>
 #include <stdio.h>
 #include <stdbool.h>
 
@@ -396,7 +397,7 @@ static void PositioningEntry(eventData *pEventData) {
 	size += sizeof(msgIPointPOS);
 	
 	// Log
-	syslog(LOG_INFO, "Route request (%i) AGREEed requesting %s positioning to Point with nonce %i ", pCurrentNodeState->pCurrentRoute->id, pointpos_str(pCurrentNodeState->pCurrentRoute->requestedPosition), lastPointNonce);				
+	syslog(LOG_INFO, "Route request (%i) AGREEed requesting %s positioning to Point with nonce %i ", pCurrentNodeState->pCurrentRoute->id, pointPosStr(pCurrentNodeState->pCurrentRoute->requestedPosition), lastPointNonce);				
 
 	//Send to dixlPoint task queue
 	msgQ_Send(msgQPointId, (char *) &message, size);	
@@ -724,7 +725,7 @@ void FSMCtrlPOINTEvent_NewMessage(message *pMessage) {
 		case StateDummy:
 			// Should not happen
 			syslog(LOG_ERR, "Wrong state Dummy: message received");
-			exit(rcFSM_WRONGSTATE);
+			taskExit(rcFSM_WRONGSTATE);
 			break;
 			
 		case StateNotReserved:
@@ -915,7 +916,7 @@ void FSMCtrlPOINTEvent_NewMessage(message *pMessage) {
 			// Accept only SENSORON or DISAGREE messages, discard others
 			switch (pMessage->header.type) {
 			// TODO SensorON check
-				case IMSGTYPE_SENSORON:						
+				case IMSGTYPE_SENSORNOTIFY:						
 					newState = StateTrainInTransition;
 					condition = TRUE;
 					break;
@@ -941,7 +942,7 @@ void FSMCtrlPOINTEvent_NewMessage(message *pMessage) {
 		case StateTrainInTransition:
 			// Accept only SENSOROFF
 			// TODO SensorOFF
-			if (pMessage->iHeader.type == IMSGTYPE_SENSOROFF) {
+			if (pMessage->iHeader.type == IMSGTYPE_SENSORNOTIFY) {
 				newState = StateNotReserved;
 				condition = TRUE;
 			} else {

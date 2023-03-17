@@ -28,7 +28,6 @@ TASK_ID     taskCommTxId;
 
 // Input message queue
 MSG_Q_ID 	msgQCommTxId;
-VX_MSG_Q(msgQCommTxName, MSGQCOMMTXMESSAGESMAX, MSGQCOMMTXMESSAGESLENGTH);
 
 // Host node address for direct communication
 nodeId hostNode = {0, 0, 0, 0};
@@ -197,7 +196,7 @@ void dixlCommTx() {
 	syslog(LOG_INFO,"Task started Id 0x%jx", taskCommTxId);	
 
 	// Message queue initialization
-	msgQCommTxId = msgQ_Initialize(msgQCommTxName, MSGQCOMMTXMESSAGESMAX, MSGQCOMMTXMESSAGESLENGTH, MSG_Q_FIFO);
+	msgQCommTxId = msgQ_Initialize( MSGQCOMMTXMESSAGESMAX, MSGQCOMMTXMESSAGESLENGTH, MSG_Q_FIFO);
 
 	// Wait for message, process and send it by socket to the destination
 	FOREVER {
@@ -237,11 +236,6 @@ void dixlCommTx() {
 					// Delivery it to the destination through the socket
 					send_message(&extMessage);
 				break;
-				
-			// TOOO Sensors messages
-			case IMSGTYPE_SENSORON:
-			case IMSGTYPE_SENSOROFF:
-
 								
 			// Other messages discarded
 			default:

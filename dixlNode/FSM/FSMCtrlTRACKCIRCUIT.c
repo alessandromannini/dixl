@@ -8,6 +8,7 @@
  */
 
 /* includes */
+#include <assert.h>
 #include <stdio.h>
 #include <stdbool.h>
 
@@ -526,7 +527,7 @@ void FSMCtrlTRACKCIRCUITEvent_NewMessage(message *pMessage) {
 		case StateDummy:
 			// Should not happen
 			syslog(LOG_ERR, "Wrong state Dummy: message received");
-			exit(rcFSM_WRONGSTATE);
+			taskExit(rcFSM_WRONGSTATE);
 			break;
 			
 		case StateNotReserved:
@@ -669,7 +670,7 @@ void FSMCtrlTRACKCIRCUITEvent_NewMessage(message *pMessage) {
 			// Accept only SENSORON or DISAGREE messages, discard others
 			switch (pMessage->header.type) {
 			// TODO SensorON check
-				case IMSGTYPE_SENSORON:						
+				case IMSGTYPE_SENSORNOTIFY:						
 					newState = StateTrainInTransition;
 					condition = TRUE;
 					break;
@@ -694,7 +695,7 @@ void FSMCtrlTRACKCIRCUITEvent_NewMessage(message *pMessage) {
 		case StateTrainInTransition:
 			// Accept only SENSOROFF
 			// TODO SensorOFF
-			if (pMessage->iHeader.type == IMSGTYPE_SENSOROFF) {
+			if (pMessage->iHeader.type == IMSGTYPE_SENSORNOTIFY) {
 				newState = StateNotReserved;
 				condition = TRUE;
 			} else {

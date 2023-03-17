@@ -19,6 +19,7 @@
 #include "../config.h"
 #include "../datatypes/messages.h"
 #include "../globals.h"
+#include "../hw.h"
 #include "../utils.h"
 #include "dixlPoint.h"
 #include "dixlComm.h"
@@ -29,12 +30,13 @@ TASK_ID     taskPointId;
 
 // Input message queue
 MSG_Q_ID 	msgQPointId;
-VX_MSG_Q(msgQPointName, MSGQPOINTMESSAGESMAX, MSGQPOINTMESSAGESLENGTH);
 
+// Semaphores
+SEM_ID semPosition;							// Semaphore to access position
 
 // Point State
-static int8_t position = POINTPOS_STRAIGHT;
-static int8_t requestedPosition = POINTPOS_STRAIGHT;
+static ePointPosition position = POINTPOS_STRAIGHT;
+static ePointPosition requestedPosition = POINTPOS_STRAIGHT;
 static struct timespec requestNonce;				// Nonce (timestamp) of the request (if 0 notification isn't sent)
 static _Vx_freq_t stepTick;
 
@@ -43,19 +45,19 @@ static void initialize() {
 	_Vx_freq_t tickRate = sysClkRateGet();
 	
 	// Copute floor approxmation of tick per step
-	stepTick = math_ceil((TASKPOINTTRANSTIME * tickRate) , POINTPOS_DIVERGING);
+	stepTick = math_ceil((TASKPOINTTRANSTIME * tickRate) , 1000*POINTPOS_DIVERGING);
 	
 	// Estimate real duration (due to tick resolution
-	double realTransitionTime = (stepTick * POINTPOS_DIVERGING) / tickRate;
-	double increment = (realTransitionTime - TASKPOINTTRANSTIME ) *100 / TASKPOINTTRANSTIME;
+	double realTransitionTime = (1000 * stepTick * POINTPOS_DIVERGING) / tickRate;
+	double increment = (realTransitionTime - TASKPOINTTRANSTIME ) * 100 / TASKPOINTTRANSTIME;
 	
 	syslog(LOG_INFO, "Straight <-> Diverging switch specs:");
-	syslog(LOG_INFO, "> Initial position         : %s", pointpos_str(position));
+	syslog(LOG_INFO, "> Initial position         : %s", pointPosStr(position));
 	syslog(LOG_INFO, "> Number of steps          : %i", POINTPOS_DIVERGING);
-	syslog(LOG_INFO, "> Requested switch time    : %is", TASKPOINTTRANSTIME);
+	syslog(LOG_INFO, "> Requested switch time    : %ims", TASKPOINTTRANSTIME);
 	syslog(LOG_INFO, "> Tick rate (clock)        : %iHz", tickRate);
 	syslog(LOG_INFO, "> Tick per step            : %i", stepTick);
-	syslog(LOG_INFO, "> Real excepted switch time: %.2fs (+%0.f%)", realTransitionTime, increment);	
+	syslog(LOG_INFO, "> Real excepted switch time: %ims (+%0.f%)", realTransitionTime, increment);	
 }
 
 // Process a single message received
@@ -66,7 +68,7 @@ static void process_message(message message) {
 		switch (message.header.type) {
 			// Point RESET
 			case IMSGTYPE_POINTRESET:
-				requestedPosition = (int8_t) message.pointIReset.requestedPosition;
+				requestedPosition = message.pointIReset.requestedPosition;
 				position=requestedPosition;
 				
 				// Disable notify
@@ -74,17 +76,17 @@ static void process_message(message message) {
 				requestNonce.tv_sec = 0;
 				
 				// Log
-				syslog(LOG_INFO, "Reset received with %s initial position", pointpos_str(requestedPosition));	
+				syslog(LOG_INFO, "Reset received with %s initial position", pointPosStr(requestedPosition));	
 				
 				break;
 			
 			// Positioning request
 			case IMSGTYPE_POINTPOS:
-				requestedPosition = (int8_t) message.pointIPosition.requestedPosition;
+				requestedPosition =  message.pointIPosition.requestedPosition;
 				requestNonce = message.pointIPosition.requestTimestamp;
 				
 				// Log
-				syslog(LOG_INFO, "Request for %s positioning received with nonce %i", pointpos_str(requestedPosition), requestNonce);	
+				syslog(LOG_INFO, "Request for %s positioning received with nonce %i", pointPosStr(requestedPosition), requestNonce);	
 				
 				break;
 				
@@ -107,6 +109,8 @@ static void process_message(message message) {
 }
 
 static int worker() {
+	// Take sem
+	semTake(semPosition, WAIT_FOREVER);			
 	
 	// If present receive a message
 	if (msgQNumMsgs(msgQPointId)) {
@@ -126,9 +130,12 @@ static int worker() {
 			position += 1;
 
 		// Log
-		syslog(LOG_INFO, "Going to %s position (%i) current is %i", pointpos_str(requestedPosition), requestedPosition, position);			
+		syslog(LOG_INFO, "Going to %s position (%i) current is %i", pointPosStr(requestedPosition), requestedPosition, position);			
 	}
-	
+
+	// Give sem to caller
+	semGive(semPosition);
+
 	// Self delete task
 	taskDelete(taskIdSelf());
 	
@@ -144,7 +151,10 @@ void dixlPoint() {
 	initialize();
 	
 	// Message queue initialization
-	msgQPointId = msgQ_Initialize(msgQPointName, MSGQPOINTMESSAGESMAX, MSGQPOINTMESSAGESLENGTH, MSG_Q_FIFO);
+	msgQPointId = msgQ_Initialize(MSGQPOINTMESSAGESMAX, MSGQPOINTMESSAGESLENGTH, MSG_Q_FIFO);
+	
+	// Create semaphore
+	semPosition = semMCreate(SEM_Q_FIFO);
 
 	// Wait for messages of positioning
 	FOREVER {
@@ -153,7 +163,12 @@ void dixlPoint() {
 		message inMessage;
 		msgQReceive(msgQPointId, (char *  ) &inMessage, sizeof(inMessage), WAIT_FOREVER);
 
-		// TODO Turn on LED
+		// Turn on LED
+		pinMode(GPIO_PIN_LED, OUT);
+		pinSet(GPIO_PIN_LED, HIGH);
+		
+		// Take sem
+		semTake(semPosition, WAIT_FOREVER);
 		
 		// Process the message
 		process_message(inMessage);
@@ -166,14 +181,24 @@ void dixlPoint() {
 			// Moved ate least one time
 			moved = TRUE;
 			
+			// Give sem to worker
+			semGive(semPosition);
+			
 			// Spawn a periodic worker
 			taskSpawn(TASKPOINTWKRNAME, TASKPOINTWKRPRIO, 0, TASKPOINTWKRSTACKSIZE, (FUNCPTR) worker, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
 			// Sleep for a period (number of tick between motor step)
 			taskDelay(stepTick);
+			
+			// Take sem
+			semTake(semPosition, WAIT_FOREVER);			
 		}
-		
-		// TODO Turn OFF Led
+
+		// Final give
+		semGive(semPosition);
+
+		// Turn OFF Led
+		pinSet(GPIO_PIN_LED, LOW);
 		
 		// IF a Nonce request is acrive
 		if (requestNonce.tv_sec && requestNonce.tv_nsec) {
@@ -190,9 +215,9 @@ void dixlPoint() {
 				syslog(LOG_ERR, "Point is in Malfunction state");	
 			else 
 				if (moved)
-					syslog(LOG_INFO, "Position %s reached with nonce %i", pointpos_str(requestedPosition), requestNonce);	
+					syslog(LOG_INFO, "Position %s reached with nonce %i", pointPosStr(requestedPosition), requestNonce);	
 				else
-					syslog(LOG_INFO, "Already in %s position with nonce %i", pointpos_str(requestedPosition), requestNonce);
+					syslog(LOG_INFO, "Already in %s position with nonce %i", pointPosStr(requestedPosition), requestNonce);
 		}
 	}		
 }

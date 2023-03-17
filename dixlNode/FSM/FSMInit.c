@@ -8,6 +8,7 @@
  */
 
 /* includes */
+#include <assert.h>
 #include <stdio.h>
 #include <stdbool.h>
 #include <string.h>
@@ -24,6 +25,7 @@
 #include "../tasks/dixlLog.h"
 #include "../tasks/dixlCtrl.h"
 #include "../tasks/dixlPoint.h"
+#include "../tasks/dixlSensor.h"
 
 /* Private definitions */
 /* Enums and types */
@@ -81,27 +83,31 @@ static void spawnCoreTasks() {
 	 * WARNING DO NOT CHANGE SPAWNING ORDER, RESPECT DEPENDENCIES *
 	 **************************************************************/	
 	// Spawning dixlCommRx
-	syslog(LOG_INFO, "Spawning Communcation Rx task...");
+	syslog(LOG_INFO, "Spawning %s task...", TASKCOMMRXDESC);
 	taskCommRxId = taskSpawn(TASKCOMMRXNAME, TASKCOMMRXPRIO, 0, TASKCOMMRXSTACKSIZE, (FUNCPTR) dixlCommRx, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 	
 	// Spawning dixlLog
-	syslog(LOG_INFO, "Spawning Logger task...");
+	syslog(LOG_INFO, "Spawning %s task...", TASKLOGDESC);
 	taskLogId = taskSpawn(TASKLOGNAME, TASKLOGPRIO, 0, TASKLOGSTACKSIZE, (FUNCPTR) dixlLog, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
 	// Spawning dixlPoint
-	syslog(LOG_INFO, "Spawning Point Simulator task...");
+	syslog(LOG_INFO, "Spawning %s task...", TASKPOINTDESC);
 	taskPointId = taskSpawn(TASKPOINTNAME, TASKPOINTPRIO, 0, TASKPOINTSTACKSIZE, (FUNCPTR) dixlPoint, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
+	// Spawning dixlPoint
+	syslog(LOG_INFO, "Spawning %s task...", TASKSENSORDESC);
+	taskSensorId = taskSpawn(TASKSENSORNAME, TASKSENSORPRIO, 0, TASKSENSORSTACKSIZE, (FUNCPTR) dixlSensor, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+
 	// Spawning dixlCtrl
-	syslog(LOG_INFO, "Spawning Control Logic task...");
+	syslog(LOG_INFO, "Spawning %s task...", TASKCTRLDESC);
 	taskCtrlId = taskSpawn(TASKCTRLNAME, TASKCTRLPRIO, 0, TASKCTRLSTACKSIZE, (FUNCPTR) dixlCtrl, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
 	// Spawning dixlDiag
-	syslog(LOG_INFO, "Spawning Diagnostic task...");
+	syslog(LOG_INFO, "Spawning %s task...", TASKDIAGDESC);
 	taskDiagId = taskSpawn(TASKDIAGNAME, TASKDIAGPRIO, 0, TASKDIAGSTACKSIZE, (FUNCPTR) dixlDiag, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
 	// Spawning dixlCommTx
-	syslog(LOG_INFO, "Spawning Communcation Tx task...");
+	syslog(LOG_INFO, "Spawning %s task...", TASKCOMMTXDESC);
 	taskCommTxId = taskSpawn(TASKCOMMTXNAME, TASKCOMMTXPRIO, 0, TASKCOMMTXSTACKSIZE, (FUNCPTR) dixlCommTx, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 }
 
@@ -361,13 +367,13 @@ void FSMInitEvent_NewMessage(message *pMessage) {
 		case StateDummy:
 			// Should not happen
 			syslog(LOG_ERR, "Wrong state Dummy: message received");
-			exit(rcFSM_WRONGSTATE);
+			taskExit(rcFSM_WRONGSTATE);
 			break;
 			
 		case StateInit:
 			// Should not happen
 			syslog(LOG_ERR, "Wrong state Init: message received");
-			exit(rcFSM_WRONGSTATE);
+			taskExit(rcFSM_WRONGSTATE);
 			break;
 
 		case StateIdle:

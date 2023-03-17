@@ -7,6 +7,8 @@
  * @date: Jan 10, 2023
  */
 
+#ifndef UTILS_H_
+#define UTILS_H_
 #include <stdio.h>
 #include <stdbool.h>
 #include <taskLib.h>
@@ -19,7 +21,7 @@
  * Inizialize the message Queue of the task
  * @return TRUE if queue initialization is OK, else FALSE
  */
-MSG_Q_ID msgQ_Initialize(char *pMsgQMem, size_t maxMsgs, size_t maxMsgLength, int options);
+MSG_Q_ID msgQ_Initialize(size_t maxMsgs, size_t maxMsgLength, int options);
 
 /**
  * Receive a message from a Queue
@@ -56,10 +58,11 @@ void task_wait4notReady(TASK_ID taskId, int retryDelay, int finalDelay);
  * @param tName		: task name
  * @return			: TRUE if OK, else FALSE
  */
-void task_shutdown(TASK_ID *tId, char *tName, MSG_Q_ID *msgQId, int *socket);
+void task_shutdown(TASK_ID *tId, char *tName, MSG_Q_ID *msgQId, int *socket, SEM_ID *semaphoreId);
 
 /**
  * Compute ceil of num / den
  */
 int math_ceil(int num, int den);
 
+#endif /* UTILS_H_ */

@@ -62,12 +62,24 @@
 #define TASKPOINTDESC  			"Point Simulator"	/* Task Point description */
 #define	TASKPOINTPRIO 			100					/* Task Point prio */
 #define	TASKPOINTSTACKSIZE		20480				/* Task Point stack Size */
-#define TASKPOINTTRANSTIME      3                   /* Task Point time to switch between straight and diverge position */
+#define TASKPOINTTRANSTIME      3000                /* Task Point time (ms) to switch between straight and diverge position */
 
 #define TASKPOINTWKRNAME 		"tDixlPointWrk"				/* Task Point worker name */
-#define TASKPOINTWKRDESC  		"Point Simulator Worker"	/* Task Point worker  description */
+#define TASKPOINTWKRDESC  		"Point Simulator Worker"	/* Task Point worker description */
 #define	TASKPOINTWKRPRIO 		80							/* Task Point worker prio */
 #define	TASKPOINTWKRSTACKSIZE	20480						/* Task Point worker stack Size */
+
+/* Task dixlSENSOR */
+#define TASKSENSORNAME 			"tDixlSensor"		/* Task Sensor name */
+#define TASKSENSORDESC  		"Sensor Checker"	/* Task Sensor description */
+#define	TASKSENSORPRIO 			100					/* Task Sensor prio */
+#define	TASKSENSORSTACKSIZE		20480				/* Task Sensor stack Size */
+#define TASKSENSORCHECKPERIOD   1000                /* Task Sensor check period (ms) */
+
+#define TASKSENSORWKRNAME 		"tDixlSensorWrk"			/* Task Sensor worker name */
+#define TASKSENSORWKRDESC  		"Sensor Checker Worker"		/* Task Sensor worker description */
+#define	TASKSENSORWKRPRIO 		80							/* Task Sensor worker prio */
+#define	TASKSENSORWKRSTACKSIZE	20480						/* Task Sensor worker stack Size */
 
 /**
  *  Messages queues specifications
@@ -76,10 +88,6 @@
 /* dxilInit task IN Queue */
 #define MSGQINITMESSAGESMAX  		1024			/* Max number of the messages accepted */
 #define MSGQINITMESSAGESLENGTH 		MSG_MAXLENGTH	/* Max length of the messages */
-
-/* dxilCommRx task IN Queue */
-// TODO #define MSGQCOMMRXESSAGESMAX  		1024			/* Max number of the messages accepted */
-// TODO #define MSGQCOMMRXESSAGESLENGTH 	MSG_MAXLENGTH	/* Max length of the messages */
 
 /* dxilCommTx task IN Queue */
 #define MSGQCOMMTXMESSAGESMAX  		1024					/* Max number of the messages accepted */
@@ -101,6 +109,15 @@
 #define MSGQPOINTMESSAGESMAX  		1024					/* Max number of the messages accepted */
 #define MSGQPOINTMESSAGESLENGTH 	MSG_MAXLENGTH			/* Max length of the messages */
 		
+/* dxilSensor task IN Queue */
+#define MSGQSENSORMESSAGESMAX  		1024					/* Max number of the messages accepted */
+#define MSGQSENSORMESSAGESLENGTH 	MSG_MAXLENGTH			/* Max length of the messages */
+		
+/**
+ * GPIO PINs
+ */
+#define GPIO_PIN_LED				16						/* GPIO PIN number for led */
+#define GPIO_PIN_BUTTON				18						/* GPIO PIN number for button */
 
 /**
  * Communication parameters

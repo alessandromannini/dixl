@@ -32,9 +32,10 @@ extern 	TASK_ID 	taskInitId;			// Init task ID
 extern 	TASK_ID 	taskCommRxId;		// Comm Rx task ID
 extern 	TASK_ID 	taskCommTxId;		// Comm Tx task ID
 extern 	TASK_ID 	taskCtrlId;			// Ctrl task ID
-extern 	TASK_ID 	taskLogId;			// Log  task ID
-extern 	TASK_ID 	taskDiagId;			// Diag  task ID
-extern 	TASK_ID 	taskPointId;		// Point  task ID
+extern 	TASK_ID 	taskLogId;			// Log task ID
+extern 	TASK_ID 	taskDiagId;			// Diag task ID
+extern 	TASK_ID 	taskPointId;		// Point task ID
+extern 	TASK_ID 	taskSensorId;		// Sensor task ID
 
 /***************************************************
  *  Messages queues
@@ -45,11 +46,18 @@ extern 	MSG_Q_ID 	msgQCommTxId;		// Comm Tx task IN Queue Id
 extern 	MSG_Q_ID 	msgQCtrlId;			// Ctrl task IN Queue Id
 extern 	MSG_Q_ID 	msgQLogId;			// Log  task IN Queue Id	
 extern 	MSG_Q_ID 	msgQPointId;    	// Point  task IN Queue Id	
+extern 	MSG_Q_ID 	msgQSensorId;    	// Point  task IN Queue Id	
 
 /***************************************************
  *  Sockets
  ***************************************************/
 extern 	int         dixlCommRxSocket;	// Comm Rx task IN Socket
+
+/***************************************************
+ *  Semaphores
+ ***************************************************/
+extern SEM_ID semPosition;							// Semaphore to access position
+extern SEM_ID semSensor;							// Semaphore to access sensor
 
 #endif /* GLOBALS_H_ */
  

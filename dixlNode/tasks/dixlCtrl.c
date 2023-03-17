@@ -36,8 +36,6 @@ TASK_ID     taskCtrlId;
 
 // Input message queue
 MSG_Q_ID 	msgQCtrlId;
-VX_MSG_Q(msgQCtrlName, MSGQCTRLMESSAGESMAX, MSGQCTRLMESSAGESLENGTH);
-
 
 // Node state
 NodeState nodeState;
@@ -52,7 +50,7 @@ void dixlCtrl() {
 	syslog(LOG_INFO, "Task started Id 0x%jx", taskCtrlId);	
 
 	// Message queue initialization
-	msgQCtrlId = msgQ_Initialize(msgQCtrlName, MSGQCTRLMESSAGESMAX, MSGQCTRLMESSAGESLENGTH, MSG_Q_FIFO);
+	msgQCtrlId = msgQ_Initialize(MSGQCTRLMESSAGESMAX, MSGQCTRLMESSAGESLENGTH, MSG_Q_FIFO);
 
 	// Wait for messages and execute FSM
 	FOREVER {

@@ -168,7 +168,7 @@ STATUS network_get_if_params(char *ifname, IPv4Address *IPv4, MACAddress *MAC) {
 		// Error
 		int err=errno;
         syslog(LOG_ERR, "getifaddrs error %i: %s", err, strerror(err));        
-        exit(rcNETWORK_GETIFADDRSERR);
+        taskExit(rcNETWORK_GETIFADDRSERR);
     }
 
     // Find the first interface excluding loopback

@@ -28,7 +28,6 @@ TASK_ID     taskLogId;
 
 // Input message queue
 MSG_Q_ID 	msgQLogId;
-VX_MSG_Q(msgQLogName, MSGQLOGMESSAGESMAX, MSGQLOGMESSAGESLENGTH);
 nodeId NodeNULL = {0 ,0 ,0 ,0};
 
 // Log data
@@ -158,7 +157,7 @@ void dixlLog() {
 	syslog(LOG_INFO, "Task started Id 0x%jx", taskLogId);	
 
 	// Message queue initialization
-	msgQLogId = msgQ_Initialize(msgQLogName, MSGQLOGMESSAGESMAX, MSGQLOGMESSAGESLENGTH, MSG_Q_FIFO);
+	msgQLogId = msgQ_Initialize(MSGQLOGMESSAGESMAX, MSGQLOGMESSAGESLENGTH, MSG_Q_FIFO);
 
 	// Wait for messages, log and forward
 	FOREVER {

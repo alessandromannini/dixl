@@ -70,8 +70,8 @@ typedef enum {
 	IMSGTYPE_ROUTETRAINNOK 		= 137,	// 2PhaseCommit Train NOK
 
 	// Sensors messages
-	IMSGTYPE_SENSORON			= 150,   // Track Circuit Sensor ON
-	IMSGTYPE_SENSOROFF			= 155,   // Track Circuit Sensor ON
+	IMSGTYPE_SENSORPOS			= 150,   // Track Circuit Sensor value request
+	IMSGTYPE_SENSORNOTIFY		= 155,   // Track Circuit Sensor value notify
 	
 	// Log messages
 	IMSGTYPE_LOG 				= 180,	// Log a message
@@ -225,10 +225,12 @@ typedef struct msgIRouteTRAINNOK {
 } msgIRouteTRAINNOK;
 
 /** message SENSOR types */
-typedef struct msgISENSORON {
-} msgISensorON;
-typedef struct msgISENSOROFF {
-} msgISensorOFF;
+typedef struct msgISENSORSTATE {
+	eSensorState requestedState;
+} msgISensorSTATE;
+typedef struct msgISENSORNOTIFY {
+	eSensorState currentState;
+} msgISensorNOTIFY;
 
 /** message POINT types */
 typedef struct msgIPOINTRESET {
@@ -236,11 +238,11 @@ typedef struct msgIPOINTRESET {
 } msgIPointRESET;
 typedef struct msgIPOINTPOS {
 	struct timespec requestTimestamp;	// Timestamp of the request as notch
-	eNodePosition requestedPosition;	// Requested point position
+	ePointPosition requestedPosition;	// Requested point position
 } msgIPointPOS;
 typedef struct msgIPOINTNOTIFY {
 	struct timespec requestTimestamp;	// Timestamp of the request as notch
-	eNodePosition currentPosition;		// Current point position
+	ePointPosition currentPosition;		// Current point position
 } msgIPointNOTIFY;
 
 /** message LOG types */
@@ -309,8 +311,8 @@ typedef struct message {
 				msgIRouteTRAINNOK   	routeITrainNOk;
 
 				// SENSOR
-				msgISensorON        	sensorION;			
-				msgISensorOFF       	sensorIOFF;		
+				msgISensorSTATE        	sensorIPOS;			
+				msgISensorNOTIFY       	sensorINOTIFY;		
 				
 				// POINT
 				msgIPointRESET			pointIReset;

@@ -7,12 +7,12 @@
  * @date: Jan 10, 2023
  */
 
+#include <errno.h>
 #include <stdbool.h>
 #include <string.h>
 
 #include <taskLib.h>
 #include <msgQLib.h>
-#include <intLib.h>
 #include <sysLib.h>
 #include <syslog.h>
 #include <objLibCommon.h>
@@ -22,15 +22,15 @@
 
 /* FUNCTIONS helpers */
 
-MSG_Q_ID msgQ_Initialize(char *pMsgQMem, size_t maxMsgs, size_t maxMsgLength, int options) {
+MSG_Q_ID msgQ_Initialize(size_t maxMsgs, size_t maxMsgLength, int options) {
 	MSG_Q_ID msgQId = 0;
 	
 	// Initialize Message Queue
-	if ((msgQId = msgQInitialize(pMsgQMem, maxMsgs, maxMsgLength, options)) == NULL) {
+	if ((msgQId = msgQCreate(maxMsgs, maxMsgLength, options)) == NULL) {
 		int err = errno;
 		/* initialization failed */
 		syslog(LOG_ERR, "Message queue initialization error %d: %s", err, strerror(err));
-		exit(rcINQUEUE_INITERR);      
+		taskExit(rcINQUEUE_INITERR);      
 	}
 	
 	syslog(LOG_INFO, "Message queue initialized");
@@ -59,7 +59,7 @@ BOOL msgQ_Receive(MSG_Q_ID msgQId, char *buffer, size_t  maxNBytes, int32_t msTi
 			return FALSE;
 		} else {
 			syslog(LOG_ERR, "Message queue receive error %d: %s", err, strerror(err));
-			exit(rcINQUEUE_RECEIVEERR);
+			taskExit(rcINQUEUE_RECEIVEERR);
 		}
 	}
 	
@@ -74,7 +74,7 @@ BOOL msgQ_Send(MSG_Q_ID msgQId, char *buffer, size_t  nBytes) {
 	if (rc == ERROR) {
 		int err = errno;
 		syslog(LOG_ERR, "Message queue receive error %d: %s", err, strerror(err));
-		exit(rcINQUEUE_SENDERR);
+		taskExit(rcINQUEUE_SENDERR);
 	}
 	
 	return TRUE;	
@@ -107,7 +107,7 @@ void task_wait4notReady(TASK_ID taskId, int retryDelay, int finalDelay) {
 	taskDelay(finalDelay);
 }
 
-void task_shutdown(TASK_ID *tId, char *tName, MSG_Q_ID *msgQId, int *socket) {	
+void task_shutdown(TASK_ID *tId, char *tName, MSG_Q_ID *msgQId, int *socket, SEM_ID *semaphoreId) {	
 	// Shutting down
 	syslog(LOG_INFO, "Deleting %s task (0x%jx) ...,", tName, *tId);
 	
@@ -139,6 +139,20 @@ void task_shutdown(TASK_ID *tId, char *tName, MSG_Q_ID *msgQId, int *socket) {
 				syslog(LOG_INFO, "%s task Socket closed", tName);
 				(*socket) = NULL;
 			};
+
+	// Delete semaphone (if present)
+	if (semaphoreId) 
+		if (*semaphoreId)
+			
+			// Acquire the semaphore
+			syslog(LOG_INFO, "Taking %s task semaphore", tName);
+			semMTake(*semaphoreId, WAIT_FOREVER);
+	
+			if (semDelete(*semaphoreId) == OK) {
+				syslog(LOG_INFO, "%s task semaphore deleted", tName);
+				(*semaphoreId) = NULL;
+			};
+
 }
 
 int math_ceil(int num, int den) {
