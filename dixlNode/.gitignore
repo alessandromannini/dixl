@@ -58,4 +58,8 @@ vsbdefs.tcl
 *.so
 *.st
 *.sym
+
+#ignore folders
 /vsb_vxsim_windows_SIMNTllvm_LP64_LARGE_SMP/
+/SDK
+
