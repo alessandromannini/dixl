@@ -1,5 +1,5 @@
 # dixl 
-## _Experimental implementation through a network of Raspberry controllers of a distributed railway interlocking system_
+## _Experimental implementation of a distributed railway interlocking system through a network of Raspberry controllers._
 
 ### Main folders structure
 
@@ -14,12 +14,14 @@
 │     requirements.txt          # Web interface app python packages requirements
 │     run.py                    # Web interface app start script
 │           
-└───<b>dixlNode                    # NODE SOFTWARE</b>
-  │   config.h                  # Configurable parameters
-  │   dkm.c                     # Start module                    
-  │   globals.h                 # Shared variables
-  │   network.h                 # Networks utilities
+└───<b>dixlNode                 # NODE SOFTWARE</b>
+  │   config.h                  # COnfigurable parameters
+  │   dkm.c                     # Main kernel module
+  │   globals.h                 # Shared variables 
+  │   hw.h                      # GPIO management
+  │   network.h                 # Network utilities
   │   utils.h                   # General purpose utilities
+  │   build.sh                  # CLI compiler build script
   │   
   ├───datatypes
   │   dataHelpers.c             # Data helper functions
@@ -38,6 +40,7 @@
       dixlInit.h                # Initialization task
       dixlLog.h                 # Logger task
       dixlPoint.h               # Point simulation task
+      dixlSensor.h              # Sensor checker task
 </pre>
 
 ### dixlNode
