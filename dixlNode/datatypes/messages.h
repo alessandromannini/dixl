@@ -70,7 +70,7 @@ typedef enum {
 	IMSGTYPE_ROUTETRAINNOK 		= 137,	// 2PhaseCommit Train NOK
 
 	// Sensors messages
-	IMSGTYPE_SENSORPOS			= 150,   // Track Circuit Sensor value request
+	IMSGTYPE_SENSORSTATE		= 150,   // Track Circuit Sensor value request
 	IMSGTYPE_SENSORNOTIFY		= 155,   // Track Circuit Sensor value notify
 	
 	// Log messages

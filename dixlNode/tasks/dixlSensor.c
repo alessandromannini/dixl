@@ -62,7 +62,7 @@ static void process_message(message message) {
 	
 	switch (message.header.type) {
 		// Positioning request
-		case IMSGTYPE_SENSORPOS:
+		case IMSGTYPE_SENSORSTATE:
 			requestedState = message.sensorIPOS.requestedState;
 			
 			// Log
