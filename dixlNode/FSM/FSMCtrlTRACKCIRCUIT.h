@@ -33,6 +33,6 @@ void FSMCtrlTRACKCIRCUITEvent_NewMessage(message *message);
  * Notify the timer is expired
  * @param message: pointer to the message received
  */
-void FSMCtrlTRACKCIRCUITEvent_TimerExpired();
+void FSMCtrlTRACKCIRCUITEvent_TimerExpired(message * message);
 
 #endif /* FSMCTRLTC_H_ */

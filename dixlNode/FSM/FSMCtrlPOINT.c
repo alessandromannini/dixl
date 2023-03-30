@@ -961,6 +961,10 @@ void FSMCtrlPOINTEvent_NewMessage(message *pMessage) {
 		
 		// Process the state change
 		StateEngine();
-	}
+	}	
+}
+
+// TODO
+void FSMCtrlPOINTEvent_TimerExpired(message *pMessage) {
 }
 

@@ -716,3 +716,8 @@ void FSMCtrlTRACKCIRCUITEvent_NewMessage(message *pMessage) {
 		StateEngine();
 	}
 }
+
+// TODO
+void FSMCtrlTRACKCIRCUITEvent_TimerExpired(message *pMessage) {
+}
+

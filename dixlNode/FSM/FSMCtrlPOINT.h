@@ -33,6 +33,6 @@ void FSMCtrlPOINTEvent_NewMessage(message *message);
  * Notify the timer is expired
  * @param message: pointer to the message received
  */
-void FSMCtrlPOINTEvent_TimerExpired();
+void FSMCtrlPOINTEvent_TimerExpired(message * message);
 
 #endif /* FSMCTRLPOINT_H_ */
