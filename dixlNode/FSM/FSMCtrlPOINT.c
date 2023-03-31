@@ -11,6 +11,7 @@
 #include <assert.h>
 #include <stdio.h>
 #include <stdbool.h>
+#include <string.h>
 
 #include <syslog.h>
 
@@ -550,6 +551,19 @@ static void ReservedStateEntry(eventData *pEventData) {
 
 	//Send to dixlCommTx task queue
 	msgQ_Send(msgQCommTxId, (char *) &message, size);
+	
+	// Prepare  message to request state to Sensor task	
+	memset(&message, 0,sizeof(message));
+	size = sizeof(msgIHeader);
+	message.iHeader.type = IMSGTYPE_SENSORSTATE;
+	message.sensorIPOS.requestedState = SENSORSTATE_ON;
+	size += sizeof(msgISensorSTATE);
+	
+	// Log
+	syslog(LOG_INFO, "Route request (%i) waiting for SENSOR ON ", pCurrentNodeState->pCurrentRoute->id);				
+
+	//Send to dixlSensor task queue
+	msgQ_Send(msgQSensorId, (char *) &message, size);				
 }
 static void ReservedState(eventData *pEventData) {	
 }
@@ -588,6 +602,23 @@ static void ReservedStateExit(eventData *pEventData) {
 /**
  * STATEINTRANSITION
  */
+static void TrainInTransitionEntry(eventData *pEventData) {
+	// Log
+	syslog(LOG_INFO, "Route request (%i) TRAIN IS GOING THROUGH", pCurrentNodeState->pCurrentRoute->id);
+	
+	// Prepare  message to request state to Sensor task	
+	message message;
+	size_t size = sizeof(msgIHeader);
+	message.iHeader.type = IMSGTYPE_SENSORSTATE;
+	message.sensorIPOS.requestedState = SENSORSTATE_OFF;
+	size += sizeof(msgISensorSTATE);
+	
+	// Log
+	syslog(LOG_INFO, "Route request (%i) waiting for SENSOR OFF ", pCurrentNodeState->pCurrentRoute->id);				
+
+	//Send to dixlSensor task queue
+	msgQ_Send(msgQSensorId, (char *) &message, size);				
+}
 static void TrainInTransitionState(eventData *pEventData) {
 }
 static void TrainInTransitionExit(eventData *pEventData) {
@@ -613,7 +644,7 @@ static StateMapItem StateMap[] = {
 		// StateReserved
 		{ ReservedState,			ReservedStateEntry,		ReservedStateExit},
 		// StateTrainInTransition
-		{ TrainInTransitionState,	NULL,					TrainInTransitionExit},
+		{ TrainInTransitionState,	TrainInTransitionEntry,	TrainInTransitionExit},
 };
 
 /* FiniteStateMachine istance object */
@@ -915,10 +946,13 @@ void FSMCtrlPOINTEvent_NewMessage(message *pMessage) {
 			// Accept only current requested route id (for DISAGREE)
 			// Accept only SENSORON or DISAGREE messages, discard others
 			switch (pMessage->header.type) {
-			// TODO SensorON check
+				// If SENSOR ON received go to state TrainInTransition
 				case IMSGTYPE_SENSORNOTIFY:						
-					newState = StateTrainInTransition;
-					condition = TRUE;
+					if (pMessage->sensorINOTIFY.currentState == SENSORSTATE_ON) {
+						newState = StateTrainInTransition;
+						condition = TRUE;
+					} else 
+						condition = FALSE;
 					break;
 				
 				case MSGTYPE_ROUTEDISAGREE:
@@ -941,10 +975,10 @@ void FSMCtrlPOINTEvent_NewMessage(message *pMessage) {
 			
 		case StateTrainInTransition:
 			// Accept only SENSOROFF
-			// TODO SensorOFF
-			if (pMessage->iHeader.type == IMSGTYPE_SENSORNOTIFY) {
+			if (pMessage->iHeader.type == IMSGTYPE_SENSORNOTIFY && pMessage->sensorINOTIFY.currentState == SENSORSTATE_OFF) {
 				newState = StateNotReserved;
 				condition = TRUE;
+
 			} else {
 				// Discard other messages
 				condition = FALSE;

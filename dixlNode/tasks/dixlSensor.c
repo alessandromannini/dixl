@@ -89,11 +89,20 @@ static int worker() {
 		// Process the message
 		process_message(message);
 	}
+	// If is VxSim wait 5 seconds and return requested state
+	if (isVxSim) {
+		syslog(LOG_INFO,"Simulation is active: emulating SENSOR %s in 5 seconds",sensorStateStr(requestedState));
+		taskDelay(sysClkRateGet() * 5);
+		currentState = requestedState;
+	} else {
+		// Read sensor state from GPIO
+		pinMode(GPIO_PIN_BUTTON, IN);
+		if (pinGet(GPIO_PIN_BUTTON) == GPIO_VALUE_LOW) 
+			currentState = SENSORSTATE_ON;
+		else
+			currentState = SENSORSTATE_OFF;
+	}
 	
-	// Read sensor state from GPIO
-	pinMode(GPIO_PIN_BUTTON, IN);
-	currentState = (eSensorState) pinGet(GPIO_PIN_BUTTON);
-
 	// Log
 	syslog(LOG_INFO, "Read state %s from GPIO", sensorStateStr(currentState));			
 

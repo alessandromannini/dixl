@@ -116,8 +116,8 @@
 /**
  * GPIO PINs
  */
-#define GPIO_PIN_LED				16						/* GPIO PIN number for led */
-#define GPIO_PIN_BUTTON				18						/* GPIO PIN number for button */
+#define GPIO_PIN_LED				17						/* GPIO PIN number for led */
+#define GPIO_PIN_BUTTON				27						/* GPIO PIN number for button */
 
 /**
  * Communication parameters

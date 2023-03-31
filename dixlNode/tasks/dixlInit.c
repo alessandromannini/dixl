@@ -27,6 +27,10 @@
 #include "../FSM/FSMInit.h"
 
 /* variables */
+// Node INFOs
+char *CPUName;
+BOOL isVxSim=0;
+
 // Node IDs
 char ifName[IFNAMSIZ] = "";							// Network interface
 MACAddress  MAC = {00, 00, 00, 00, 00, 00};		// MAC Address
@@ -47,6 +51,10 @@ void getNodeInformations(){
 	// Get Node informations
 	network_get_if_params(ifName, &IPv4, &MAC);
 	network_IPv4_to_str(&IPv4, IPv4s);	
+	
+	// Get CPU Name
+	CPUName = sysModel();
+	isVxSim = !strncmp(CPUName, "SIMNT", 5);
 }
 
 /** 
@@ -65,6 +73,8 @@ void welcomeBanner() {
 	
 	syslog(LOG_INFO, "> Node informations");
 	syslog(LOG_INFO, "> -----------------------------------------------");
+	syslog(LOG_INFO, "> Board                : %s", CPUName);	
+	syslog(LOG_INFO, "> VxSim simulator      : %s", (isVxSim ? "yes" : "no"));	
 	syslog(LOG_INFO, "> Clock tick rate (hz) : %d", sysClkRateGet());	
 	syslog(LOG_INFO, "> Interface            : %s", ifName);
 	syslog(LOG_INFO, "> MAC                  : %02x:%02x:%02x:%02x:%02x:%02x", MAC.bytes[0], MAC.bytes[1], MAC.bytes[2], MAC.bytes[3], MAC.bytes[4], MAC.bytes[5]);

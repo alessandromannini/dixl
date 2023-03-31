@@ -21,6 +21,8 @@ extern MACAddress MAC;				// MAC address of the node
 extern IPv4Address IPv4;			// IPv4 of the node
 extern IPv4String IPv4s;			// IPv4s (string) of the node
 extern nodeId NodeNULL;				// NULL node
+extern char *CPUName;				// CPU board name
+extern BOOL isVxSim;				// VxSim simulator on?
 
 /***************************************************
  *  Task IDs
