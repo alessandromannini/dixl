@@ -77,10 +77,6 @@ void welcomeBanner() {
  */
 void dixlInit() {
 	
-	// Redirect syslog to console
-	int STDOUT_FILENO = fileno(stdout);
-	syslogFdSet(STDOUT_FILENO);
-	
 	// Delay until start task closes
 	task_wait4notReady(taskStartId, 1, 1);
 	

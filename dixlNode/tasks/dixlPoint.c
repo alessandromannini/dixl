@@ -57,7 +57,7 @@ static void initialize() {
 	syslog(LOG_INFO, "> Requested switch time    : %ims", TASKPOINTTRANSTIME);
 	syslog(LOG_INFO, "> Tick rate (clock)        : %iHz", tickRate);
 	syslog(LOG_INFO, "> Tick per step            : %i", stepTick);
-	syslog(LOG_INFO, "> Real excepted switch time: %ims (+%0.f%)", realTransitionTime, increment);	
+	syslog(LOG_INFO, "> Real excepted switch time: %0.fms (+%0.f%)", realTransitionTime, increment);	
 }
 
 // Process a single message received
