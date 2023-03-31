@@ -142,7 +142,7 @@ void task_shutdown(TASK_ID *tId, char *tName, MSG_Q_ID *msgQId, int *socket, SEM
 
 	// Delete semaphone (if present)
 	if (semaphoreId) 
-		if (*semaphoreId)
+		if (*semaphoreId) {
 			
 			// Acquire the semaphore
 			syslog(LOG_INFO, "Taking %s task semaphore", tName);
@@ -152,6 +152,7 @@ void task_shutdown(TASK_ID *tId, char *tName, MSG_Q_ID *msgQId, int *socket, SEM
 				syslog(LOG_INFO, "%s task semaphore deleted", tName);
 				(*semaphoreId) = NULL;
 			};
+		}
 
 }
 
