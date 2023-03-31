@@ -162,10 +162,13 @@ void dixlPoint() {
 		// Wait an activation message ... FOREVER
 		message inMessage;
 		msgQReceive(msgQPointId, (char *  ) &inMessage, sizeof(inMessage), WAIT_FOREVER);
-
+		
+		// If is VxSim compile LED management is disabled
+#if CPU !=_VX_SIMNT
 		// Turn on LED
-		pinMode(GPIO_PIN_LED, OUT);
-		pinSet(GPIO_PIN_LED, HIGH);
+			pinMode(GPIO_PIN_LED, OUT);
+			pinSet(GPIO_PIN_LED, HIGH);
+#endif		
 		
 		// Take sem
 		semTake(semPosition, WAIT_FOREVER);
@@ -197,8 +200,10 @@ void dixlPoint() {
 		// Final give
 		semGive(semPosition);
 
-		// Turn OFF Led
+#if CPU !=_VX_SIMNT
+		// Turn OFF Led		
 		pinSet(GPIO_PIN_LED, LOW);
+#endif
 		
 		// IF a Nonce request is acrive
 		if (requestNonce.tv_sec && requestNonce.tv_nsec) {

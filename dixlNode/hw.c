@@ -9,7 +9,10 @@
 
 #include "hw.h"
 
+// In VxSim GPIO lib is not included
+#if CPU !=_VX_SIMNT
 STATUS pinMode(PinNumber pin, ePinMode mode) {
+	
 	return vxbGpioSetDir(pin, mode);
 }
 
@@ -25,3 +28,4 @@ STATUS pinSet(PinNumber pin, ePinLevel level) {
 STATUS pinFree(PinNumber pin) {
 	return vxbGpioFree(pin);
 }
+#endif

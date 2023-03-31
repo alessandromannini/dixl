@@ -61,10 +61,11 @@ uint_t stop(void) {
 	task_shutdown(&taskInitId, TASKINITDESC, &msgQInitId, NULL, NULL);
 	
 	// GPIO freeing
+#if CPU !=_VX_SIMNT
 	pinFree(GPIO_PIN_BUTTON);
 	pinFree(GPIO_PIN_LED);
 	syslog(LOG_INFO, "GPIO pin freed");
-
+#endif
 	// Node halted
 	syslog(LOG_INFO, "dixlNode halted");
 	
