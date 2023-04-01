@@ -29,7 +29,7 @@
 /* variables */
 // Node INFOs
 char *CPUName;
-BOOL isVxSim=0;
+bool isVxSim=0;
 
 // Node IDs
 char ifName[IFNAMSIZ] = "";							// Network interface
@@ -96,7 +96,7 @@ void dixlInit() {
 	// Print welcome banner
 	welcomeBanner();	
 	
-	// TODO Verifica already running
+	// Verifica already running
 	syslog(LOG_DEBUG, "Task taskStartId 0x%jx", taskStartId);
 		
 	// Start

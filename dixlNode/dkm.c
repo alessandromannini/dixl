@@ -33,6 +33,12 @@ uint_t start(void) {
 	taskStartId = taskIdSelf();
 	taskStartName = taskName(0);
 	
+	// Check if already running
+	if (taskInitId) {
+		syslog(LOG_WARNING, "dixl Node already running ...");
+		return 0;
+	}
+	
 	// Spawn the Initialization task
 	syslog(LOG_INFO, "Spawning Initialization task...");
 	
