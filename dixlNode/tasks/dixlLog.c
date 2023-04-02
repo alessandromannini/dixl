@@ -79,7 +79,7 @@ static void logEnqueue(logMessage line) {
 }
 
 /* Get head line without dequeueing */
-static BOOL logHead(logMessage line) {
+static bool logHead(logMessage line) {
 	// Check at least one line present
 	if (numLines == 0) return FALSE;
 	
@@ -90,7 +90,7 @@ static BOOL logHead(logMessage line) {
 }
 
 /* Get head line and dequeue it */
-static BOOL logDequeue(logMessage line) {
+static bool logDequeue(logMessage line) {
 	// Check at least one line present
 	if (numLines == 0) return FALSE;
 	
@@ -110,7 +110,7 @@ static BOOL logDequeue(logMessage line) {
 }
 
 /* Send all current lines to CommTx to be sent to destination */
-static BOOL logSendCurrent(nodeId destination) {
+static bool logSendCurrent(nodeId destination) {
 	// Current stored lines loop
 	for (int i=0; i<numLines; i++) {
 		// Prepare the message for dixlCommTx

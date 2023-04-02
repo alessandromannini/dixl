@@ -56,7 +56,7 @@ typedef struct {
 	eStates newState;				// New state to pass to
 	eStates currentState;			// Current state
     StateMapItem *stateMap;			// Map to function for each state
-	BOOL eventGenerated;			// An event occured and hasn't been served
+	bool eventGenerated;			// An event occured and hasn't been served
 	eventData *pEventData;			// Point to current event Data
 } FiniteStateMachine;
 
@@ -71,7 +71,7 @@ static NodeState *pCurrentNodeState = NULL;
 /**
  *  Functions implementation 
  */
-static BOOL setRoute(nodeId source,routeId requestedRouteId) {
+static bool setRoute(nodeId source,routeId requestedRouteId) {
 	// Search for the requested route
 	pCurrentNodeState->pCurrentRoute = NULL;
 	
@@ -528,7 +528,7 @@ static void FSMEvent_Internal(eStates newState, eventData *pEventData) {
 void FSMCtrlTRACKCIRCUITEvent_NewMessage(message *pMessage) {	
 	
 	// Result of the precondition evaluation to pass to new state
-	BOOL condition = FALSE;
+	bool condition = FALSE;
 	// Event data
 	eventData eventData;
 	eventData.pMessage = pMessage;

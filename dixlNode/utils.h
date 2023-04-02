@@ -32,7 +32,7 @@ MSG_Q_ID msgQ_Initialize(size_t maxMsgs, size_t maxMsgLength, int options);
  * @param msTimeout
  * @return
  */
-BOOL msgQ_Receive(MSG_Q_ID msgQId, char *buffer, size_t  maxNBytes, int32_t msTimeout);
+bool msgQ_Receive(MSG_Q_ID msgQId, char *buffer, size_t  maxNBytes, int32_t msTimeout);
 
 /**
  * Send a message to a Queue
@@ -41,7 +41,7 @@ BOOL msgQ_Receive(MSG_Q_ID msgQId, char *buffer, size_t  maxNBytes, int32_t msTi
  * @param nBytes
  * @return
  */
-BOOL msgQ_Send(MSG_Q_ID msgQId, char *buffer, size_t  nBytes);
+bool msgQ_Send(MSG_Q_ID msgQId, char *buffer, size_t  nBytes);
 
 /**
  * Wait the task with taskId ID become not ready, each test is made after a delay

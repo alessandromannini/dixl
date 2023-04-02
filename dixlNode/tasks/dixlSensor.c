@@ -143,7 +143,7 @@ void dixlSensor() {
 		process_message(inMessage);
 		
 		// Need to run ?
-		BOOL runned = FALSE;
+		bool runned = FALSE;
 		
 		// Process spawning a worker while position!=requestedPosition AND requestedPosition!=UNDEFINED (Malfunction) OR new messages		
 		while (currentState != requestedState) {
@@ -156,7 +156,7 @@ void dixlSensor() {
 			// Spawn a periodic worker
 			taskSpawn(TASKSENSORWKRNAME, TASKSENSORWKRPRIO, 0, TASKSENSORWKRSTACKSIZE, (FUNCPTR) worker, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
-			// Sleep for a period (number of tick between motor step)
+			// Sleep for a period (number of tick between checks)
 			taskDelay(periodTick);
 			
 			// Take sem

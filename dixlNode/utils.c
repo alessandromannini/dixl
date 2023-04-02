@@ -38,7 +38,7 @@ MSG_Q_ID msgQ_Initialize(size_t maxMsgs, size_t maxMsgLength, int options) {
 	return msgQId;
 }
 
-BOOL msgQ_Receive(MSG_Q_ID msgQId, char *buffer, size_t  maxNBytes, int32_t msTimeout) {
+bool msgQ_Receive(MSG_Q_ID msgQId, char *buffer, size_t  maxNBytes, int32_t msTimeout) {
 	// Set the timeout
 	_Vx_ticks_t timeout;
 	if (msTimeout != WAIT_FOREVER && msTimeout != NO_WAIT) {
@@ -66,7 +66,7 @@ BOOL msgQ_Receive(MSG_Q_ID msgQId, char *buffer, size_t  maxNBytes, int32_t msTi
 	return TRUE;
 }
 
-BOOL msgQ_Send(MSG_Q_ID msgQId, char *buffer, size_t  nBytes) {
+bool msgQ_Send(MSG_Q_ID msgQId, char *buffer, size_t  nBytes) {
 	// Send the message
 	STATUS rc = msgQSend(msgQId, buffer, nBytes, WAIT_FOREVER, MSG_PRI_NORMAL);
 	
@@ -81,7 +81,7 @@ BOOL msgQ_Send(MSG_Q_ID msgQId, char *buffer, size_t  nBytes) {
 }
 
 
-BOOL msgQ_Delete(MSG_Q_ID msgQId) {
+bool msgQ_Delete(MSG_Q_ID msgQId) {
 	// Delete the queue
 	STATUS rc = msgQDelete(msgQId);
 	

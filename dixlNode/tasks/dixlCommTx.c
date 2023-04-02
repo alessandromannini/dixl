@@ -66,7 +66,7 @@ static void reset_config(const message *inMessage) {
  * @param outMessage: messeage to send
  * @return
  */
-static BOOL process_message(const message *inMessage, message *outMessage) {	
+static bool process_message(const message *inMessage, message *outMessage) {	
 	// Common section
 	outMessage->header.source = IPv4;
 	uint8_t size = sizeof(msgHeader);
@@ -159,7 +159,7 @@ static BOOL process_message(const message *inMessage, message *outMessage) {
  * @param message: message to send
  * @return
  */
-static BOOL send_message(const message *message) {
+static bool send_message(const message *message) {
 	int fd;					// Send socket file descriptor
 	IPv4String destAddr;	// Destination address of the node
 	

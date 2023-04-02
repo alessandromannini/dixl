@@ -177,7 +177,7 @@ void dixlPoint() {
 		process_message(inMessage);
 		
 		// Need to move ?
-		BOOL moved = FALSE;
+		bool moved = FALSE;
 		
 		// Process spawning a worker while position!=requestedPosition AND requestedPosition!=UNDEFINED (Malfunction) OR new messages		
 		while ((position != requestedPosition && position != POINTPOS_UNDEFINED) || msgQNumMsgs(msgQPointId)) {
