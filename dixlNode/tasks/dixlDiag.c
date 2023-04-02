@@ -150,6 +150,7 @@ static void sendToCtrl() {
 		size += sizeof(msgIDiagErrTask);
 	} else {
 		message.iHeader.type = IMSGTYPE_DIAGERRCOMM;
+		message.diagErrComm.node = clients[currentChecked].id;
 		size += sizeof(msgIDiagErrComm);
 	}
 	
@@ -170,6 +171,7 @@ static void sendToHost() {
 		size += sizeof(msgIDiagErrTask);
 	} else {
 		message.iHeader.type = IMSGTYPE_DIAGERRCOMM;
+		message.diagErrComm.node = clients[currentChecked].id;
 		size += sizeof(msgIDiagErrComm);
 	}
 	
