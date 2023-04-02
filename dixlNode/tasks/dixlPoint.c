@@ -169,6 +169,8 @@ void dixlPoint() {
 			pinMode(GPIO_PIN_LED, OUT);
 			pinSet(GPIO_PIN_LED, HIGH);
 #endif		
+		// Diag task suspended
+		taskSuspend(taskDiagId);
 		
 		// Take sem
 		semTake(semPosition, WAIT_FOREVER);
@@ -204,7 +206,10 @@ void dixlPoint() {
 		// Turn OFF Led		
 		pinSet(GPIO_PIN_LED, LOW);
 #endif
-		
+
+		// Diag task resumed
+		taskResume(taskDiagId);
+
 		// IF a Nonce request is acrive
 		if (requestNonce.tv_sec && requestNonce.tv_nsec) {
 			// Prepare the notification message
