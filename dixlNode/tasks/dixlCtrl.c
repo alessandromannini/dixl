@@ -93,9 +93,9 @@ void dixlCtrl() {
 				// - put in fail-safe status
 				
 				// Get CONFIG
-				nodeState.pRouteList = message.ctrlIConfigSet.pRoute;
-				nodeState.numRoutes = message.ctrlIConfigSet.numRoutes;				
-				nodeState.nodeType = message.ctrlIConfigSet.nodeType;
+				nodeState.pRouteList = message.nodeIConfigSet.pRoute;
+				nodeState.numRoutes = message.nodeIConfigSet.numRoutes;				
+				nodeState.nodeType = message.nodeIConfigSet.nodeType;
 				
 				// Set FSM function pointers and initialize it
 				if (nodeState.nodeType == NODETYPE_TRACKCIRCUIT) {
@@ -119,7 +119,7 @@ void dixlCtrl() {
 				
 			// Other messages passed to the FSM (if configured)
 			default:
-				// If Event handler confgired, notify the message
+				// If Event handler configured, notify the message
 				if (FSMNewMessage)
 					// Notify the new message to the FSM
 					FSMNewMessage(&message);

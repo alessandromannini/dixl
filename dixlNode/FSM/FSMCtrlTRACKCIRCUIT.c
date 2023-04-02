@@ -33,6 +33,7 @@ typedef enum eStates {
 	StateWaitAgree,
 	StateReserved,
 	StateTrainInTransition,
+	StateFailSafe,
 } eStates;
 
 typedef struct eventData {
@@ -71,6 +72,7 @@ static NodeState *pCurrentNodeState = NULL;
 /**
  *  Functions implementation 
  */
+
 static bool setRoute(nodeId source,routeId requestedRouteId) {
 	// Search for the requested route
 	pCurrentNodeState->pCurrentRoute = NULL;
@@ -88,6 +90,81 @@ static bool setRoute(nodeId source,routeId requestedRouteId) {
 	logger_log(LOGTYPE_REQ, requestedRouteId, source );			
 	logger_log(LOGTYPE_DISAGREE, requestedRouteId, NodeNULL );			
 	return FALSE;
+}
+
+static eNodePosition findPosition(routeId requestedRouteId) {
+	// Search for the requested route
+	route *pCurrentRoute = pCurrentNodeState->pRouteList;
+	
+	for (uint32_t i=0; i < pCurrentNodeState->numRoutes ; i++ ) {
+		 // If found return position
+		if (pCurrentRoute[i].id == requestedRouteId) {
+			return pCurrentRoute[i].position;
+		}
+	}
+		
+	// Not found, return NODEPOS_UNDEFINED
+	syslog(LOG_ERR, "Requested route id (%i) not found", requestedRouteId);
+	return NODEPOS_UNDEFINED;
+}
+
+/**
+ * Common functions
+ * 
+ * @param pInMessage: original message received
+ */
+static void rejectRouteRequest(message *pInMessage) {
+	eNodePosition position;
+	
+	// Get original message
+	nodeId *destNode = &(pInMessage->header.source);
+	message message;
+	size_t size = sizeof(msgIHeader);
+	routeId requestedRouteId = pInMessage->routeIReq.requestRouteId;
+
+	// Reply DISAGREE only to route request
+	switch (pInMessage->header.type) {
+		case MSGTYPE_ROUTEREQ:
+			
+			// Log
+			logger_log(LOGTYPE_REQ, requestedRouteId, *destNode );			
+			logger_log(LOGTYPE_DISAGREE, requestedRouteId, NodeNULL );
+
+			
+			// Prepare  DISAGREE message for source node			
+			position = findPosition(requestedRouteId);
+			
+			// First node? Send to host
+			if (position == NODEPOS_FIRST) {
+				message.header.type = IMSGTYPE_ROUTETRAINNOK;
+				message.routeITrainNOk.destination = *destNode;
+				message.routeITrainNOk.requestRouteId = pInMessage->routeReq.requestRouteId;
+				size += sizeof(msgIRouteTRAINNOK);
+				
+				// Log
+				syslog(LOG_INFO, "Sending TRAINNOK for route (%i) to host node (%d.%d.%d.%d)", pInMessage->routeReq.requestRouteId, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);			
+			} else {
+				message.iHeader.type = IMSGTYPE_ROUTEDISAGREE;
+				message.routeIDisagree.destination = *destNode;
+				message.routeIDisagree.requestRouteId = pInMessage->routeReq.requestRouteId;
+				size += sizeof(msgIRouteDISAGREE);
+	
+				// Log
+				nodeId *destNode = &(pInMessage->header.source);
+				syslog(LOG_INFO, "Sending TRAINNOK for route (%i) to node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);			
+			}		
+			
+			// Log
+			logger_log(LOGTYPE_DISAGREE, pCurrentNodeState->pCurrentRoute->id, *destNode );
+			
+			//Send to dixlCommTx task queue
+			msgQ_Send(msgQCommTxId, (char *) &message, size);
+			break;
+			
+		default:
+			syslog(LOG_INFO, "Received unexcepted message (%i) from node (%d.%d.%d.%d)", pInMessage->header.type, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);
+			break;
+	}
 }
 
 /**
@@ -112,6 +189,10 @@ static void NotReservedExit(eventData *pEventData) {
 	// Get original message
 	message *pInMessage = pEventData->pMessage;
 	
+	// If DIAGERR* do nothing
+	if (pInMessage->header.type == IMSGTYPE_DIAGERRCOMM || pInMessage->header.type == IMSGTYPE_DIAGERRTASK)
+		return;	
+
 	// Last node ?
 	if (pCurrentNodeState->pCurrentRoute->position != NODEPOS_LAST) {
 		// Log
@@ -146,6 +227,10 @@ static void WaitAckExit(eventData *pEventData) {
 	// Get original message
 	message *pInMessage = pEventData->pMessage;
 	
+	// If DIAGERR* do nothing
+	if (pInMessage->header.type == IMSGTYPE_DIAGERRCOMM || pInMessage->header.type == IMSGTYPE_DIAGERRTASK)
+		return;	
+
 	// If exit due to NACK, send back to prev node
 	if (pInMessage->header.type == MSGTYPE_ROUTENACK) {
 		// Prepare  message for prev node
@@ -205,6 +290,10 @@ static void WaitCommitEntry(eventData *pEventData) {
 static void WaitCommitExit(eventData *pEventData) {
 	// Get original message
 	message *pInMessage = pEventData->pMessage;
+	
+	// If DIAGERR* do nothing
+	if (pInMessage->header.type == IMSGTYPE_DIAGERRCOMM || pInMessage->header.type == IMSGTYPE_DIAGERRTASK)
+		return;	
 
 	// If exit due to DISAGREE, forward to next node (if present)
 	if (pInMessage->header.type == MSGTYPE_ROUTEDISAGREE) {
@@ -258,6 +347,10 @@ static void WaitAgreeState(eventData *pEventData) {
 static void WaitAgreeExit(eventData *pEventData) {
 	// Get original message
 	message *pInMessage = pEventData->pMessage;
+	
+	// If DIAGERR* do nothing
+	if (pInMessage->header.type == IMSGTYPE_DIAGERRCOMM || pInMessage->header.type == IMSGTYPE_DIAGERRTASK)
+		return;	
 
 	// If exit due to DISAGREE, send back to prev node (if present)
 	if (pInMessage->header.type == MSGTYPE_ROUTEDISAGREE) {
@@ -356,6 +449,10 @@ static void ReservedState(eventData *pEventData) {
 static void ReservedExit(eventData *pEventData) {
 	// Get original message
 	message *pInMessage = pEventData->pMessage;
+	
+	// If DIAGERR* do nothing
+	if (pInMessage->header.type == IMSGTYPE_DIAGERRCOMM || pInMessage->header.type == IMSGTYPE_DIAGERRTASK)
+		return;	
 
 	// If exit due to DISAGREE, forward to next node (if present)
 	if (pInMessage->header.type == MSGTYPE_ROUTEDISAGREE) {
@@ -408,8 +505,36 @@ static void TrainInTransitionEntry(eventData *pEventData) {
 static void TrainInTransitionState(eventData *pEventData) {
 }
 static void TrainInTransitionExit(eventData *pEventData) {
+	// Get original message
+	message *pInMessage = pEventData->pMessage;
+	
+	// If DIAGERR* do nothing
+	if (pInMessage->header.type == IMSGTYPE_DIAGERRCOMM || pInMessage->header.type == IMSGTYPE_DIAGERRTASK)
+		return;	
+
 	// Log
 	syslog(LOG_INFO, "Route request (%i) SENSOR OFF received", pCurrentNodeState->pCurrentRoute->id);
+}
+
+
+/**
+ * STATEFAILSAFE
+ */
+static void FailSafeEntry(eventData *pEventData) {
+	// Log
+	syslog(LOG_ERR, "Node is going in fail-safe mode all subsequent requests will be rejected");
+}
+static void FailSafeState(eventData *pEventData) {
+	// Reject All reuqests
+	// Filter DIAGERR* initial messages and MALFUNCTION
+	switch  (pEventData->pMessage->header.type) {
+		case IMSGTYPE_DIAGERRCOMM:
+		case IMSGTYPE_DIAGERRTASK:
+		case IMSGTYPE_POINTPOS:			
+			break;
+		default:
+			rejectRouteRequest(pEventData->pMessage);
+	}
 }
 
 static StateMapItem StateMap[] = {
@@ -427,6 +552,8 @@ static StateMapItem StateMap[] = {
 		{ ReservedState,			ReservedEntry,			ReservedExit},
 		// StateTrainInTransition
 		{ TrainInTransitionState,	TrainInTransitionEntry,	TrainInTransitionExit},
+		// StateFailSafe
+		{ FailSafeState,			FailSafeEntry,			NULL },		
 };
 
 /* FiniteStateMachine istance object */
@@ -535,191 +662,208 @@ void FSMCtrlTRACKCIRCUITEvent_NewMessage(message *pMessage) {
 	// New state
 	eStates newState=NULL;
 	
-	switch (FSM.currentState) {
-		case StateDummy:
-			// Should not happen
-			syslog(LOG_ERR, "Wrong state Dummy: message received");
-			taskExit(rcFSM_WRONGSTATE);
-			break;
-			
-		case StateNotReserved:
-			// Accept only ROUTEREQ messages, discard others			
-			if (pMessage->header.type == MSGTYPE_ROUTEREQ) {
-				// Set information of the requested route or fail
-				if (!setRoute(pMessage->header.source,pMessage->routeReq.requestRouteId))
-					condition = FALSE;
-				else {
-					// Go to next state depending on node position (in the current requested route)
-					switch (pCurrentNodeState->pCurrentRoute->position) {
-						case NODEPOS_FIRST:
-						case NODEPOS_MIDDLE:
-							newState = StateWaitAck;
-							break;
-							
-						case NODEPOS_LAST:
-							newState = StateWaitCommit;
-							break;
-					}
-					condition = TRUE;
-				}
-			} else {
-				// Discard other messages
-				condition = FALSE;
-			}
-			break;
-			
-		case StateWaitAck:
-			// Accept only current requested route id
-			// Accept only ACK or NACK messages, discard others
-			switch (pMessage->header.type) {
-				case MSGTYPE_ROUTEACK:
-					if (pMessage->routeAck.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
-						// Go to next state depending on node position FIRST or MIDDLE (in the current requested route)
+	// 1) in every state DIAGERR* messagessend to StateFailSafe
+	// 2) in every state except NOT_RESERVED REQ messages are discarded
+	if (pMessage->header.type == IMSGTYPE_DIAGERRCOMM || pMessage->header.type == IMSGTYPE_DIAGERRTASK) {
+		newState = StateFailSafe;
+		condition = TRUE;				
+	} else if (pMessage->header.type == MSGTYPE_ROUTEREQ && FSM.currentState != StateNotReserved) {
+		// SImply reject request
+		rejectRouteRequest(pMessage);
+		condition = FALSE;
+	} else {
+		switch (FSM.currentState) {
+			case StateDummy:
+				// Should not happen
+				syslog(LOG_ERR, "Wrong state Dummy: message received");
+				taskExit(rcFSM_WRONGSTATE);
+				break;
+				
+			case StateNotReserved:
+				// Accept only ROUTEREQ messages, discard others			
+				if (pMessage->header.type == MSGTYPE_ROUTEREQ) {
+					// Set information of the requested route or fail
+					if (!setRoute(pMessage->header.source,pMessage->routeReq.requestRouteId))
+						condition = FALSE;
+					else {
+						// Go to next state depending on node position (in the current requested route)
 						switch (pCurrentNodeState->pCurrentRoute->position) {
 							case NODEPOS_FIRST:
-								newState = StateWaitAgree;
-								break;
-								
 							case NODEPOS_MIDDLE:
 								newState = StateWaitAck;
 								break;
-						}
-						condition = TRUE;
-					} else
-						// Discard
-						condition = FALSE;
-					break;
-				
-				case MSGTYPE_ROUTENACK:
-					if (pMessage->routeINAck.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
-						// Not necessary to test NodePosition
-						// Exit send NACK to prev or TRAINNOK to host
-						newState = StateNotReserved;
-						condition = TRUE;
-					} else
-						// Discard
-						condition = FALSE;
-					break;
-					
-				default:
-					condition = FALSE;
-					break;
-			}						
-			break;
-			
-		case StateWaitCommit:
-			// Accept only current requested route id
-			// Accept only COMMIT or DISAGREE messages, discard others
-			switch (pMessage->header.type) {
-				case MSGTYPE_ROUTECOMMIT:
-					if (pMessage->routeCommit.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
-						// Go to next state depending on node position LAST or MIDDLE (in the current requested route)
-						switch (pCurrentNodeState->pCurrentRoute->position) {
-							case NODEPOS_MIDDLE:
-								newState = StateWaitAgree;
-								break;
 								
 							case NODEPOS_LAST:
-								newState = StateReserved;
+								newState = StateWaitCommit;
 								break;
 						}
 						condition = TRUE;
-					} else
-						// Discard
-						condition = FALSE;
-					break;
-				
-				case MSGTYPE_ROUTEDISAGREE:
-					if (pMessage->routeIDisagree.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
-						// Not necessary to test NodePosition
-						// Exit send DISAGREE to next node if is not last
-						newState = StateNotReserved;
-						condition = TRUE;
-					} else
-						// Discard
-						condition = FALSE;
-					break;
-
-				default:
+					}
+				} else {
+					// Discard other messages
 					condition = FALSE;
-					break;
-			}						
-			break;
-			
-		case StateWaitAgree:
-			// Accept only current requested route id
-			// Accept only AGREE or DISAGREE messages, discard others
-			switch (pMessage->header.type) {
-				case MSGTYPE_ROUTEAGREE:
-					if (pMessage->routeCommit.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
-						// Go to Reserved state
-						newState = StateReserved;
-						condition = TRUE;
-					} else
-						// Discard
-						condition = FALSE;
-					break;
+				}
+				break;
 				
-				case MSGTYPE_ROUTEDISAGREE:
-					if (pMessage->routeIDisagree.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
-						// Not necessary to test NodePosition
-						// Exit send DISAGREE to prev node or TRAINNOK to host
-						newState = StateNotReserved;
-						condition = TRUE;
-					} else
-						// Discard
+			case StateWaitAck:
+				// Accept only current requested route id
+				// Accept only ACK or NACK messages, discard others
+				switch (pMessage->header.type) {
+					case MSGTYPE_ROUTEACK:
+						if (pMessage->routeAck.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
+							// Go to next state depending on node position FIRST or MIDDLE (in the current requested route)
+							switch (pCurrentNodeState->pCurrentRoute->position) {
+								case NODEPOS_FIRST:
+									newState = StateWaitAgree;
+									break;
+									
+								case NODEPOS_MIDDLE:
+									newState = StateWaitAck;
+									break;
+							}
+							condition = TRUE;
+						} else
+							// Discard
+							condition = FALSE;
+						break;
+					
+					case MSGTYPE_ROUTENACK:
+						if (pMessage->routeINAck.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
+							// Not necessary to test NodePosition
+							// Exit send NACK to prev or TRAINNOK to host
+							newState = StateNotReserved;
+							condition = TRUE;
+						} else
+							// Discard
+							condition = FALSE;
+						break;
+						
+					default:
 						condition = FALSE;
-					break;
-
-				default:
-					condition = FALSE;
-					break;
-			}						
-			break;
-			
-		case StateReserved:
-			// Accept only current requested route id (for DISAGREE)
-			// Accept only SENSORON or DISAGREE messages, discard others
-			switch (pMessage->header.type) {
-				// If SENSOR ON received go to state TrainInTransition
-				case IMSGTYPE_SENSORNOTIFY:						
-					if (pMessage->sensorINOTIFY.currentState == SENSORSTATE_ON) {
-						newState = StateTrainInTransition;
-						condition = TRUE;
-					} else 
-						condition = FALSE;
-					break;
+						break;
+				}						
+				break;
 				
-				case MSGTYPE_ROUTEDISAGREE:
-					if (pMessage->routeIDisagree.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
-						// Not necessary to test NodePosition
-						// Exit send DISAGREE to next node
-						newState = StateNotReserved;
-						condition = TRUE;
-					} else
-						// Discard
+			case StateWaitCommit:
+				// Accept only current requested route id
+				// Accept only COMMIT or DISAGREE messages, discard others
+				switch (pMessage->header.type) {
+					case MSGTYPE_ROUTECOMMIT:
+						if (pMessage->routeCommit.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
+							// Go to next state depending on node position LAST or MIDDLE (in the current requested route)
+							switch (pCurrentNodeState->pCurrentRoute->position) {
+								case NODEPOS_MIDDLE:
+									newState = StateWaitAgree;
+									break;
+									
+								case NODEPOS_LAST:
+									newState = StateReserved;
+									break;
+							}
+							condition = TRUE;
+						} else
+							// Discard
+							condition = FALSE;
+						break;
+					
+					case MSGTYPE_ROUTEDISAGREE:
+						if (pMessage->routeIDisagree.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
+							// Not necessary to test NodePosition
+							// Exit send DISAGREE to next node if is not last
+							newState = StateNotReserved;
+							condition = TRUE;
+						} else
+							// Discard
+							condition = FALSE;
+						break;
+		
+					default:
 						condition = FALSE;
-					break;
-
-				default:
+						break;
+				}						
+				break;
+				
+			case StateWaitAgree:
+				// Accept only current requested route id
+				// Accept only AGREE or DISAGREE messages, discard others
+				switch (pMessage->header.type) {
+					case MSGTYPE_ROUTEAGREE:
+						if (pMessage->routeCommit.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
+							// Go to Reserved state
+							newState = StateReserved;
+							condition = TRUE;
+						} else
+							// Discard
+							condition = FALSE;
+						break;
+					
+					case MSGTYPE_ROUTEDISAGREE:
+						if (pMessage->routeIDisagree.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
+							// Not necessary to test NodePosition
+							// Exit send DISAGREE to prev node or TRAINNOK to host
+							newState = StateNotReserved;
+							condition = TRUE;
+						} else
+							// Discard
+							condition = FALSE;
+						break;
+		
+					default:
+						condition = FALSE;
+						break;
+				}						
+				break;
+				
+			case StateReserved:
+				// Accept only current requested route id (for DISAGREE)
+				// Accept only SENSORON or DISAGREE messages, discard others
+				switch (pMessage->header.type) {
+					// If SENSOR ON received go to state TrainInTransition
+					case IMSGTYPE_SENSORNOTIFY:						
+						if (pMessage->sensorINOTIFY.currentState == SENSORSTATE_ON) {
+							newState = StateTrainInTransition;
+							condition = TRUE;
+						} else 
+							condition = FALSE;
+						break;
+					
+					case MSGTYPE_ROUTEDISAGREE:
+						if (pMessage->routeIDisagree.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
+							// Not necessary to test NodePosition
+							// Exit send DISAGREE to next node
+							newState = StateNotReserved;
+							condition = TRUE;
+						} else
+							// Discard
+							condition = FALSE;
+						break;
+		
+					default:
+						condition = FALSE;
+						break;
+				}						
+				break;
+				
+			case StateTrainInTransition:
+				// Accept only SENSOROFF
+				if (pMessage->iHeader.type == IMSGTYPE_SENSORNOTIFY && pMessage->sensorINOTIFY.currentState == SENSORSTATE_OFF) {
+					newState = StateNotReserved;
+					condition = TRUE;
+				} else {
+					// Discard other messages
 					condition = FALSE;
-					break;
-			}						
-			break;
-			
-		case StateTrainInTransition:
-			// Accept only SENSOROFF
-			if (pMessage->iHeader.type == IMSGTYPE_SENSORNOTIFY && pMessage->sensorINOTIFY.currentState == SENSORSTATE_OFF) {
-				newState = StateNotReserved;
+				}
+				break;
+		
+			case StateFailSafe:
+				// Keep the state
+				newState = StateFailSafe;
 				condition = TRUE;
-			} else {
-				// Discard other messages
-				condition = FALSE;
-			}
-			break;
-			
+				break;
+							
+		}
 	}
-	
+
 	// If the condition is passed, the new state is served
 	if (condition) {
 		// Generate the internal event

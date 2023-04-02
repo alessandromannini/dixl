@@ -44,8 +44,8 @@ typedef enum {
 	MSGTYPE_LOGDELACK			= 84,	// Ack messages were deleted
 
 	// Diagnostic messages
-	MSGTYPE_NODEDIAG 			= 90,	// Communication diagnostic request
-	MSGTYPE_NODEDIAGACK 		= 91,	// Communication diagnostic request Ack
+	MSGTYPE_DIAGERRTASK			= 90,	// Diagnostic error on task
+	MSGTYPE_DIAGERRCOMM 		= 91,	// Diagnostic communication error
 	
 	// Point requests  
 	MSGTYPE_POINTMALFUNC   		= 95,   // Point set malfunction state	
@@ -56,8 +56,8 @@ typedef enum {
 	IMSGTYPE_COMMTXCONFIGRESET  = 102,   // Reset config in dixlCommTx task	
 
 	// Service messages - Init task
-	IMSGTYPE_NODECONFIGSET      = 111,   // Set config in dixlCtrl task
-	IMSGTYPE_NODECONFIGRESET    = 112,   // Reset config in dixlCtrl task	
+	IMSGTYPE_NODECONFIGSET      = 111,   // Set config in dixlCtrl and dixlDiag task
+	IMSGTYPE_NODECONFIGRESET    = 112,   // Reset config in dixlCtrl and dixlDiag task	
 	
 	// Route messages internal request to send to
 	IMSGTYPE_ROUTEREQ 			= 130,	// Route request
@@ -78,11 +78,14 @@ typedef enum {
 	IMSGTYPE_LOGSEND			= 182,	// Send current  log lines to the host
 	IMSGTYPE_LOGDELACK		    = 184,	// Ack log lines deletion to the host
 
+	// Diagnostic messages
+	IMSGTYPE_DIAGERRTASK		= 190,	// Diagnostic error on task
+	IMSGTYPE_DIAGERRCOMM 		= 191,	// Diagnostic communication error
+
 	// Point requests  
 	IMSGTYPE_POINTRESET			= 195,   // Point position reset
 	IMSGTYPE_POINTPOS			= 196,   // Point position request
 	IMSGTYPE_POINTNOTIFY		= 197,   // Point position or malfunction notify
-
 } eMsgType;
 
 /***************************************
@@ -170,6 +173,13 @@ typedef struct msgLOGDEL {
 typedef struct msgLOGDELACK {
 } msgLogDELACK;
 
+/** message DIAG types */
+typedef struct msgDIAGERRTASK {
+} msgDiagErrTask;
+typedef struct msgDIAGERRCOMM {
+	nodeId node;
+} msgDiagErrComm;
+
 /***************************************
  * INTERNAL MESSAGES and TYPES
  ***************************************/
@@ -180,15 +190,15 @@ typedef struct msgICommTxCONFIGSET {
 typedef struct msgICommTxCONFIGRESET {
 } msgICommTxCONFIGRESET;
 
-/** message CTRL types */ 
-typedef struct msgICtrlCONFIGSET {
+/** message NDDE types */ 
+typedef struct msgINodeCONFIGSET {
 	uint8_t nodeType;				// Type of the node ( => behaviour)
 	uint8_t padding[3];	
 	uint32_t numRoutes;				// Total number (N) of segments in the configuration
 	route *pRoute;					// Pointer to array of routes
-} msgICtrlCONFIGSET;
+} msgINodeCONFIGSET;
 typedef struct msgICtrlCONFIGRESET {
-} msgICtrlCONFIGRESET;
+} msgINodeCONFIGRESET;
 
 /** message ROUTE types */
 typedef struct msgIRouteREQ {
@@ -258,6 +268,13 @@ typedef struct msgILOGSEND {
 typedef struct msgILOGACK {
 } msgILogDELACK;
 
+/** message DIAG types */
+typedef struct msgIDIAGERRTASK {
+} msgIDiagErrTask;
+typedef struct msgIDIAGERRCOMM {
+	nodeId node;
+} msgIDiagErrComm;
+
 /**
  *  message GENERIC 
  */
@@ -287,6 +304,10 @@ typedef struct message {
 				//LOG
 				msgLogSEND 			logSend;
 				msgLogDELACK		logDelAck;
+
+				// DIAG
+				msgDiagErrTask		diagErrTask;
+				msgDiagErrComm		diagErrComm;
 			};
 		};
 		struct {
@@ -296,9 +317,9 @@ typedef struct message {
 				msgICommTxCONFIGSET   	commTxIConfigSet;
 				msgICommTxCONFIGRESET 	commTxIConfigReset;
 
-				// CTRL
-				msgICtrlCONFIGSET   	ctrlIConfigSet;
-				msgICtrlCONFIGRESET 	ctrlIConfigReset;
+				// NODE (CTRL + DIAG)
+				msgINodeCONFIGSET   	nodeIConfigSet;
+				msgINodeCONFIGRESET 	nodeIConfigReset;
 				
 				// ROUTE
 				msgIRouteREQ        	routeIReq;
@@ -323,6 +344,10 @@ typedef struct message {
 				msgILog 				logILog;
 				msgILogSEND 			logISend;
 				msgILogDELACK 			logIDelAck;
+
+				// DIAG
+				msgIDiagErrTask			diagIErrTask;
+				msgIDiagErrComm			diagIErrComm;
 			};
 		};
 	};

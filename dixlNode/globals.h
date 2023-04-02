@@ -22,7 +22,7 @@ extern IPv4Address IPv4;			// IPv4 of the node
 extern IPv4String IPv4s;			// IPv4s (string) of the node
 extern nodeId NodeNULL;				// NULL node
 extern char *CPUName;				// CPU board name
-extern BOOL isVxSim;				// VxSim simulator on?
+extern bool isVxSim;				// VxSim simulator on?
 
 /***************************************************
  *  Task IDs
@@ -44,6 +44,7 @@ extern 	TASK_ID 	taskSensorId;		// Sensor task ID
  ***************************************************/
 /* IN queues Ids */
 extern 	MSG_Q_ID 	msgQInitId;			// Init task IN queue Id
+extern 	MSG_Q_ID 	msgQDiagId;			// Diag task IN queue Id
 extern 	MSG_Q_ID 	msgQCommTxId;		// Comm Tx task IN Queue Id
 extern 	MSG_Q_ID 	msgQCtrlId;			// Ctrl task IN Queue Id
 extern 	MSG_Q_ID 	msgQLogId;			// Log  task IN Queue Id	
@@ -60,6 +61,7 @@ extern 	int         dixlCommRxSocket;	// Comm Rx task IN Socket
  ***************************************************/
 extern SEM_ID semPosition;							// Semaphore to access position
 extern SEM_ID semSensor;							// Semaphore to access sensor
+extern SEM_ID semDiag;							    // Semaphore to access internal variables
 
 #endif /* GLOBALS_H_ */
  

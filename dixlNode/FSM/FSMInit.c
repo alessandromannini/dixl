@@ -58,7 +58,7 @@ typedef struct {
 	eStates newState;				// New state to pass to
 	eStates currentState;			// Current state
     StateMapItem *stateMap;			// Map to function for each state
-	BOOL eventGenerated;			// An event occured and hasn't been served
+	bool eventGenerated;			// An event occured and hasn't been served
 	eventData *pEventData;			// Point to current event Data
 } FiniteStateMachine;
 
@@ -203,16 +203,16 @@ static void ConfiguringExit(eventData *pEventData) {
  */
 static void ConfiguredState(eventData *pEventData) {
 	// Prepare CONFIG SET message for dixlCtrl
-	message message, message2;
+	message messageConfig, messageCommTx;
 	
-	message.iHeader.type = IMSGTYPE_NODECONFIGSET;
-	message.ctrlIConfigSet.pRoute = configuration;
-	message.ctrlIConfigSet.numRoutes = configTotalSegments;
-	message.ctrlIConfigSet.nodeType = (uint8_t) configNodeType;
+	messageConfig.iHeader.type = IMSGTYPE_NODECONFIGSET;
+	messageConfig.nodeIConfigSet.pRoute = configuration;
+	messageConfig.nodeIConfigSet.numRoutes = configTotalSegments;
+	messageConfig.nodeIConfigSet.nodeType = (uint8_t) configNodeType;
 
 	// Prepare CONFIG SET message for dixlCommTx
-	message2.iHeader.type = IMSGTYPE_COMMTXCONFIGSET;
-	message2.commTxIConfigSet.hostNode = source;
+	messageCommTx.iHeader.type = IMSGTYPE_COMMTXCONFIGSET;
+	messageCommTx.commTxIConfigSet.hostNode = source;
 	
 	// Check CONFIG
 	if (configTotalSegments <= 0) {
@@ -222,24 +222,26 @@ static void ConfiguredState(eventData *pEventData) {
 		syslog(LOG_ERR, "Wrong CONFIG node type: going back to Idle state");
 		FSMEvent_Internal(StateIdle, pEventData);
 	} else {		
-		// CONFIG ok, Send to dixlCtrl task queue
-		msgQ_Send(msgQCtrlId, (char *) &message, sizeof(msgIHeader) + sizeof(msgICtrlCONFIGSET));
+		// CONFIG ok, Send to dixlCtrl and dixlDiag task queue
+		msgQ_Send(msgQCtrlId, (char *) &messageConfig, sizeof(msgIHeader) + sizeof(msgINodeCONFIGSET));
+		msgQ_Send(msgQDiagId, (char *) &messageConfig, sizeof(msgIHeader) + sizeof(msgINodeCONFIGSET));
 		
 		// Send host address to tCommTx
-		msgQ_Send(msgQCommTxId, (char *) &message2, sizeof(msgIHeader) + sizeof(msgICommTxCONFIGSET));		
+		msgQ_Send(msgQCommTxId, (char *) &messageCommTx, sizeof(msgIHeader) + sizeof(msgICommTxCONFIGSET));		
 	}
 }
 static void ConfiguredExit(eventData *pEventData) {
 	// Prepare CONFIG RESET message for dixlCtrl and dixlCommTx and dixlPOint
-	message messageCtrl, messageCommTx;
-	messageCtrl.iHeader.type = IMSGTYPE_NODECONFIGRESET;
+	message messageConfig, messageCommTx;
+	messageConfig.iHeader.type = IMSGTYPE_NODECONFIGRESET;
 	messageCommTx.iHeader.type = IMSGTYPE_COMMTXCONFIGRESET;
 	
 	// Log RESET
 	syslog(LOG_ERR, "CONFIG RESET received");
 	
-	// Send to dixlCtrl task queue
-	msgQ_Send(msgQCtrlId, (char *) &messageCtrl, sizeof(msgIHeader) + sizeof(msgICtrlCONFIGRESET));		
+	// Send to dixlCtrl and dixlDiag task queue
+	msgQ_Send(msgQCtrlId, (char *) &messageConfig, sizeof(msgIHeader) + sizeof(msgINodeCONFIGRESET));		
+	msgQ_Send(msgQDiagId, (char *) &messageConfig, sizeof(msgIHeader) + sizeof(msgINodeCONFIGRESET));		
 
 	// Send to dixlCommTx task queue
 	msgQ_Send(msgQCommTxId, (char *) &messageCommTx, sizeof(msgIHeader) + sizeof(msgICommTxCONFIGRESET));		
@@ -356,7 +358,7 @@ void FSMInit() {
 void FSMInitEvent_NewMessage(message *pMessage) {	
 	
 	// Result of the precondition evaluation to pass to new state
-	BOOL condition = FALSE;
+	bool condition = FALSE;
 	// Event data
 	eventData eventData;
 	eventData.pMessage = pMessage;

@@ -13,6 +13,7 @@
 
 /* includes */
 #include <stdint.h>
+#include <stdbool.h>
 
 /***************************************************
  *  Return codes
@@ -115,5 +116,19 @@ const char *pointPosStr(ePointPosition pos);
  */
 const char *sensorStateStr(eSensorState state);
 
+/**
+ * Check if node Id is valued
+ * @param node
+ * @return Return TRUE if node is not valued
+ */
+bool nodeIsNull(nodeId node);
+ 
+ /**
+  * Check if two node Id are equal
+  * @param node1
+  * @param node2
+  * @return Return TRUE if node are equal
+  */
+bool nodecmp(const nodeId node1, const nodeId node2);
 #endif /* DATATYPES_H_ */
  

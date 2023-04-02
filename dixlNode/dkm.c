@@ -57,8 +57,8 @@ uint_t stop(void) {
 	syslog(LOG_INFO, "Shutting down dixlNode...");
 
 	// Deleting tasks in reverse order
+	task_shutdown(&taskDiagId, TASKDIAGDESC, NULL, NULL, &semDiag);
 	task_shutdown(&taskCommTxId, TASKCOMMTXDESC, &msgQCommTxId, NULL, NULL);
-	task_shutdown(&taskDiagId, TASKDIAGDESC, NULL, NULL, NULL);
 	task_shutdown(&taskCtrlId, TASKCTRLDESC, &msgQCtrlId, NULL, NULL);
 	task_shutdown(&taskPointId, TASKPOINTDESC, &msgQPointId, NULL, &semPosition);
 	task_shutdown(&taskSensorId, TASKSENSORDESC, &msgQSensorId, NULL, &semSensor);

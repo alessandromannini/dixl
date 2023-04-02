@@ -144,7 +144,19 @@ static bool process_message(const message *inMessage, message *outMessage) {
 			outMessage->header.destination = inMessage->routeITrainNOk.destination;
 			size += sizeof(msgLogDELACK);
 			break;
-			
+
+		case IMSGTYPE_DIAGERRCOMM:
+			outMessage->header.type = MSGTYPE_DIAGERRCOMM;			
+			outMessage->header.destination = hostNode;
+			size += sizeof(msgIDiagErrComm);
+			break;
+
+		case IMSGTYPE_DIAGERRTASK:
+			outMessage->header.type = MSGTYPE_DIAGERRTASK;
+			outMessage->header.destination = hostNode;
+			size += sizeof(msgIDiagErrTask);
+			break;
+
 		default:			
 			return FALSE;
 			
@@ -231,6 +243,8 @@ void dixlCommTx() {
 			case IMSGTYPE_ROUTETRAINOK:
 			case IMSGTYPE_ROUTETRAINNOK:
 			case IMSGTYPE_LOGSEND:
+			case IMSGTYPE_DIAGERRCOMM:
+			case IMSGTYPE_DIAGERRTASK:
 				// Process the message preparing it for External delivery
 				if (process_message(&inMessage, &extMessage))				    
 					// Delivery it to the destination through the socket

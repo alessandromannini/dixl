@@ -54,8 +54,15 @@
 /* Task dixlDiag */
 #define TASKDIAGNAME  			"tDixlDiag"			/* Task Diag name */
 #define TASKDIAGDESC  			"Diagnostic"		/* Task Diag description */
-#define	TASKDIAGPRIO 			100					/* Task Diag prio */
+#define	TASKDIAGPRIO 			VX_TASK_PRIORITY_MAX/* Task Diag prio */
 #define	TASKDIAGSTACKSIZE 		20480				/* Task Diag stack Size */
+#define	TASKDIAGCHECKPERIOD		00000				/* Task Diag check period (ms), 0 = continuous */
+#define	TASKDIAGPINGPKTS		3					/* Task Diag packets to send for each ping */
+
+#define TASKDIAGWKRNAME  		"tDixlDiagWkr"			/* Task Diag name */
+#define TASKDIAGWKRDESC  		"Diagnostic Worker"		/* Task Diag description */
+#define	TASKDIAGWKRPRIO 		VX_TASK_PRIORITY_MAX -5 /* Task Diag prio */
+#define	TASKDIAGWKRSTACKSIZE 	20480					/* Task Diag stack Size */
 
 /* Task dixlPOINT */
 #define TASKPOINTNAME 			"tDixlPoint"		/* Task Point name */
@@ -64,7 +71,7 @@
 #define	TASKPOINTSTACKSIZE		20480				/* Task Point stack Size */
 #define TASKPOINTTRANSTIME      3000                /* Task Point time (ms) to switch between straight and diverge position */
 
-#define TASKPOINTWKRNAME 		"tDixlPointWrk"				/* Task Point worker name */
+#define TASKPOINTWKRNAME 		"tDixlPointWkr"				/* Task Point worker name */
 #define TASKPOINTWKRDESC  		"Point Simulator Worker"	/* Task Point worker description */
 #define	TASKPOINTWKRPRIO 		80							/* Task Point worker prio */
 #define	TASKPOINTWKRSTACKSIZE	20480						/* Task Point worker stack Size */
@@ -76,7 +83,7 @@
 #define	TASKSENSORSTACKSIZE		20480				/* Task Sensor stack Size */
 #define TASKSENSORCHECKPERIOD   1000                /* Task Sensor check period (ms) */
 
-#define TASKSENSORWKRNAME 		"tDixlSensorWrk"			/* Task Sensor worker name */
+#define TASKSENSORWKRNAME 		"tDixlSensorWkr"			/* Task Sensor worker name */
 #define TASKSENSORWKRDESC  		"Sensor Checker Worker"		/* Task Sensor worker description */
 #define	TASKSENSORWKRPRIO 		80							/* Task Sensor worker prio */
 #define	TASKSENSORWKRSTACKSIZE	20480						/* Task Sensor worker stack Size */
