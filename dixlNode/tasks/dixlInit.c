@@ -69,6 +69,7 @@ void welcomeBanner() {
 	syslog(LOG_INFO, "* organization :  Universita' degli Studi di Firenze *");
 	syslog(LOG_INFO, "* date         :  Jan 10, 2023                       *");
 	syslog(LOG_INFO, "* contact      :  alessandro.mannini@gmail.com       *");
+	syslog(LOG_INFO, "* version      :  %s                        *", DIXL_VERSION);
 	syslog(LOG_INFO, "******************************************************");
 	
 	syslog(LOG_INFO, "> Node informations");

@@ -92,7 +92,7 @@
                 <stringAttribute value="-D_WRS_VX_SMP"/>
                 <stringAttribute value="-D_WRS_CONFIG_SMP"/>
                 <stringAttribute value="-D_VSB_CONFIG_FILE=\&quot;$(VSB_DIR)/h/config/vsbConfig.h\&quot;"/>
-                <stringAttribute value=" "/>
+                <stringAttribute value="-DDIXL_VERSION=\&quot;001.000.000\&quot;"/>
             </listAttribute>
             <stringAttribute key="BLD::Info|Tool|C-Compiler|derivedSigs|vsb_vxsim_windows_SIMNTllvm_LP64_LARGE_SMP" value="*.o"/>
             <stringAttribute key="BLD::Info|Tool|C-Compiler|dbgFlags|vsb_vxsim_windows_SIMNTllvm_LP64_LARGE_SMP" value="-g"/>
@@ -126,6 +126,7 @@
             <stringAttribute key="BLD::Info|Tool|Assembler|cmd|vsb_vxsim_windows_SIMNTllvm_LP64_LARGE_SMP" value="echo &quot;building $@&quot;;%assemblerprefix% $(TOOL_PATH)/clang %DebugModeFlags% %ToolFlags% %Defines% $(DEFINES) $(ADDED_CFLAGS) %Includes% $(ADDED_INCLUDES) -o %OutFile% -c %InFile%"/>
             <stringAttribute key="BLD::Info|redirRoot" value=""/>
             <stringAttribute key="BLD::Info|defaultSpec" value="vsb_vxsim_windows_SIMNTllvm_LP64_LARGE_SMP"/>
+            <stringAttribute key="BLD::Info|activeSpec" value="vsb_vxsim_windows_SIMNTllvm_LP64_LARGE_SMP"/>
         </mapAttribute>
     </attributes>
     <buildtargets>
