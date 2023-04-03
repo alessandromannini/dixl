@@ -40,7 +40,9 @@
 ├─── hw.h                            # GPIO management
 ├─── network.h                       # Network utilities
 ├─── utils.h                         # General purpose utilities
+├─── version.h                       # Versioning file
 ├─── build.sh                        # CLI compiler build script
+├─── ftpd.sh                         # CLI ftp script
 │    
 </pre>
 
