@@ -92,7 +92,6 @@
                 <stringAttribute value="-D_WRS_VX_SMP"/>
                 <stringAttribute value="-D_WRS_CONFIG_SMP"/>
                 <stringAttribute value="-D_VSB_CONFIG_FILE=\&quot;$(VSB_DIR)/h/config/vsbConfig.h\&quot;"/>
-                <stringAttribute value="-DDIXL_VERSION=\&quot;001.000.000\&quot;"/>
             </listAttribute>
             <stringAttribute key="BLD::Info|Tool|C-Compiler|derivedSigs|vsb_vxsim_windows_SIMNTllvm_LP64_LARGE_SMP" value="*.o"/>
             <stringAttribute key="BLD::Info|Tool|C-Compiler|dbgFlags|vsb_vxsim_windows_SIMNTllvm_LP64_LARGE_SMP" value="-g"/>

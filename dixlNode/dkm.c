@@ -18,6 +18,8 @@
 #include "hw.h"
 #include "utils.h"
 #include "tasks/dixlInit.h"
+#include "version.h"
+
 /*
  * Task infos
  */
