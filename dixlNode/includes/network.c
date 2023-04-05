@@ -19,9 +19,11 @@
 #include <net/if_dl.h>
 #include "ifaddrs.h"
 
-#include "utils.h" 
-#include "globals.h" 
-#include "network.h" 
+#include "../globals.h" 
+#include "network.h"
+#include "utils.h"
+
+
 
 /* FUNCTIONS helpers */
 int socket_create(int domain, int type, int proto) {

@@ -15,8 +15,8 @@
 
 #include "globals.h"
 #include "config.h"
-#include "hw.h"
-#include "utils.h"
+#include "includes/hw.h"
+#include "includes/utils.h"
 #include "tasks/dixlInit.h"
 #include "version.h"
 

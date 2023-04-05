@@ -21,10 +21,11 @@
 
 #include "../config.h"
 #include "../datatypes/messages.h"
-#include "../network.h"
-#include "../utils.h"
 #include "../globals.h"
 #include "dixlDiag.h"
+
+#include "../includes/network.h"
+#include "../includes/utils.h"
 #include "dixlComm.h"
 
 /* variables */

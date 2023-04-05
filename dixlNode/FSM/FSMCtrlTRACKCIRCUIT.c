@@ -20,7 +20,7 @@
 #include "../datatypes/messages.h"
 #include "../tasks/dixlLog.h"
 #include "../globals.h"
-#include "../utils.h"
+#include "../includes/utils.h"
 
 
 /* Private definitions */

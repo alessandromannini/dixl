@@ -19,7 +19,7 @@
 #include "../config.h"
 #include "../datatypes/messages.h"
 #include "../globals.h"
-#include "../utils.h"
+#include "../includes/utils.h"
 #include "../tasks/dixlComm.h"
 #include "../tasks/dixlDiag.h"
 #include "../tasks/dixlLog.h"

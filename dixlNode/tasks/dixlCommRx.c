@@ -22,8 +22,8 @@
 #include "dixlLog.h"
 #include "../config.h"
 #include "../datatypes/messages.h"
-#include "../network.h"
-#include "../utils.h"
+#include "../includes/network.h"
+#include "../includes/utils.h"
 
 /* variables */
 int dixlCommRxSocket = 0;

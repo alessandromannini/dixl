@@ -21,10 +21,11 @@
 
 #include "../globals.h"
 #include "../config.h"
-#include "../utils.h"
-#include "../network.h"
 #include "dixlComm.h"
 #include "../FSM/FSMInit.h"
+#include "../includes/network.h"
+#include "../includes/utils.h"
+#include "../version.h"
 
 /* variables */
 // Node INFOs

@@ -19,7 +19,7 @@
 #include "../config.h"
 #include "../datatypes/messages.h"
 #include "../globals.h"
-#include "../utils.h"
+#include "../includes/utils.h"
 
 
 /* Private definitions */

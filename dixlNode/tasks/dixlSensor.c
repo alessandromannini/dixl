@@ -19,9 +19,10 @@
 #include "../config.h"
 #include "../datatypes/messages.h"
 #include "../globals.h"
-#include "../hw.h"
-#include "../utils.h"
 #include "dixlSensor.h"
+
+#include "../includes/hw.h"
+#include "../includes/utils.h"
 #include "dixlComm.h"
 
 /* variables */

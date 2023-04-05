@@ -18,8 +18,9 @@
 #include "../config.h"
 #include "../datatypes/messages.h"
 #include "../globals.h"
-#include "../utils.h"
 #include "dixlLog.h"
+
+#include "../includes/utils.h"
 #include "dixlComm.h"
 
 /* variables */

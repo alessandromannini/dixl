@@ -19,8 +19,8 @@
 #include "dixlComm.h"
 #include "../config.h"
 #include "../datatypes/messages.h"
-#include "../network.h"
-#include "../utils.h"
+#include "../includes/network.h"
+#include "../includes/utils.h"
 
 /* variables */
 // Task

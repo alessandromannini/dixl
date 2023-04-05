@@ -20,6 +20,11 @@
 │     │  ├─── dataTypes.h            # Data types definitions
 │     │  └─── messages.h             # External and internal messages definitions
 │     │       
+│     ├─── includes
+│     │  ├─── hw.h                   # GPIO management
+│     │  ├─── network.h              # Network utilities
+│     │  └─── utils.h                # General purpose utilities
+│     │       
 │     ├─── FSM
 │     │  ├─── FSMCtrlPOINT.h         # FSM that define tCtrl task behaviour when operating as a Point controller
 │     │  ├─── FSMCtrlTRACKCIRCUIT.h  # FSM that define tCtrl task behaviour when operating as a Track Circuit controller
@@ -37,9 +42,6 @@
 ├─── config.h                        # Configurable parameters
 ├─── dkm.c                           # Main kernel module
 ├─── globals.h                       # Shared variables 
-├─── hw.h                            # GPIO management
-├─── network.h                       # Network utilities
-├─── utils.h                         # General purpose utilities
 ├─── version.h                       # Versioning file
 ├─── build.sh                        # CLI compiler build script
 ├─── ftpd.sh                         # CLI ftp script

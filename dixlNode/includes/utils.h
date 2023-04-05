@@ -7,8 +7,8 @@
  * @date: Jan 10, 2023
  */
 
-#ifndef UTILS_H_
-#define UTILS_H_
+#ifndef INCLUDES_UTILS_H_
+#define INCLUDES_UTILS_H_
 #include <stdio.h>
 #include <stdbool.h>
 #include <taskLib.h>
@@ -65,4 +65,4 @@ void task_shutdown(TASK_ID *tId, char *tName, MSG_Q_ID *msgQId, int *socket, SEM
  */
 int math_ceil(int num, int den);
 
-#endif /* UTILS_H_ */
+#endif /* INCLUDES_UTILS_H_ */

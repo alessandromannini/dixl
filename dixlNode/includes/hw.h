@@ -7,8 +7,8 @@
  * @date: Jan 10, 2023
  */
 
-#ifndef HW_H_
-#define HW_H_
+#ifndef INCLUDES_HW_H_
+#define INCLUDES_HW_H_
 #include "sysLib.h"
 #include <subsys/gpio/vxbGpioLib.h>
 

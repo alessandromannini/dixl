@@ -17,7 +17,7 @@
 #include <syslog.h>
 #include <objLibCommon.h>
 
-#include "globals.h"
+#include "../globals.h"
 #include "network.h"
 
 /* FUNCTIONS helpers */

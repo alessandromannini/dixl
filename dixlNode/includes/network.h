@@ -11,7 +11,8 @@
 #include <stdbool.h>
 
 #include <netinet/in.h>
-#include "globals.h"
+
+#include "../globals.h"
 
 /* DEFINEs */
 #define 	SOCK_OK			0

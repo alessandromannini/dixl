@@ -18,11 +18,11 @@
 
 #include "../globals.h"
 #include "../config.h"
-#include "../utils.h"
 #include "dixlCtrl.h"
 #include "dixlComm.h"
 #include "../FSM/FSMCtrlPOINT.h"
 #include "../FSM/FSMCtrlTRACKCIRCUIT.h"
+#include "../includes/utils.h"
 
 /* types */
 /* FSM generic manage functions  */
