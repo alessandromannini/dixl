@@ -23,32 +23,32 @@
 /* Task dixlInit */
 #define TASKINITNAME  			"tDixlInit"			/* Task Init name */
 #define TASKINITDESC  			"Initialization"	/* Task Init description */
-#define	TASKINITPRIO 			100					/* Task Init prio */
+#define	TASKINITPRIO 			80					/* Task Init prio */
 #define	TASKINITSTACKSIZE 		20480				/* Task Init Stack Size */
 
 /* Task dixlConnRx */
 #define TASKCOMMRXNAME  		"tDixlConnRx"		/* Task ConnRx name */
 #define TASKCOMMRXDESC  		"Communication RX"	/* Task ConnRx description */
-#define	TASKCOMMRXPRIO 			100					/* Task ConnRx prio */
+#define	TASKCOMMRXPRIO 			90					/* Task ConnRx prio */
 #define	TASKCOMMRXSTACKSIZE 	20480				/* Task ConnRx stack Size */
 
 /* Task dixlConnTx */
 #define TASKCOMMTXNAME  		"tDixlConnTx"		/* Task ConnTx name */
 #define TASKCOMMTXDESC  		"Communication TX"	/* Task ConnTx description */
-#define	TASKCOMMTXPRIO 			100					/* Task ConnTx prio */
+#define	TASKCOMMTXPRIO 			90					/* Task ConnTx prio */
 #define	TASKCOMMTXSTACKSIZE 	20480				/* Task ConnTx stack Size */
 
 /* Task dixlLog */
 #define TASKLOGNAME  			"tDixlLog"	    	/* Task Logger name */
 #define TASKLOGDESC  			"Logger"			/* Task Logger description */
-#define	TASKLOGPRIO 			100					/* Task Logger prio */
+#define	TASKLOGPRIO 			95					/* Task Logger prio */
 #define	TASKLOGSTACKSIZE 		20480				/* Task Logger stack Size */
 #define TASKLOGMAXLINES			1024				/* Task Logger: maximum lines that can be stored */
 
 /* Task dixlCtrl */
 #define TASKCTRLNAME  			"tDixlCtrl"			/* Task Ctrl name */
 #define TASKCTRLDESC  			"Control Logic"		/* Task Ctrl description */
-#define	TASKCTRLPRIO 			100					/* Task Ctrl prio */
+#define	TASKCTRLPRIO 			80					/* Task Ctrl prio */
 #define	TASKCTRLSTACKSIZE 		20480				/* Task Ctrl stack Size */
 
 /* Task dixlDiag */
@@ -67,25 +67,25 @@
 /* Task dixlPOINT */
 #define TASKPOINTNAME 			"tDixlPoint"		/* Task Point name */
 #define TASKPOINTDESC  			"Point Simulator"	/* Task Point description */
-#define	TASKPOINTPRIO 			100					/* Task Point prio */
+#define	TASKPOINTPRIO 			86					/* Task Point prio */
 #define	TASKPOINTSTACKSIZE		20480				/* Task Point stack Size */
 #define TASKPOINTTRANSTIME      3000                /* Task Point time (ms) to switch between straight and diverge position */
 
 #define TASKPOINTWKRNAME 		"tDixlPointWkr"				/* Task Point worker name */
 #define TASKPOINTWKRDESC  		"Point Simulator Worker"	/* Task Point worker description */
-#define	TASKPOINTWKRPRIO 		80							/* Task Point worker prio */
+#define	TASKPOINTWKRPRIO 		85							/* Task Point worker prio */
 #define	TASKPOINTWKRSTACKSIZE	20480						/* Task Point worker stack Size */
 
 /* Task dixlSENSOR */
 #define TASKSENSORNAME 			"tDixlSensor"		/* Task Sensor name */
 #define TASKSENSORDESC  		"Sensor Checker"	/* Task Sensor description */
-#define	TASKSENSORPRIO 			100					/* Task Sensor prio */
+#define	TASKSENSORPRIO 			86					/* Task Sensor prio */
 #define	TASKSENSORSTACKSIZE		20480				/* Task Sensor stack Size */
 #define TASKSENSORCHECKPERIOD   1000                /* Task Sensor check period (ms) */
 
 #define TASKSENSORWKRNAME 		"tDixlSensorWkr"			/* Task Sensor worker name */
 #define TASKSENSORWKRDESC  		"Sensor Checker Worker"		/* Task Sensor worker description */
-#define	TASKSENSORWKRPRIO 		80							/* Task Sensor worker prio */
+#define	TASKSENSORWKRPRIO 		85							/* Task Sensor worker prio */
 #define	TASKSENSORWKRSTACKSIZE	20480						/* Task Sensor worker stack Size */
 
 /**
