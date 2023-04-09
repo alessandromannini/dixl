@@ -38,8 +38,6 @@ enum returnCode {
 };
 typedef enum returnCode returnCode;
 
-
-
 /***************************************************
  *  Node data types and parameters
  ***************************************************/

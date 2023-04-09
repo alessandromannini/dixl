@@ -26,13 +26,15 @@ void FSMInit();
 /**
  * Notify a new message Event
  * @param message: pointer to the message received
+ * @param deadline: next deadline or 0
  */
-void FSMInitEvent_NewMessage(message *message);
+void FSMInitEvent_NewMessage(message *message, struct timespec *deadline);
 
 /**
  * Notify the timer is expired
  * @param message: pointer to the message received
+ * @param deadline: next deadline or 0
  */
-void FSMInitEvent_TimerExpired();
+void FSMInitEvent_TimerExpired(message *message, struct timespec *deadline);
 
 #endif /* FSMINIT_H_ */

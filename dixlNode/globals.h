@@ -48,8 +48,8 @@ extern 	MSG_Q_ID 	msgQDiagId;			// Diag task IN queue Id
 extern 	MSG_Q_ID 	msgQCommTxId;		// Comm Tx task IN Queue Id
 extern 	MSG_Q_ID 	msgQCtrlId;			// Ctrl task IN Queue Id
 extern 	MSG_Q_ID 	msgQLogId;			// Log  task IN Queue Id	
-extern 	MSG_Q_ID 	msgQPointId;    	// Point  task IN Queue Id	
-extern 	MSG_Q_ID 	msgQSensorId;    	// Point  task IN Queue Id	
+extern 	MSG_Q_ID 	msgQPointId;    	// Point task IN Queue Id	
+extern 	MSG_Q_ID 	msgQSensorId;    	// Sensor task IN Queue Id	
 
 /***************************************************
  *  Sockets

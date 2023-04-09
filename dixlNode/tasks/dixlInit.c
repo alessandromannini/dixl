@@ -118,6 +118,6 @@ void dixlInit() {
 		msgQReceive(msgQInitId, (char *  ) &message, sizeof(message), WAIT_FOREVER);
 		
 		// Notify the new message to the FSM
-		FSMInitEvent_NewMessage(&message);
+		FSMInitEvent_NewMessage(&message, NULL);
 	}
 }

@@ -53,12 +53,12 @@ typedef struct StateMapItem {
 
 /* Machine Instance */
 typedef struct {
-	// TODO timer	
 	eStates newState;				// New state to pass to
 	eStates currentState;			// Current state
     StateMapItem *stateMap;			// Map to function for each state
 	bool eventGenerated;			// An event occured and hasn't been served
 	eventData *pEventData;			// Point to current event Data
+    struct timespec deadline;   	// Next timeout or 0 = no timeout		
 } FiniteStateMachine;
 
 
@@ -651,8 +651,9 @@ static void FSMEvent_Internal(eStates newState, eventData *pEventData) {
  * - newStateEntry
  * - newState
  * @param message: message received
+ * @param deadline: next deadline or 0
  */
-void FSMCtrlTRACKCIRCUITEvent_NewMessage(message *pMessage) {	
+void FSMCtrlTRACKCIRCUITEvent_NewMessage(message *pMessage, struct timespec *deadline) {	
 	
 	// Result of the precondition evaluation to pass to new state
 	bool condition = FALSE;
@@ -876,6 +877,6 @@ void FSMCtrlTRACKCIRCUITEvent_NewMessage(message *pMessage) {
 }
 
 // TODO
-void FSMCtrlTRACKCIRCUITEvent_TimerExpired(message *pMessage) {
+void FSMCtrlTRACKCIRCUITEvent_TimerExpired(message *pMessage, struct timespec *deadline) {
 }
 

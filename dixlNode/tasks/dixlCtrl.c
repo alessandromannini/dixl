@@ -27,8 +27,8 @@
 /* types */
 /* FSM generic manage functions  */
 typedef void (*FSMCtrlFunc)(NodeState *pEventData);
-typedef void (*FSMCtrlEventNewMessage)(message *message);
-typedef void (*FSMCtrlEventTimeout)(message *message);
+typedef void (*FSMCtrlEventNewMessage)(message *message, struct timespec *deadline);
+typedef void (*FSMCtrlEventTimeout)(message *message, struct timespec *deadline);
 
 /* variables */
 // Task
@@ -122,7 +122,8 @@ void dixlCtrl() {
 				// If Event handler configured, notify the message
 				if (FSMNewMessage)
 					// Notify the new message to the FSM
-					FSMNewMessage(&message);
+					// TODO timeoout
+					FSMNewMessage(&message, NULL);
 				else
 					// Log and error and ignore the message
 					syslog(LOG_ERR, "Node not configured: message discarted");

@@ -26,13 +26,15 @@ void FSMCtrlTRACKCIRCUIT();
 /**
  * Notify a new message Event
  * @param message: pointer to the message received
+ * @param deadline: next deadline or 0
  */
-void FSMCtrlTRACKCIRCUITEvent_NewMessage(message *message);
+void FSMCtrlTRACKCIRCUITEvent_NewMessage(message *message, struct timespec *deadline);
 
 /**
  * Notify the timer is expired
  * @param message: pointer to the message received
+ * @param deadline: next deadline or 0
  */
-void FSMCtrlTRACKCIRCUITEvent_TimerExpired(message * message);
+void FSMCtrlTRACKCIRCUITEvent_TimerExpired(message * message, struct timespec *deadline);
 
 #endif /* FSMCTRLTC_H_ */
