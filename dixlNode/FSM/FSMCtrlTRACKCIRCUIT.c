@@ -883,6 +883,6 @@ void FSMCtrlTRACKCIRCUITEvent_NewMessage(message *pMessage, struct timespec *dea
 }
 
 // TODO
-void FSMCtrlTRACKCIRCUITEvent_TimerExpired(message *pMessage, struct timespec *deadline) {
+void FSMCtrlTRACKCIRCUITEvent_TimerExpired(struct timespec *deadline) {
 }
 

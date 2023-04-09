@@ -11,6 +11,7 @@
 #include <stdbool.h>
 #include <string.h>
 
+#include <clockLib.h>
 #include <taskLib.h>
 #include <msgQLib.h>
 #include <sysLib.h>
@@ -160,3 +161,33 @@ int math_ceil(int num, int den) {
  	 return ((num / den) + ((num % den)==0 ?  0 : 1));
 }
 
+double time_timespecdiff(const struct timespec *time1, const struct timespec *time0) {
+  return (time1->tv_sec - time0->tv_sec)
+      + (time1->tv_nsec - time0->tv_nsec) / 1000000000.0;
+}
+
+_Vx_ticks_t time_ticksToDeadline(const struct timespec deadline) {
+	// if deadline not valued, return WAIT_FOREVER
+	if (deadline.tv_sec == 0 && deadline.tv_nsec == 0) return 0;
+	
+	// Get current timestamp
+	struct timespec current;
+	clock_gettime(CLOCK_REALTIME, &current);
+	
+	// Compute difference
+	double period = time_timespecdiff(&current, &deadline);
+	
+	// If zero or negative return WAIT_FOREVER
+	if (period <=0) return 0;
+	
+	// Transform period in ticks
+	_Vx_freq_t tickRate = sysClkRateGet();
+	
+	// Copute floor approxmation of tick per step
+	_Vx_ticks_t ticks = math_ceil((unsigned int)(period * tickRate) , 1);
+	
+	// If zero or negative return WAIT_FOREVER
+	if (ticks <=0) return 0;
+	
+	return ticks;
+}

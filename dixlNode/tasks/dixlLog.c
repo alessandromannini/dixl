@@ -194,10 +194,10 @@ void dixlLog() {
 				break;
 		}
 	}
-	
+		
 	// Dummy call (to avoid compiler warnings ;)
 	logMessage line;
 	logHead(line);
-	logDequeue(line);
+	logDequeue(line);	
 }
 

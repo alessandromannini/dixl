@@ -1070,6 +1070,6 @@ void FSMCtrlPOINTEvent_NewMessage(message *pMessage, struct timespec *deadline) 
 }
 
 // TODO
-void FSMCtrlPOINTEvent_TimerExpired(message *pMessage, struct timespec *deadline) {
+void FSMCtrlPOINTEvent_TimerExpired(struct timespec *deadline) {
 }
 

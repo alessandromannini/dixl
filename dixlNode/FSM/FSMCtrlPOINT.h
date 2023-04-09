@@ -35,6 +35,6 @@ void FSMCtrlPOINTEvent_NewMessage(message *message, struct timespec *deadline);
  * @param message: pointer to the message received
  * @param deadline: next deadline or 0
  */
-void FSMCtrlPOINTEvent_TimerExpired(message * message, struct timespec *deadline);
+void FSMCtrlPOINTEvent_TimerExpired(struct timespec *deadline);
 
 #endif /* FSMCTRLPOINT_H_ */

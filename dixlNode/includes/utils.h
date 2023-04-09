@@ -65,4 +65,19 @@ void task_shutdown(TASK_ID *tId, char *tName, MSG_Q_ID *msgQId, int *socket, SEM
  */
 int math_ceil(int num, int den);
 
+/**
+ * Compute difference between two timespecs
+ * @param time1 greater timespec
+ * @param time0 smaller timespec
+ * @return
+ */
+double time_timespecdiff(const struct timespec *time1, const struct timespec *time0);
+
+/**
+ * Get the period of time between a timespec and the current timestamp, in ticks
+ * @param deadline timespec
+ * @return number of ticks 
+ */
+_Vx_ticks_t time_ticksToDeadline(const struct timespec deadline);
+
 #endif /* INCLUDES_UTILS_H_ */
