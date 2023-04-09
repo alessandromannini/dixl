@@ -101,16 +101,17 @@ static int worker() {
 #else
 	// Read sensor state from GPIO
 	pinMode(GPIO_PIN_BUTTON, IN);
-	if (pinGet(GPIO_PIN_BUTTON) == GPIO_VALUE_LOW) 
-		currentState = SENSORSTATE_ON;
-	else
+	if (pinGet(GPIO_PIN_BUTTON) == GPIO_VALUE_LOW) {
+		// Log occupied if it wasn't
+		if (curremtState != SENSORSTATE_ON) logger_log(LOGTYPE_OCCUPIED, NULL, NodeNULL );
+		currentState = SENSORSTATE_ON;		
+	} else
 		currentState = SENSORSTATE_OFF;
 #endif
 
 	// Log	
-	syslog(LOG_INFO, "Read state %s from GPIO", sensorStateStr(currentState));
-	logger_log(LOGTYPE_OCCUPIED, NULL, NodeNULL );			
-	
+	if (requestNonce.tv_sec)
+		syslog(LOG_INFO, "Read state %s from GPIO", sensorStateStr(currentState));
 
 	// Give sem to caller
 	semGive(semSensor);
