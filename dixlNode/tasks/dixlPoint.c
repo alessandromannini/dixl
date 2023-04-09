@@ -184,7 +184,7 @@ void dixlPoint() {
 		
 		// Process spawning a worker while position!=requestedPosition AND requestedPosition!=UNDEFINED (Malfunction) OR new messages		
 		while ((position != requestedPosition && position != POINTPOS_UNDEFINED) || msgQNumMsgs(msgQPointId)) {
-			// Moved ate least one time
+			// Moved at least one time
 			moved = TRUE;
 			
 			// Give sem to worker
@@ -211,8 +211,8 @@ void dixlPoint() {
 		// Diag task resumed
 		taskResume(taskDiagId);
 
-		// IF a Nonce request is acrive
-		if (requestNonce.tv_sec && requestNonce.tv_nsec) {
+		// IF a Nonce request is active
+		if (requestNonce.tv_sec || requestNonce.tv_nsec) {
 			// Prepare the notification message
 			message outMessage;
 			outMessage.iHeader.type = IMSGTYPE_POINTNOTIFY;

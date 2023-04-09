@@ -26,11 +26,10 @@ typedef enum {
 	/** TYPES*/
 	// Service messages - Init task
 	LOGTYPE_REQ 				= 10,	// Request received
-	// TODO Cancellare se confermato che non servono
-	// LOGTYPE_REQACK 				= 11,	// Request ACKed
-	// LOGTYPE_REQNACK				= 12,	// Request NACKed
-	LOGTYPE_RESERVED			= 13,	// Request AGREEed
-	LOGTYPE_DISAGREE			= 14,	// Request DISAGREEed
+	LOGTYPE_OCCUPIED			= 11,	// Track occupied
+	LOGTYPE_REQNACK				= 12,	// Request NACKed
+	LOGTYPE_DISAGREE			= 13,	// Request DISAGREEed
+	LOGTYPE_RESERVED			= 14,	// Request AGREEed
 } eLogType;
 
 /*  Log message struct  */

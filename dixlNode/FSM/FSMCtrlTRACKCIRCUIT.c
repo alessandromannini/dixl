@@ -68,6 +68,8 @@ typedef struct {
  */
 // Node State
 static NodeState *pCurrentNodeState = NULL;
+static struct timespec lastSensorNonce; // Nonce of the last Sensor request (the excepted one) 
+
 
 /**
  *  Functions implementation 
@@ -435,10 +437,12 @@ static void ReservedEntry(eventData *pEventData) {
 	size = sizeof(msgIHeader);
 	message.iHeader.type = IMSGTYPE_SENSORSTATE;
 	message.sensorIPOS.requestedState = SENSORSTATE_ON;
+	clock_gettime(CLOCK_REALTIME, &lastSensorNonce);
+	message.pointIPosition.requestTimestamp = lastSensorNonce;	
 	size += sizeof(msgISensorSTATE);
 	
 	// Log
-	syslog(LOG_INFO, "Route request (%i) waiting for SENSOR ON ", pCurrentNodeState->pCurrentRoute->id);				
+	syslog(LOG_INFO, "Route request (%i) waiting for SENSOR ON with nonce %i", pCurrentNodeState->pCurrentRoute->id, lastSensorNonce);			
 
 	//Send to dixlSensor task queue
 	msgQ_Send(msgQSensorId, (char *) &message, size);		
@@ -494,10 +498,12 @@ static void TrainInTransitionEntry(eventData *pEventData) {
 	size_t size = sizeof(msgIHeader);
 	message.iHeader.type = IMSGTYPE_SENSORSTATE;
 	message.sensorIPOS.requestedState = SENSORSTATE_OFF;
+	clock_gettime(CLOCK_REALTIME, &lastSensorNonce);
+	message.pointIPosition.requestTimestamp = lastSensorNonce;	
 	size += sizeof(msgISensorSTATE);
 	
 	// Log
-	syslog(LOG_INFO, "Route request (%i) waiting for SENSOR OFF ", pCurrentNodeState->pCurrentRoute->id);				
+	syslog(LOG_INFO, "Route request (%i) waiting for SENSOR OFF with nonce %i", pCurrentNodeState->pCurrentRoute->id, lastSensorNonce);					
 
 	//Send to dixlSensor task queue
 	msgQ_Send(msgQSensorId, (char *) &message, size);				
@@ -821,7 +827,7 @@ void FSMCtrlTRACKCIRCUITEvent_NewMessage(message *pMessage, struct timespec *dea
 				switch (pMessage->header.type) {
 					// If SENSOR ON received go to state TrainInTransition
 					case IMSGTYPE_SENSORNOTIFY:						
-						if (pMessage->sensorINOTIFY.currentState == SENSORSTATE_ON) {
+						if (pMessage->sensorINOTIFY.currentState == SENSORSTATE_ON && pMessage->sensorINOTIFY.requestTimestamp.tv_sec == lastSensorNonce.tv_sec && pMessage->sensorINOTIFY.requestTimestamp.tv_nsec == lastSensorNonce.tv_nsec ) {
 							newState = StateTrainInTransition;
 							condition = TRUE;
 						} else 
@@ -847,7 +853,7 @@ void FSMCtrlTRACKCIRCUITEvent_NewMessage(message *pMessage, struct timespec *dea
 				
 			case StateTrainInTransition:
 				// Accept only SENSOROFF
-				if (pMessage->iHeader.type == IMSGTYPE_SENSORNOTIFY && pMessage->sensorINOTIFY.currentState == SENSORSTATE_OFF) {
+				if (pMessage->iHeader.type == IMSGTYPE_SENSORNOTIFY && pMessage->sensorINOTIFY.currentState == SENSORSTATE_OFF && pMessage->sensorINOTIFY.requestTimestamp.tv_sec == lastSensorNonce.tv_sec && pMessage->sensorINOTIFY.requestTimestamp.tv_nsec == lastSensorNonce.tv_nsec ) {
 					newState = StateNotReserved;
 					condition = TRUE;
 				} else {

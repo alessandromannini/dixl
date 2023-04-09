@@ -236,9 +236,11 @@ typedef struct msgIRouteTRAINNOK {
 
 /** message SENSOR types */
 typedef struct msgISENSORSTATE {
+	struct timespec requestTimestamp;	// Timestamp of the request as nonce	
 	eSensorState requestedState;
 } msgISensorSTATE;
 typedef struct msgISENSORNOTIFY {
+	struct timespec requestTimestamp;	// Timestamp of the request as nonce
 	eSensorState currentState;
 } msgISensorNOTIFY;
 
@@ -247,11 +249,11 @@ typedef struct msgIPOINTRESET {
 	ePointPosition requestedPosition;	// Requested point position
 } msgIPointRESET;
 typedef struct msgIPOINTPOS {
-	struct timespec requestTimestamp;	// Timestamp of the request as notch
+	struct timespec requestTimestamp;	// Timestamp of the request as nonce
 	ePointPosition requestedPosition;	// Requested point position
 } msgIPointPOS;
 typedef struct msgIPOINTNOTIFY {
-	struct timespec requestTimestamp;	// Timestamp of the request as notch
+	struct timespec requestTimestamp;	// Timestamp of the request as nonce
 	ePointPosition currentPosition;		// Current point position
 } msgIPointNOTIFY;
 

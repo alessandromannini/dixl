@@ -38,6 +38,7 @@ SEM_ID semSensor;							// Semaphore to access sensor
 // Sensor State
 static eSensorState currentState = -1;
 static eSensorState requestedState = SENSORSTATE_ON;
+static struct timespec requestNonce;				// Nonce (timestamp) of the request (if 0 notification isn't sent)
 static _Vx_freq_t periodTick;
 
 /* Implementation functions */
@@ -65,9 +66,11 @@ static void process_message(message message) {
 		// Positioning request
 		case IMSGTYPE_SENSORSTATE:
 			requestedState = message.sensorIPOS.requestedState;
+			requestNonce = message.sensorIPOS.requestTimestamp;
+			
 			
 			// Log
-			syslog(LOG_INFO, "Waiting for %s state", sensorStateStr(requestedState));				
+			syslog(LOG_INFO, "Waiting for %s state with nonce %i", sensorStateStr(requestedState), requestNonce);				
 			break;
 			
 		// Other messages discarded
@@ -104,8 +107,10 @@ static int worker() {
 		currentState = SENSORSTATE_OFF;
 #endif
 
-	// Log
-	syslog(LOG_INFO, "Read state %s from GPIO", sensorStateStr(currentState));			
+	// Log	
+	syslog(LOG_INFO, "Read state %s from GPIO", sensorStateStr(currentState));
+	logger_log(LOGTYPE_OCCUPIED, NULL, NodeNULL );			
+	
 
 	// Give sem to caller
 	semGive(semSensor);
@@ -129,57 +134,43 @@ void dixlSensor() {
 	
 	// Message queue initialization
 	msgQSensorId = msgQ_Initialize(MSGQSENSORMESSAGESMAX, MSGQSENSORMESSAGESLENGTH, MSG_Q_FIFO);
-
-	// Wait for messages of positioning
+	
+	// Take sem
+	semTake(semSensor, WAIT_FOREVER);			
+	
+	// Spawn the worker ... FOREVER
 	FOREVER {
 		
-		// Wait an activation message ... FOREVER
-		message inMessage;
-		msgQReceive(msgQSensorId, (char *  ) &inMessage, sizeof(inMessage), WAIT_FOREVER);
+		// Give sem to worker
+		semGive(semSensor);			
+		
+		// Spawn a periodic worker to ready sensor state
+		taskSpawn(TASKSENSORWKRNAME, TASKSENSORWKRPRIO, 0, TASKSENSORWKRSTACKSIZE, (FUNCPTR) worker, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 
+		// Sleep for a period (number of tick between checks)
+		taskDelay(periodTick);
+		
 		// Take sem
-		semTake(semSensor, WAIT_FOREVER);		
+		semTake(semSensor, WAIT_FOREVER);					
 		
-		// Process the message
-		process_message(inMessage);
-		
-		// Need to run ?
-		bool runned = FALSE;
-		
-		// Process spawning a worker while position!=requestedPosition AND requestedPosition!=UNDEFINED (Malfunction) OR new messages		
-		while (currentState != requestedState) {
-			// Moved ate least one time
-			runned = TRUE;
-			
-			// Give sem to worker
-			semGive(semSensor);			
-			
-			// Spawn a periodic worker
-			taskSpawn(TASKSENSORWKRNAME, TASKSENSORWKRPRIO, 0, TASKSENSORWKRSTACKSIZE, (FUNCPTR) worker, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
+		// IF a Nonce request is active
+		if (requestNonce.tv_sec || requestNonce.tv_nsec) {			
+			// Prepare the notification message
+			message outMessage;
+			outMessage.iHeader.type = IMSGTYPE_SENSORNOTIFY;
+			outMessage.sensorINOTIFY.currentState = currentState;
+			outMessage.sensorINOTIFY.requestTimestamp = requestNonce;
+	
+			// Notify to task Ctrl
+			msgQ_Send(msgQCtrlId, (char *) &outMessage, sizeof(msgIHeader) + sizeof(msgISensorNOTIFY));					
+				
+			// Reset request nonce
+			requestNonce.tv_sec = 0;
+			requestNonce.tv_nsec =0;			
 
-			// Sleep for a period (number of tick between checks)
-			taskDelay(periodTick);
-			
-			// Take sem
-			semTake(semSensor, WAIT_FOREVER);					
-		}
-
-		// Final give
-		semGive(semSensor);
-		
-		// Prepare the notification message
-		message outMessage;
-		outMessage.iHeader.type = IMSGTYPE_SENSORNOTIFY;
-		outMessage.sensorINOTIFY.currentState = currentState;
-
-		// Notify to task Ctrl
-		msgQ_Send(msgQCtrlId, (char *) &outMessage, sizeof(msgIHeader) + sizeof(msgISensorNOTIFY));					
-			
-		// Log
-		if (runned)
+			// Log
 			syslog(LOG_INFO, "State %s reached", sensorStateStr(requestedState));	
-		else
-			syslog(LOG_INFO, "Already in %s state", sensorStateStr(requestedState));
+		}
 	}		
 }
 
