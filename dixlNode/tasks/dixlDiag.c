@@ -405,7 +405,7 @@ void dixlDiag() {
 			// Spawn a periodic worker
 			taskSpawn(TASKDIAGWKRNAME, TASKDIAGWKRPRIO, 0, TASKDIAGWKRSTACKSIZE, (FUNCPTR) worker, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0);
 			
-			// Sleep for a period if configured (number of tick between motor step)
+			// Sleep for a period if configured
 			if (periodTick) taskDelay(periodTick);
 			
 			// Go to next client
