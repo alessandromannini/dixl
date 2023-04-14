@@ -56,10 +56,7 @@ class MsgType(Enum):
 	# Point requests - Point task
 	POINTMALFUNC   				= 95   # Point set malfunction state (error simulation request)
 
-# Node type 
-class NodeType(Enum):
-	POINT 				= 10	# Point (Deviatoio)
-	TRACKCIRCUIT 		= 20	# Track Circuit (Cdb o Circuito di Binario)
+
 
 # Node position */
 class NodePosition(Enum):
@@ -100,10 +97,10 @@ MsgPointMALFUNCTIONFormat = MsgHeaderFormat
 
 # Host and Nodes IDs and IPs
 # TODO Detect MAC and IP of the host
-Host 		 	 = { "Id": bytes([192, 168, 110, 254]), "MAC": b"\x7C\x76\x35\xF0\x99\xC0", "IP": "192.168.110.254" }
+Host 		 	 = { "Id": bytes([192, 168, 173, 124]), "MAC": b"\x7C\x76\x35\xF0\x99\xC0", "IP": "192.168.173.124" }
 NodeNull	 	 = { "Id": bytes([0, 0, 0, 0]), "MAC": b"\x00\x00\x00\x00\x00\x00", "IP": "192.168.173.121"  }
-NodeTrackCircuit = { "Id": bytes([192, 168, 110, 80]), "MAC": b"\x7a\x7a\xc0\xa8\xad\x50", "IP": "192.168.110.80"  }
-NodePoint 		 = { "Id": bytes([192, 168, 110, 90]), "MAC": b"\x7a\x7a\xc0\xa8\xad\x5A", "IP": "192.168.110.90"  }
+NodeTrackCircuit = { "Id": bytes([192, 168, 173, 80]), "MAC": b"\x7a\x7a\xc0\xa8\xad\x50", "IP": "192.168.173.80"  }
+NodePoint 		 = { "Id": bytes([192, 168, 173, 90]), "MAC": b"\x7a\x7a\xc0\xa8\xad\x5A", "IP": "192.168.173.121"  }
 NodeCommPort 	 = 256
 
 def sendReset2TC():

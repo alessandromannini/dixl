@@ -126,9 +126,6 @@
             <stringAttribute key="BLD::Info|Tool|Assembler|cmd|vsb_vxsim_windows_SIMNTllvm_LP64_LARGE_SMP" value="echo &quot;building $@&quot;;%assemblerprefix% $(TOOL_PATH)/clang %DebugModeFlags% %ToolFlags% %Defines% $(DEFINES) $(ADDED_CFLAGS) %Includes% $(ADDED_INCLUDES) -o %OutFile% -c %InFile%"/>
             <stringAttribute key="BLD::Info|redirRoot" value=""/>
             <stringAttribute key="BLD::Info|defaultSpec" value="vsb_vxsim_windows_SIMNTllvm_LP64_LARGE_SMP"/>
-            <stringAttribute key="BLD::Info|activeSpec" value="vsb_vxsim_windows_SIMNTllvm_LP64_LARGE_SMP"/>
-            <listAttribute key="BLD::Info|Libs|vsb_vxsim_windows_SIMNTllvm_LP64_LARGE_SMP"/>
-            <booleanAttribute key="BLD::Info|activeDebugMode" value="true"/>
         </mapAttribute>
     </attributes>
     <buildtargets>
