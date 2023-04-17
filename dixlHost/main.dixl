@@ -1,0 +1,42 @@
+{
+    "id": "main",
+    "description": "test scenarios",
+    "nodes": [
+        {
+            "id": "TC1",
+            "MAC": "7a:7a:c0:a8:ad:50",
+            "type": "TRACKCIRCUIT"
+        },
+        {
+            "id": "PT1",
+            "MAC": "7a:7a:c0:a8:ad:5a",
+            "type": "POINT"
+        }
+    ],
+    "routes": [
+        {
+            "id": 1,
+            "nodeRefs": [
+                {
+                    "id": "TC1"
+                },
+                {
+                    "id": "PT1",
+                    "requestedPosition": "DIVERGING"
+                }
+            ]
+        },
+        {
+            "id": 2,
+            "nodeRefs": [
+                {
+                    "id": "TC1"
+                },
+                {
+                    "id": "PT1",
+                    "requestedPosition": "STRAIGHT"
+                }
+            ]
+        }
+    ]
+}
