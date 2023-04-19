@@ -1,9 +1,9 @@
-from point import Point
-from point_ref import PointRef, PointPosition
-from route import Route
-from track_circuit import TrackCircuit
-from track_circuit_ref import TrackCircuitRef
-from layout import Layout
+from model.point import Point
+from model.point_ref import PointRef, PointPosition
+from model.route import Route
+from model.track_circuit import TrackCircuit
+from model.track_circuit_ref import TrackCircuitRef
+from model.layout import Layout
 import json
 from  json_encoder import JSONEncoderCustom
 

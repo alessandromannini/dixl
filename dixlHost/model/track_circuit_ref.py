@@ -1,7 +1,7 @@
-from node_ref import NodeRef
+from model.node_ref import NodeRef
 
 class TrackCircuitRef(NodeRef):
-    from node import Node
+    from model.node import Node
     
     # Constructor    
     def __init__(self, node: Node) -> None:

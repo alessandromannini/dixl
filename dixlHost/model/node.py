@@ -8,7 +8,7 @@
 # imports
 from abc import ABC, abstractproperty
 from enum import Enum
-from node_config import NodeConfig
+from model.node_config import NodeConfig
 
 # Node type 
 class NodeType(Enum):

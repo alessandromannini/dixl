@@ -5,7 +5,7 @@
 @date           : "Jan 10, 2023"
 @version        : "1.0.0"
 """
-from node_config_item import NodeConfigItem, NodePosition
+from model.node_config_item import NodeConfigItem, NodePosition
 from collections.abc import Sequence
 
 from typing import TYPE_CHECKING

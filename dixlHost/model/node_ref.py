@@ -5,7 +5,7 @@
 @date           : "Jan 10, 2023"
 @version        : "1.0.0"
 """
-from node import Node
+from model.node import Node
 
 class NodeRef(object):
     # Constructor    

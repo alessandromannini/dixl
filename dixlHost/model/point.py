@@ -6,22 +6,27 @@
 @version        : "1.0.0"
 """
 # imports
-from node import Node, NodeType
+from enum import Enum
+from model.node import Node, NodeType
 
-class TrackCircuit(Node):
+# Point position */
+class PointPosition(Enum):
+    UNDEFINED			= -1    # Undefined (for Track Circuits or Malfunction)
+    STRAIGHT 			= 0	    # Stright direction
+    DIVERGING			= 50 	# DIverging direction
+
+class Point(Node):
     # Constructor    
     def __init__(self, id: int, MAC: bytes) -> None:
         super().__init__(id, MAC)
-
+        
+    # Properties
     @property
     def type(self) -> NodeType:
-        return NodeType.TRACKCIRCUIT
+        return NodeType.POINT
 
+    # Methods
     def to_json(self)->dict:
         dd: dict = super().to_json()
         dd["type"] = self.type.name
         return dd
-
-    # Properties
-
-    # Methods

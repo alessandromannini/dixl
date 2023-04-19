@@ -6,13 +6,13 @@
 @version        : "1.0.0"
 """
 # imports
-from node import Node, NodeType
-from point import Point, PointPosition
-from track_circuit import TrackCircuit
-from node_ref import NodeRef
-from route import Route
-from point_ref import PointRef
-from track_circuit_ref import TrackCircuitRef
+from model.node import Node, NodeType
+from model.point import Point, PointPosition
+from model.track_circuit import TrackCircuit
+from model.node_ref import NodeRef
+from model.route import Route
+from model.point_ref import PointRef
+from model.track_circuit_ref import TrackCircuitRef
 import os
 import json
 from json_encoder import JSONEncoderCustom

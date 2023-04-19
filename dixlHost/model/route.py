@@ -7,11 +7,11 @@
 """
 # imports
 from enum import Enum
-from node import Node
-from node_config_item import NodePosition
-from node import Node
-from node_ref import NodeRef
-from point_ref import PointRef
+from model.node import Node
+from model.node_config_item import NodePosition
+from model.node import Node
+from model.node_ref import NodeRef
+from model.point_ref import PointRef
 from typing import Iterable
 from collections.abc import MutableSequence
 

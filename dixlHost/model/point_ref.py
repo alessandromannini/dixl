@@ -5,28 +5,30 @@
 @date           : "Jan 10, 2023"
 @version        : "1.0.0"
 """
-# imports
 from enum import Enum
-from node import Node, NodeType
+from model.node_ref import NodeRef
 
-# Point position */
+# Point types
 class PointPosition(Enum):
     UNDEFINED			= -1    # Undefined (for Track Circuits or Malfunction)
     STRAIGHT 			= 0	    # Stright direction
     DIVERGING			= 50 	# DIverging direction
 
-class Point(Node):
+class PointRef(NodeRef):
+    from model.node import Node
+
     # Constructor    
-    def __init__(self, id: int, MAC: bytes) -> None:
-        super().__init__(id, MAC)
-        
+    def __init__(self, node: Node, requestedPosition: PointPosition) -> None:
+        super().__init__(node)
+        self._requestedPos = requestedPosition
+
     # Properties
     @property
-    def type(self) -> NodeType:
-        return NodeType.POINT
+    def requestedPos(self) -> PointPosition:
+        return self._requestedPos
 
     # Methods
     def to_json(self)->dict:
         dd: dict = super().to_json()
-        dd["type"] = self.type.name
-        return dd
+        dd[ "requestedPosition"] = self.requestedPos
+        return dd            
