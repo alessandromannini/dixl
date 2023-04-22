@@ -16,6 +16,7 @@
     "routes": [
         {
             "id": 1,
+			"description": "Left-to-right diverging",
             "nodeRefs": [
                 {
                     "id": "TC1"
@@ -28,6 +29,7 @@
         },
         {
             "id": 2,
+			"description": "Left-to-right straight",
             "nodeRefs": [
                 {
                     "id": "TC1"

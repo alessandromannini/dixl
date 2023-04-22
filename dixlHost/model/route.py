@@ -35,8 +35,9 @@ class Route(MutableSequence[NodeRef]):
     Represent a route that the train can request    
     """
     # Constructor    
-    def __init__(self, id: int, iterable: Iterable[NodeRef] = None) -> None:
+    def __init__(self, id: int, description = None, iterable: Iterable[NodeRef] = None) -> None:
         self.__id: int = id
+        self.description: str = description
         self.__nodes: list[NodeRef] = list()
         self.state: RouteState = RouteState.UNKNOWUN
         self.reservation: ReservationState = ReservationState.UNKNOWN
@@ -97,7 +98,8 @@ class Route(MutableSequence[NodeRef]):
 
     def to_json(self)->dict:
         # Id
-        dd: dict = {"id" : self.id}
+        dd: dict = {    "id" : self.id,
+                        "description": self.description}
 
         # List of nodeRef
         nodeRefs = []

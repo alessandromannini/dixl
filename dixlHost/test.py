@@ -12,13 +12,13 @@ tc = TrackCircuit("TC1", b"\x7a\x7a\xc0\xa8\xad\x50")
 pt = Point("PT1", b"\x7a\x7a\xc0\xa8\xad\x5A")
 
 # Routes
-route1 = Route(1,   [   TrackCircuitRef(tc),
-                        PointRef(pt, PointPosition.DIVERGING)
-                    ])
+route1 = Route(1,   "Left-to-right diverging",  [   TrackCircuitRef(tc),
+                                                    PointRef(pt, PointPosition.DIVERGING)
+                                                ])
 
-route2 = Route(2,   [   TrackCircuitRef(tc),
-                        PointRef(pt, PointPosition.STRAIGHT)
-                    ])
+route2 = Route(2,   "Left-to-right straight",   [   TrackCircuitRef(tc),
+                                                    PointRef(pt, PointPosition.STRAIGHT)
+                                                ])
 
 # Layout
 layout = Layout("main","test scenarios")

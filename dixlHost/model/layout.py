@@ -22,11 +22,29 @@ import utility
 class Layout(object):
     # Constructor    
     def __init__(self, id: str, description: str) -> None:
-        self.id = id
-        self.description = description
-        self.nodes = dict[str, Node]()
-        self.routes = dict[int, Route]()
-        
+        self._id = id
+        self._description = description
+        self._nodes = dict[str, Node]()
+        self._routes = dict[int, Route]()
+
+
+    # Propeties
+    @property
+    def id(self) -> str: return self._id
+    @id.setter
+    def id(self, v: str): self._id = v
+
+    @property
+    def description(self) -> str: return self._description
+    @description.setter
+    def description(self, v: str): self._description = v
+
+    @property
+    def nodes(self) -> dict[str, Node](): return self._nodes
+
+    @property
+    def routes(self) -> dict[str, Route](): return self._routes
+
     # Methods
     def NodeAdd(self, node: Node) -> None:
         self.nodes[node.id] = node
@@ -95,6 +113,7 @@ class Layout(object):
         
         for route in routes:            
             id: int = route['id']
+            description: int = route.get('description', '')
             nodeRefs: list() = route['nodeRefs']
             nodeRefs_list = list[NodeRef]() 
             for nodeRef in nodeRefs:
@@ -108,7 +127,7 @@ class Layout(object):
                 else:
                     nodeRefs_list.append(TrackCircuitRef(node))    
             
-            route_obj = Route(id, nodeRefs_list)
+            route_obj = Route(id, description, nodeRefs_list)
             ll.RouteAdd(route_obj)
                         
         return ll
