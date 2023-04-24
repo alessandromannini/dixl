@@ -103,7 +103,7 @@ static int worker() {
 	pinMode(GPIO_PIN_BUTTON, IN);
 	if (pinGet(GPIO_PIN_BUTTON) == GPIO_VALUE_LOW) {
 		// Log occupied if it wasn't
-		if (curremtState != SENSORSTATE_ON) logger_log(LOGTYPE_OCCUPIED, NULL, NodeNULL );
+		if (currentState != SENSORSTATE_ON) logger_log(LOGTYPE_OCCUPIED, NULL, NodeNULL );
 		currentState = SENSORSTATE_ON;		
 	} else
 		currentState = SENSORSTATE_OFF;
