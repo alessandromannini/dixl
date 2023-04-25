@@ -7,7 +7,6 @@
 """
 from enum import Enum
 from typing import TYPE_CHECKING
-
 if TYPE_CHECKING:
     from node import Node
     from point import PointPosition
@@ -26,7 +25,7 @@ class NodeConfigItem(object):
         self._position: NodePosition = position
         self._prev: 'Node' = prev
         self._next: Node = next
-        self._requestedPos: PointPosition
+        self._requestedPos: PointPosition = requestedPos
 
     # Properties
     @property

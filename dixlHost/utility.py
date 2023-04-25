@@ -30,9 +30,14 @@ def str2MAC(v: str) -> bytes:
     return bytes(values)
 
 def MAC2str(MAC: bytes) -> str:
-   return ":".join([f'{b:x}' for b in MAC])
+   return ":".join([f'{b:02x}' for b in MAC])
 
 def IP2str(IP: bytearray) -> str:
    return ".".join([f'{b}' for b in IP])
+
+def str2IP(v: str) -> bytes:
+    slices = str.split(v,".")    
+    values = [int(slice) for slice in slices]
+    return bytes(values)
 
 

@@ -1,35 +1,6 @@
-"""
-@author         : "Alessandro Mannini"
-@organization   : "Università degli Studi di Firenze"
-@contact        : "alessandro.mannini@gmail.com"
-@date           : "Jan 10, 2023"
-@version        : "1.0.0"
-"""
-import struct
-import socket
-from collections import namedtuple
-from collections.abc import Iterable
-from enum import Enum
 
-def flatten(x):
-    if isinstance(x, bytes):
-        return [x]
-    elif isinstance(x, Iterable):
-        return [a for i in x for a in flatten(i)]
-    elif isinstance(x, Enum):
-        return [x.value]
-    else:
-        return [x]
 
-def getMessageToSend(data: namedtuple, format: str):
-    dataToSend = bytearray(struct.pack(format, *flatten(data)))
-    dataToSend[0]=len(dataToSend)
-    return dataToSend
 
-class MsgType(Enum):
-	# Service messages - Init task
-	NODERESET 					= 10	# Reset in the Init state
-	NODECONFIG 					= 11	# Routes configuration sent by the host
 	NODEDISCOVERY 				= 20	# TODO Nodes discovery from the host
 	NODEADVERTISE 				= 21	# TODO Node advertise reply to discovery
         
@@ -70,30 +41,7 @@ class PointPosition(Enum):
     STRAIGHT 			= 0	    # Stright direction
     DIVERGING			= 50 	# DIverging direction
 
-# Messages defs
-Header = namedtuple("Header", [ "length", "type" , "source", "destination"])
-Route = namedtuple("Route", ["ID", "prev", "next", "position", "requestedPosition"])
-MsgInitCONFIGTYPE = namedtuple("MsgHeaderCONFIG", ["header", "sequence", "totalSegments", "nodeType"])
-MsgInitCONFIG = namedtuple("MsgHeaderCONFIG", ["header", "sequence", "totalSegments", "route"])
-MsgRouteREQ = namedtuple("MsgRouteREQ", ["header", "requestRouteId"])
-MsgRouteTRAINOK = namedtuple("MsgRouteTRAINOK", ["header", "requestRouteId"])
-MsgRouteTRAINNOK = namedtuple("MsgRouteTRAINNOK", ["header", "requestRouteId"])
-MsgInitRESET = namedtuple("MsgInitRESET", ["header"])
-MsgPointMALFUNCTION = namedtuple("MsgPointMALFUNCTION", ["header"])
 
-# Packed messages formats
-MsgHeaderFormat = "BBxx4s4sxxxx"
-MsgRouteFormat = "I4s4sbbxx"
-MsgSequenceTotalFormat = "II"
-MsgNodeTypeFormat = "Bxxx"
-MsgInitCONFIGTYPEFormat = MsgHeaderFormat + MsgSequenceTotalFormat + MsgNodeTypeFormat
-MsgInitCONFIGFormat = MsgHeaderFormat + MsgSequenceTotalFormat + MsgRouteFormat
-MsgRouteRequestFormat = "I"
-MsgRouteREQFormat = MsgHeaderFormat + MsgRouteRequestFormat
-MsgRouteTRAINOKFormat = MsgHeaderFormat + MsgRouteRequestFormat
-MsgRouteTRAINNOKFormat = MsgHeaderFormat + MsgRouteRequestFormat
-MsgInitRESETFormat = MsgHeaderFormat
-MsgPointMALFUNCTIONFormat = MsgHeaderFormat
 
 # Host and Nodes IDs and IPs
 # TODO Detect MAC and IP of the host
@@ -101,83 +49,7 @@ Host 		 	 = { "Id": bytes([192, 168, 173, 124]), "MAC": b"\x7C\x76\x35\xF0\x99\x
 NodeNull	 	 = { "Id": bytes([0, 0, 0, 0]), "MAC": b"\x00\x00\x00\x00\x00\x00", "IP": "192.168.173.121"  }
 NodeTrackCircuit = { "Id": bytes([192, 168, 173, 80]), "MAC": b"\x7a\x7a\xc0\xa8\xad\x50", "IP": "192.168.173.80"  }
 NodePoint 		 = { "Id": bytes([192, 168, 173, 90]), "MAC": b"\x7a\x7a\xc0\xa8\xad\x5A", "IP": "192.168.173.121"  }
-NodeCommPort 	 = 256
 
-def sendReset2TC():
-	##############################################
-	# Create a client socket to NodeTrackCircuit #
-	##############################################
-	client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	client_socket.connect((NodeTrackCircuit["IP"], NodeCommPort))
-
-	# Send config
-	# Route request
-	messageToSend = getMessageToSend( MsgInitRESET( Header( 0, MsgType.NODERESET, Host["Id"], NodeTrackCircuit["Id"]) ), MsgInitRESETFormat)
-	ret = client_socket.send(messageToSend)
-        
-	# Close the socket
-	client_socket.shutdown(socket.SHUT_RDWR)
-
-def sendReset2PT():
-	##############################################
-	# Create a client socket to NodePoint        #
-	##############################################
-	client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	client_socket.connect((NodePoint["IP"], NodeCommPort))
-
-	# Send config
-	# Route request
-	messageToSend = getMessageToSend( MsgInitRESET( Header( 0, MsgType.NODERESET, Host["Id"], NodePoint["Id"]) ), MsgInitRESETFormat)
-	client_socket.send(messageToSend)
-        
-	# Close the socket
-	client_socket.shutdown(socket.SHUT_RDWR)
-
-def sendConfig2TC():
-	##############################################
-	# Create a client socket to NodeTrackCircuit #
-	##############################################
-	client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	client_socket.connect((NodeTrackCircuit["IP"], NodeCommPort))
-
-	# Send config
-	# Node type
-	messageToSend = getMessageToSend( MsgInitCONFIGTYPE( Header( 0, MsgType.NODECONFIG, Host["Id"], NodeTrackCircuit["Id"]), 0, 2, NodeType.TRACKCIRCUIT ), MsgInitCONFIGTYPEFormat)
-	client_socket.send(messageToSend)
-
-	# Track 1
-	messageToSend = getMessageToSend( MsgInitCONFIG( Header( 0, MsgType.NODECONFIG, Host["Id"], NodeTrackCircuit["Id"]), 1, 2, Route( 1, Host["Id"], NodePoint["Id"], NodePosition.FIRST, PointPosition.UNDEFINED ) ), MsgInitCONFIGFormat)
-	client_socket.send(messageToSend)
-
-	# Track 2
-	messageToSend = getMessageToSend( MsgInitCONFIG( Header( 0, MsgType.NODECONFIG, Host["Id"], NodeTrackCircuit["Id"]), 2, 2, Route( 2, Host["Id"], NodePoint["Id"], NodePosition.FIRST, PointPosition.UNDEFINED ) ), MsgInitCONFIGFormat)
-	client_socket.send(messageToSend)
-
-	# Close the socket
-	client_socket.shutdown(socket.SHUT_RDWR)
-
-def sendConfig2PT():
-	##############################################
-	# Create a client socket to NodePoint       #
-	##############################################
-	client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-	client_socket.connect((NodePoint["IP"], NodeCommPort))
-
-	# Send config
-	# Node type
-	messageToSend = getMessageToSend( MsgInitCONFIGTYPE( Header( 0, MsgType.NODECONFIG, Host["Id"], NodePoint["Id"]), 0, 2, NodeType.POINT ), MsgInitCONFIGTYPEFormat)
-	client_socket.send(messageToSend)
-
-	# Track 1
-	messageToSend = getMessageToSend( MsgInitCONFIG( Header( 0, MsgType.NODECONFIG, Host["Id"], NodePoint["Id"]), 1, 2, Route( 1, NodeTrackCircuit["Id"], NodeNull["Id"], NodePosition.LAST, PointPosition.DIVERGING ) ), MsgInitCONFIGFormat)
-	client_socket.send(messageToSend)
-
-	# Track 2
-	messageToSend = getMessageToSend( MsgInitCONFIG( Header( 0, MsgType.NODECONFIG, Host["Id"], NodePoint["Id"]), 2, 2, Route( 2, NodeTrackCircuit["Id"], NodeNull["Id"], NodePosition.LAST, PointPosition.STRAIGHT ) ), MsgInitCONFIGFormat)
-	client_socket.send(messageToSend)
-
-	# Close the socket
-	client_socket.shutdown(socket.SHUT_RDWR)
 
 def sendMalfunction2PT():
 	##############################################

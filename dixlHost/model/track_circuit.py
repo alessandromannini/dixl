@@ -10,8 +10,8 @@ from model.node import Node, NodeType
 
 class TrackCircuit(Node):
     # Constructor    
-    def __init__(self, id: int, MAC: bytes) -> None:
-        super().__init__(id, MAC)
+    def __init__(self, id: int, MAC: bytes, IP: bytes = None) -> None:
+        super().__init__(id, MAC, IP)
 
     @property
     def type(self) -> NodeType:

@@ -17,8 +17,8 @@ class PointPosition(Enum):
 
 class Point(Node):
     # Constructor    
-    def __init__(self, id: int, MAC: bytes) -> None:
-        super().__init__(id, MAC)
+    def __init__(self, id: int, MAC: bytes, IP: bytes = None) -> None:
+        super().__init__(id, MAC, IP)
         
     # Properties
     @property

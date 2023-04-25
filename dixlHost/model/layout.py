@@ -100,10 +100,17 @@ class Layout(object):
             id: str = node['id']    
             MAC: bytes = utility.str2MAC(node['MAC'])
             type: str = node['type']
-            if type == NodeType.POINT.name:
-                ll.NodeAdd(Point(id, MAC))
+            if "IP" in node: 
+                IP = utility.str2IP(node['IP'])
             else:
-                ll.NodeAdd(TrackCircuit(id, MAC))
+                IP = None
+            if type == NodeType.POINT.name:
+                nodeObj: Node = Point(id, MAC,IP)
+            else:
+                nodeObj: Node = TrackCircuit(id, MAC, IP)
+            
+            
+            ll.NodeAdd(nodeObj)
 
         # Routes
         if 'routes' in json_dict.keys():

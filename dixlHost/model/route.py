@@ -86,9 +86,9 @@ class Route(MutableSequence[NodeRef]):
 
         # Is a reference to Point?
         if isinstance(nodeRef, PointRef):
-            nodeRef.node.Config.RouteSet(index, prev, next, position, nodeRef.requestedPos )
+            nodeRef.node.Config.RouteSet(self.id, prev, next, position, nodeRef.requestedPos )
         else:
-            nodeRef.node.Config.RouteSet(index, prev, next, position )                
+            nodeRef.node.Config.RouteSet(self.id, prev, next, position )                
 
 
     def __generateNodesConfig(self) -> None:

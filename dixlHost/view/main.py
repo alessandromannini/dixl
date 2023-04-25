@@ -10,8 +10,9 @@ import os
 from pubsub import pub
 
 from  model.layout import Layout
-from  model.layout import Route
-from  model.layout import Node
+from  model.route import Route
+from  model.node import Node
+from model.node import NodeState
 from  utility import *
 
 class Main(sg.Window):
@@ -21,6 +22,7 @@ class Main(sg.Window):
     Notify events using Pypubsub library with these topics:
         LAYOUT OPERATIONS:
         - view.layout.open
+# TODO
         - view.layout.refreship
         - view.layout.reset
         - view.layout.config
@@ -32,6 +34,7 @@ class Main(sg.Window):
         - view.node.refreship
         - view.node.reset
         - view.node.config
+        - view.node.log
         - view.node.malfunction
     """
     # Constructor
@@ -41,7 +44,7 @@ class Main(sg.Window):
         self.__layout: Layout = layout
         self.__nodeId: list[int] = list()
         self.__routeId: list[str] = list()
-        super().__init__('dixlHost',layout=layout, margins=(400,300))
+        super().__init__('dixlHost',layout=layout, margins=(400,300), finalize=True)
 
     # Properties
     @property
@@ -57,6 +60,12 @@ class Main(sg.Window):
     def __layout_base(self):
 
         working_dir = os.getcwd()
+
+        host_row = [ [
+                sg.Text('Host IP', font="bold"),
+                sg.Text('', key='HOST.IP', size=(15,1), pad=(7,50), text_color='black', background_color='#C9E4E7', justification='center')
+            ]
+        ]
 
         layout_row = [ [
                 sg.Text('Layout', font="bold"),
@@ -77,7 +86,8 @@ class Main(sg.Window):
                             [[
                                 sg.Text("ID", key=f"NODE.LBL.IP", size=(5,1), pad=((36,0),(7,7)),text_color='black', background_color='#C9E4E7'),
                                 sg.Text("MAC", key=f"NODE.LBL.MAC", size=(15,1), pad=((1,0),(7,7)),text_color='black', background_color='#C9E4E7'),
-                                sg.Text("IP", key=f"NODE.LBL.IP", size=(15,1), pad=((1,7),(7,7)),text_color='black', background_color='#C9E4E7')
+                                sg.Text("IP", key=f"NODE.LBL.IP", size=(15,1), pad=((1,0),(7,7)),text_color='black', background_color='#C9E4E7'),
+                                sg.Text("MAL", key=f"NODE.LBL.MALFUNC", size=(4,1), pad=((1,7),(7,7)),text_color='black', background_color='#C9E4E7')
                             ]]                                     
                         )]]    
 
@@ -94,7 +104,8 @@ class Main(sg.Window):
             ]
         ]
 
-        layout =    [   layout_row,
+        layout =    [   host_row,
+                        layout_row,
                         [
                             sg.Column(nodes_column),
                             sg.VSeperator(),
@@ -121,7 +132,31 @@ class Main(sg.Window):
                     self['LAYOUT.FILE'].update(filename)
                     pub.sendMessage('view.layout.open', filename=filename)
 
+                case 'NODE.UPDATE.STATE':
+                    self.setNodeStatus(values[event])
+
+                case 'NODE.UPDATE.IP':
+                    self.setNodeIP(values[event])
+
                 case _:
+                    # NODE Reset
+                    if event.startswith('NODE.BTN.RESET.'):
+                        pub.sendMessage('view.node.reset', nodeId=event.rsplit(".", 1)[1])
+                    # NODE Config
+                    elif event.startswith('NODE.BTN.CONFIG.'):
+                        pub.sendMessage('view.node.config', nodeId=event.rsplit(".", 1)[1])
+                    # NODE Refresh IP
+                    elif event.startswith('NODE.BTN.IP.'):
+                        pub.sendMessage('view.node.refreship', nodeId=event.rsplit(".", 1)[1])
+                    # NODE Log
+                    elif event.startswith('NODE.BTN.LOG.'):
+                        pub.sendMessage('view.node.log', nodeId=event.rsplit(".", 1)[1])
+                    # NODE Malfunction
+                    elif event.startswith('NODE.BTN.MALFUNC.'):
+                        pub.sendMessage('view.node.malfunction', nodeId=event.rsplit(".", 1)[1])
+                    # ROUTE Request
+                    elif event.startswith('ROUTE.BTN.REQUEST.'):
+                        pub.sendMessage('view.route.request', nodeId=event.rsplit(".", 1)[1])
                     pass
 
         # Close the window
@@ -161,10 +196,11 @@ class Main(sg.Window):
         # Prepare the row
         node_id = node.id
         node_row =  [   
-                        sg.Image(filename=Main.absolutePath('../images/status_led_inactive.png'), size=(20,20), subsample=2),
-                        sg.Text(node_id, key=f"NODE.TXT.IP.{node_id}", size=(5,1), pad=((6,0),(3,1)), text_color='black', background_color='#34D1BF'),
+                        sg.Image(filename=Main.absolutePath('../images/status_led_inactive.png'), key=f'NODE.IMG.{node_id}', size=(20,20), subsample=2),
+                        sg.Text(node_id, key=f"NODE.TXT.ID.{node_id}", size=(5,1), pad=((6,0),(3,1)), text_color='black', background_color='#34D1BF'),
                         sg.Text(MAC2str(node.MAC), key=f"NODE.TXT.MAC.{node_id}", size=(15,1), pad=((1,0),(3,1)), text_color='black', background_color='#34D1BF'),
-                        sg.Text(IP2str(node.IP), key=f"NODE.TXT.IP.{node_id}", size=(15,1), pad=((1,7),(3,1)), text_color='black', background_color='#34D1BF'),
+                        sg.Text(IP2str(node.IP), key=f"NODE.TXT.IP.{node_id}", size=(15,1), pad=((1,0),(3,1)), text_color='black', background_color='#34D1BF'),
+                        sg.Checkbox('',key=f"NODE.CHK.MALFUNC.{node_id}", pad=((10,7),(3,1)), text_color='black'),
                         sg.Button("IP", key=f"NODE.BTN.IP.{node_id}"),
                         sg.Button("RESET", key=f"NODE.BTN.RESET.{node_id}"),
                         sg.Button("CONFIG", key=f"NODE.BTN.CONFIG.{node_id}"),
@@ -174,3 +210,24 @@ class Main(sg.Window):
 
         # Store the id
         self.__nodeId.append(node_id)
+
+    def hostIP(self, hostIP: str) -> None:
+        # Set host IP
+        self['HOST.IP'].update(hostIP)
+
+    def setNodeStatus(self, node: Node) -> None:
+        match node.state:
+            case NodeState.PENDING:
+                self[f'NODE.IMG.{node.id}'].update(filename=Main.absolutePath('../images/status_led_yellow.png'), size=(20,20), subsample=2)
+
+            case NodeState.FAIL:
+                self[f'NODE.IMG.{node.id}'].update(filename=Main.absolutePath('../images/status_led_red.png'), size=(20,20), subsample=2)
+
+            case NodeState.OK:
+                self[f'NODE.IMG.{node.id}'].update(filename=Main.absolutePath('../images/status_led_green.png'), size=(20,20), subsample=2)                
+
+            case _:
+                self[f'NODE.IMG.{node.id}'].update(filename=Main.absolutePath('../images/status_led_inactive.png'), size=(20,20), subsample=2)
+
+    def setNodeIP(self, node: Node) -> None:
+        self[f'NODE.TXT.IP.{node.id}'].update(IP2str(node.IP))
