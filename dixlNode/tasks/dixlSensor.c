@@ -93,11 +93,15 @@ static int worker() {
 		// Process the message
 		process_message(message);
 	}
-	// If VxSim compile Button emulate mode
+	// If VxSim compile Button emulate mode (only when needed)
 #if CPU ==_VX_SIMNT
-	syslog(LOG_INFO,"Simulation mode: emulating SENSOR %s in 5 seconds",sensorStateStr(requestedState));
-	taskDelay(sysClkRateGet() * 5);
-	currentState = requestedState;
+	if (currentState != requestedState) {
+		syslog(LOG_INFO,"Simulation mode: emulating SENSOR %s in 5 seconds", sensorStateStr(requestedState));
+		taskDelay(sysClkRateGet() * 5);
+		// Log occupied if it wasn't
+		if (currentState != SENSORSTATE_ON) logger_log(LOGTYPE_OCCUPIED, NULL, NodeNULL );
+		currentState = requestedState;
+	}
 #else
 	// Read sensor state from GPIO
 	pinMode(GPIO_PIN_BUTTON, IN);
