@@ -32,7 +32,7 @@ int dixlCommRxSocket = 0;
 TASK_ID     taskCommRxId;
 
 // Received data buffer
-char buffer[COMMBUFFERSIZE];
+char buffer[COMMBUFFERSIZE] = "\0";
 int bufferLen = 0;
 /**
  * Process data received from the stream:
@@ -58,7 +58,7 @@ static bool process_message(char *stream, ssize_t streamLen) {
 	
 	// While the buffer containts a complete message, process it
 	uint8_t messageLen = 0;
-	while (( messageLen = buffer[0] ) <= bufferLen ) {
+	while ( bufferLen > 0 && ( messageLen = buffer[0] ) <= bufferLen ) {
 	 	
 		// The message is complete: copy data to message struct removing from buffer
 		message message;
