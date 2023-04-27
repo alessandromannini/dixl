@@ -36,7 +36,7 @@ MSG_Q_ID 	msgQSensorId;
 SEM_ID semSensor;							// Semaphore to access sensor
 
 // Sensor State
-static eSensorState currentState = -1;
+static eSensorState currentState = SENSORSTATE_ON;
 static eSensorState requestedState = SENSORSTATE_ON;
 static struct timespec requestNonce;				// Nonce (timestamp) of the request (if 0 notification isn't sent)
 static _Vx_freq_t periodTick;
@@ -96,7 +96,7 @@ static int worker() {
 	// If VxSim compile Button emulate mode (only when needed)
 #if CPU ==_VX_SIMNT
 	if (currentState != requestedState) {
-		syslog(LOG_INFO,"Simulation mode: emulating SENSOR %s in 5 seconds", sensorStateStr(requestedState));
+		syslog(LOG_INFO,"Simulation mode:p emulating SENSOR %s in 5 seconds", sensorStateStr(requestedState));
 		taskDelay(sysClkRateGet() * 5);
 		// Log occupied if it wasn't
 		if (currentState != SENSORSTATE_ON) logger_log(LOGTYPE_OCCUPIED, NULL, NodeNULL );
@@ -107,7 +107,10 @@ static int worker() {
 	pinMode(GPIO_PIN_BUTTON, IN);
 	if (pinGet(GPIO_PIN_BUTTON) == GPIO_VALUE_LOW) {
 		// Log occupied if it wasn't
-		if (currentState != SENSORSTATE_ON) logger_log(LOGTYPE_OCCUPIED, NULL, NodeNULL );
+		if (currentState != SENSORSTATE_ON) {
+			logger_log(LOGTYPE_OCCUPIED, NULL, NodeNULL );
+			syslog(LOG_INFO,"SENSOR is %s: track is occupied", sensorStateStr(SENSORSTATE_ON));
+		}
 		currentState = SENSORSTATE_ON;		
 	} else
 		currentState = SENSORSTATE_OFF;
@@ -158,8 +161,8 @@ void dixlSensor() {
 		// Take sem
 		semTake(semSensor, WAIT_FOREVER);					
 		
-		// IF a Nonce request is active
-		if (requestNonce.tv_sec || requestNonce.tv_nsec) {			
+		// IF a Nonce request is active and state reached
+		if ((requestNonce.tv_sec || requestNonce.tv_nsec) && currentState == requestedState) {			
 			// Prepare the notification message
 			message outMessage;
 			outMessage.iHeader.type = IMSGTYPE_SENSORNOTIFY;
