@@ -267,7 +267,8 @@ typedef struct msgILOGSEND {
 	uint32_t totalLines;			// Total number of lines
 	logMessage line;
 } msgILogSEND;
-typedef struct msgILOGACK {
+typedef struct msgILOGDELACK {
+	nodeId destination;
 } msgILogDELACK;
 
 /** message DIAG types */

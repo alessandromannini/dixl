@@ -141,7 +141,7 @@ static bool process_message(const message *inMessage, message *outMessage) {
 			
 		case IMSGTYPE_LOGDELACK:
 			outMessage->header.type = MSGTYPE_LOGDELACK;			
-			outMessage->header.destination = inMessage->routeITrainNOk.destination;
+			outMessage->header.destination = inMessage->logIDelAck.destination;
 			size += sizeof(msgLogDELACK);
 			break;
 
@@ -243,6 +243,7 @@ void dixlCommTx() {
 			case IMSGTYPE_ROUTETRAINOK:
 			case IMSGTYPE_ROUTETRAINNOK:
 			case IMSGTYPE_LOGSEND:
+			case IMSGTYPE_LOGDELACK:
 			case IMSGTYPE_DIAGERRCOMM:
 			case IMSGTYPE_DIAGERRTASK:
 				// Process the message preparing it for External delivery

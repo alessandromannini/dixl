@@ -112,6 +112,12 @@ static bool logDequeue(logMessage line) {
 
 /* Send all current lines to CommTx to be sent to destination */
 static bool logSendCurrent(nodeId destination) {
+	// Something to send ?
+	if (numLines < 0) {
+		newestSent = -1;
+		return FALSE;
+	}
+		
 	// Current stored lines loop
 	for (int i=0; i<numLines; i++) {
 		// Prepare the message for dixlCommTx
@@ -135,6 +141,9 @@ static bool logSendCurrent(nodeId destination) {
 
 /* Remove all lines trasmitted in the last request */
 static void logPrune() {
+	// Something to prune?
+	if (newestSent < 0) return;
+	
 	// Remove from head to newestSent
 	int numRemoved = 0;
 	
@@ -147,6 +156,7 @@ static void logPrune() {
 
 	// Remove from head
 	head = (head + numRemoved) % TASKLOGMAXLINES;
+	numLines -= numRemoved;
 		
 	// Reset last tramitted index
 	newestSent = -1;
@@ -176,21 +186,39 @@ void dixlLog() {
 				
 			// External Log lines request
 			case MSGTYPE_LOGREQ:
+				// Log
+				syslog(LOG_INFO, "Log REQ received from host node (%d.%d.%d.%d)", inMessage.header.source.bytes[0], inMessage.header.source.bytes[1], inMessage.header.source.bytes[2], inMessage.header.source.bytes[3]);			
+				
 				// Send current log to the requester
 				logSendCurrent(inMessage.header.source);
+
+				// Log
+				syslog(LOG_INFO, "Log SENT to host node (%d.%d.%d.%d)", inMessage.header.source.bytes[0], inMessage.header.source.bytes[1], inMessage.header.source.bytes[2], inMessage.header.source.bytes[3]);			
+				
 				break;
 
 			// External Log del request (after a logREQ)
 			case MSGTYPE_LOGDEL:
+				// Log
+				syslog(LOG_INFO, "Log DEL received from host node (%d.%d.%d.%d)", inMessage.header.source.bytes[0], inMessage.header.source.bytes[1], inMessage.header.source.bytes[2], inMessage.header.source.bytes[3]);			
+				
 				// Prune log lines based on last request
 				logPrune();
-				
+
+				// Log
+				syslog(LOG_INFO, "Log PRUNED ...");			
+
 				// ACK the deletion
 				message outMessage;
 				outMessage.iHeader.type = IMSGTYPE_LOGDELACK;
+				outMessage.logIDelAck.destination = inMessage.header.source;
 
 				// Send to CommTx task
 				msgQ_Send(msgQCommTxId, (char *) &outMessage, sizeof(msgIHeader) + sizeof(msgILogDELACK));		
+				
+				// Log
+				syslog(LOG_INFO, "Log DEL ACK sent to host node (%d.%d.%d.%d)", inMessage.header.source.bytes[0], inMessage.header.source.bytes[1], inMessage.header.source.bytes[2], inMessage.header.source.bytes[3]);			
+
 				break;
 		}
 	}
