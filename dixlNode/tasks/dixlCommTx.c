@@ -132,10 +132,10 @@ static bool process_message(const message *inMessage, message *outMessage) {
 			
 		case IMSGTYPE_LOGSEND:
 			outMessage->header.type = MSGTYPE_LOGSEND;			
-			outMessage->header.destination = inMessage->routeITrainNOk.destination;
-			outMessage->logISend.currentLine = inMessage->logISend.currentLine;
-			outMessage->logISend.totalLines = inMessage->logISend.totalLines;
-			outMessage->logISend.line = inMessage->logISend.line;
+			outMessage->header.destination = inMessage->logISend.destination;
+			outMessage->logSend.currentLine = inMessage->logISend.currentLine;
+			outMessage->logSend.totalLines = inMessage->logISend.totalLines;
+			outMessage->logSend.line = inMessage->logISend.line;
 			size += sizeof(msgLogSEND);
 			break;
 			
