@@ -37,7 +37,7 @@ typedef struct client {
 	struct timespec lastCheck;			// timestamp of the last check
 } client;
 static client clients[CONFIGMAXROUTES];
-static uint_t currentChecked = -1;
+static int currentChecked = -1;
 static bool task_error = false;
 static bool client_error = false;
 
@@ -94,7 +94,7 @@ static void config_pack(message message, client *clients) {
 		int idxClient=0;
 		while (!nodeIsNull(clients[idxClient].id)) {
 			// Found?
-			if (nodecmp(clients[idxClient].id , pRoute[idxRoute].prev))
+			if (nodecmp(clients[idxClient].id , pRoute[idxRoute].prev) == 0)
 				break;
 			
 			idxClient++;
