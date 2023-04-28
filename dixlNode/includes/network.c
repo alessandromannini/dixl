@@ -146,6 +146,30 @@ size_t socket_send(int fd, void *buffer, size_t buffer_size) {
 	return ret;	
 }
 
+size_t socket_sendto(int fd, void *buffer, size_t buffer_size, const struct sockaddr *to, socklen_t tolen) {
+    ssize_t ret;
+
+	if ((ret = sendto(fd, buffer, buffer_size, 0, to, tolen)) == SOCK_ERROR) {
+	    // Error	  
+		int err=errno;
+		syslog(LOG_ERR, "Sendto socket error: %s", err, strerror(err));
+	} else if (ret != buffer_size) {
+		syslog (LOG_ERR, "Sendto socket error: %i bytes sent istead of %i", ret, buffer_size);
+	}
+	return ret;	
+}
+
+size_t socket_recvfrom(int fd, void *buffer, size_t buffer_size, struct sockaddr *from, socklen_t *fromlen) {
+    ssize_t ret;
+
+	if ((ret = recvfrom(fd, buffer, buffer_size, 0, from, fromlen)) == SOCK_ERROR) {
+		// Error
+		int err=errno;
+        syslog(LOG_ERR, "Receive socket error %i: %s", err, strerror(err));
+	}
+	return ret;	
+}
+
 void network_IPv4_to_str(const IPv4Address *IPv4, char *str) {	
 	snprintf(str, 16, "%d.%d.%d.%d", IPv4->bytes[0], IPv4->bytes[1], IPv4->bytes[2], IPv4->bytes[3]);	
 }

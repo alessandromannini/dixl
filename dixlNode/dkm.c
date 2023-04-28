@@ -41,6 +41,9 @@ uint_t start(void) {
 		return 0;
 	}
 	
+	// Time setting
+	time_set(NTPServer, NTPTimezoneOffset);
+	
 	// Spawn the Initialization task
 	syslog(LOG_INFO, "Spawning Initialization task...");
 	

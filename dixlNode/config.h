@@ -15,6 +15,12 @@
 #define CONFIG_H_
 
 #define C
+/**
+ * NTP parameters
+ */
+#define NTPServer				"193.204.114.232"	/* INRIM NTP server IP */
+#define NTPTimezoneOffset		+7200				/* Timezone (in seconds) */
+
 
 /**
  *  tasks parameters

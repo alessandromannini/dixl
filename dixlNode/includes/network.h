@@ -78,6 +78,26 @@ ssize_t socket_recv(int fd, void *buffer, size_t buffer_size);
 size_t socket_send(int fd, void *buffer, size_t buffer_size);
 
 /**
+ *  send a message into the socket
+ *  @param fd: file descriptor of the socket
+ *  @param buffer: char buffer where data to send is stored
+ *  @param buffer_size: size of the buffer
+ *  @param to: destination socket address
+ *  @param tolen: length of the address of the destination
+ */
+size_t socket_sendto(int fd, void *buffer, size_t buffer_size, const struct sockaddr *to, socklen_t tolen);
+
+/**
+ *  receive a message from the socket
+ *  @param fd: file descriptor of the socket
+ *  @param buffer: char buffer where to store received data
+ *  @param buffer_size: size of the buffer
+ *  @param from: address of the sender
+ *  @param fromlen: length of the address of the sender
+ */
+size_t socket_recvfrom(int fd, void *buffer, size_t buffer_size, struct sockaddr *from, socklen_t *fromlen);
+
+/**
  *  get the name of the first interface excluding loopback
  *  @param ifname: buffer to store interface name
  */

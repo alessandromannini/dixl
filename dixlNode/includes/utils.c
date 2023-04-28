@@ -20,6 +20,7 @@
 
 #include "../globals.h"
 #include "network.h"
+#include "ntp.h"
 
 /* FUNCTIONS helpers */
 
@@ -190,4 +191,25 @@ _Vx_ticks_t time_ticksToDeadline(const struct timespec deadline) {
 	if (ticks <=0) return 0;
 	
 	return ticks;
+}
+
+bool time_set(char *ntpServer, int timezoneOffset) {
+	// Call NTP client
+	struct timespec updated = ntpc(ntpServer, timezoneOffset);
+	
+	if (updated.tv_sec == 0) return false;
+	
+	// Get current timestamp
+	struct timespec current;
+	clock_gettime(CLOCK_REALTIME, &current);	
+	
+	// Set current timestamp
+	clock_settime(CLOCK_REALTIME, &updated);
+	
+	
+	//#compare to system time
+	syslog(LOG_INFO, "System time is now %s", ctime(&updated.tv_sec));
+	syslog(LOG_INFO, "System time was %0.2f seconds off\n", time_timespecdiff(&updated, &current));	
+	
+	return true;
 }

@@ -80,4 +80,11 @@ double time_timespecdiff(const struct timespec *time1, const struct timespec *ti
  */
 _Vx_ticks_t time_ticksToDeadline(const struct timespec deadline);
 
+/**
+ * Get the period of time between a timespec and the current timestamp, in ticks
+ * @param ntpServer: 		IP address of the NTP server
+ * @param timezoneOffset:	offset of the time zone in seconds
+ * @return number of ticks 
+ */
+bool time_set(char *ntpServer, int timezoneOffset);
 #endif /* INCLUDES_UTILS_H_ */
