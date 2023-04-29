@@ -135,7 +135,7 @@ static void rejectRouteRequest(message *pInMessage) {
 			
 			// Log
 			logger_log(LOGTYPE_REQ, requestedRouteId, *destNode );			
-			logger_log(LOGTYPE_DISAGREE, requestedRouteId, NodeNULL );
+			logger_log(LOGTYPE_DISAGREE, requestedRouteId,  *destNode );
 
 			
 			// Prepare  DISAGREE message for source node			
@@ -160,9 +160,6 @@ static void rejectRouteRequest(message *pInMessage) {
 				nodeId *destNode = &(pInMessage->header.source);
 				syslog(LOG_INFO, "Sending TRAINNOK for route (%i) to node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);			
 			}		
-			
-			// Log
-			logger_log(LOGTYPE_DISAGREE, pCurrentNodeState->pCurrentRoute->id, *destNode );
 			
 			//Send to dixlCommTx task queue
 			msgQ_Send(msgQCommTxId, (char *) &message, size);

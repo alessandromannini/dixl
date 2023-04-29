@@ -14,6 +14,7 @@
 #include <msgQLib.h>
 #include <taskLib.h>
 #include <syslog.h>
+#include <string.h>
 
 #include "../config.h"
 #include "../datatypes/messages.h"
@@ -113,8 +114,21 @@ static bool logDequeue(logMessage line) {
 /* Send all current lines to CommTx to be sent to destination */
 static bool logSendCurrent(nodeId destination) {
 	// Something to send ?
-	if (numLines < 0) {
+	if (numLines == 0) {
 		newestSent = -1;
+		
+		// Send a empty log sequence
+		// Prepare the message for dixlCommTx
+		message message;
+		memset(&message, 0, sizeof(message));
+		
+		message.iHeader.type = IMSGTYPE_LOGSEND;
+		message.logISend.destination = destination;
+		message.logISend.currentLine = 0;
+		message.logISend.totalLines = 0;
+		
+		// Send to dilCommTx
+		msgQ_Send(msgQCommTxId, (char *) &message, sizeof(msgIHeader) + sizeof(msgILogSEND));		
 		return FALSE;
 	}
 		
@@ -122,6 +136,7 @@ static bool logSendCurrent(nodeId destination) {
 	for (int i=0; i<numLines; i++) {
 		// Prepare the message for dixlCommTx
 		message message;
+		memset(&message, 0, sizeof(message));
 		
 		message.iHeader.type = IMSGTYPE_LOGSEND;
 		message.logISend.destination = destination;
@@ -148,7 +163,7 @@ static void logPrune() {
 	int numRemoved = 0;
 	
 	// Compute num of lines to remove
-	if (newestSent > head)
+	if (newestSent >= head)
 		numRemoved = newestSent - head +1;
 	else
 		numRemoved = TASKLOGMAXLINES - head + newestSent +1;
