@@ -153,7 +153,7 @@ static void rejectRouteRequest(message *pInMessage) {
 	
 				// Log
 				nodeId *destNode = &(pInMessage->header.source);
-				syslog(LOG_INFO, "Sending TRAINNOK for route (%i) to node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);			
+				syslog(LOG_INFO, "Sending DISAGREE for route (%i) to node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);			
 			}		
 						
 			//Send to dixlCommTx task queue
@@ -180,7 +180,8 @@ static void NotReservedEntry(eventData *pEventData) {
 	pCurrentNodeState->pCurrentRoute = NULL;	
 
 	// Log
-	syslog(LOG_INFO, "Request cleaned");	
+	syslog(LOG_INFO, "Request cleaned");
+	logger_log(LOGTYPE_NOTRESERVED, 0, NodeNULL);
 }
 static void NotReservedState(eventData *pEventData) {
 }
@@ -422,9 +423,9 @@ static void ReservedEntry(eventData *pEventData) {
 		// Log
 		nodeId *destNode = &(pCurrentNodeState->pCurrentRoute->prev);
 		syslog(LOG_INFO, "Route request (%i) AGREEed sending back AGREE to prev node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);			
-		
-		logger_log(LOGTYPE_RESERVED, pCurrentNodeState->pCurrentRoute->id, NodeNULL );			
 	}
+		
+	logger_log(LOGTYPE_RESERVED, pCurrentNodeState->pCurrentRoute->id, NodeNULL );			
 
 	//Send to dixlCommTx task queue
 	msgQ_Send(msgQCommTxId, (char *) &message, size);	

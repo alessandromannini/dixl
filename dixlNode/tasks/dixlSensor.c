@@ -33,12 +33,12 @@ TASK_ID     taskSensorId;
 MSG_Q_ID 	msgQSensorId;
 
 // Semaphores
-SEM_ID semSensor;							// Semaphore to access sensor
+SEM_ID semSensor;										// Semaphore to access sensor
 
 // Sensor State
-static eSensorState currentState = SENSORSTATE_ON;
-static eSensorState requestedState = SENSORSTATE_ON;
-static struct timespec requestNonce;				// Nonce (timestamp) of the request (if 0 notification isn't sent)
+static eSensorState currentState = SENSORSTATE_OFF;		// Initial OFF state
+static eSensorState requestedState = SENSORSTATE_OFF;
+static struct timespec requestNonce;					// Nonce (timestamp) of the request (if 0 notification isn't sent)
 static _Vx_freq_t periodTick;
 
 /* Implementation functions */
@@ -96,7 +96,7 @@ static int worker() {
 	// If VxSim compile Button emulate mode (only when needed)
 #if CPU ==_VX_SIMNT
 	if (currentState != requestedState) {
-		syslog(LOG_INFO,"Simulation mode:p emulating SENSOR %s in 5 seconds", sensorStateStr(requestedState));
+		syslog(LOG_INFO,"Simulation mode: emulating SENSOR %s in 5 seconds", sensorStateStr(requestedState));
 		taskDelay(sysClkRateGet() * 5);
 		// Log occupied if it wasn't
 		if (currentState != SENSORSTATE_ON) logger_log(LOGTYPE_OCCUPIED, NULL, NodeNULL );

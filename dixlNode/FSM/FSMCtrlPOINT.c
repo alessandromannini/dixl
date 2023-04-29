@@ -138,7 +138,7 @@ static void rejectRouteRequest(message *pInMessage) {
 			logger_log(LOGTYPE_DISAGREE, requestedRouteId,  *destNode );
 
 			
-			// Prepare  DISAGREE message for source node			
+			// Prepare DISAGREE message for source node			
 			position = findPosition(requestedRouteId);
 			
 			// First node? Send to host
@@ -158,7 +158,7 @@ static void rejectRouteRequest(message *pInMessage) {
 	
 				// Log
 				nodeId *destNode = &(pInMessage->header.source);
-				syslog(LOG_INFO, "Sending TRAINNOK for route (%i) to node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);			
+				syslog(LOG_INFO, "Sending DISAGREE for route (%i) to node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);			
 			}		
 			
 			//Send to dixlCommTx task queue
@@ -180,7 +180,7 @@ static void NotReservedEntry(eventData *pEventData) {
 	
 	// Log
 	syslog(LOG_INFO, "Request cleaned");	
-	
+	logger_log(LOGTYPE_NOTRESERVED, 0, NodeNULL);	
 }
 static void NotReservedState(eventData *pEventData) {
 }
