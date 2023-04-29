@@ -12,6 +12,9 @@ from model.node_config_item import NodePosition
 from model.node import Node
 from model.node_ref import NodeRef
 from model.point_ref import PointRef
+
+import threading
+from pubsub import pub
 from typing import Iterable
 from collections.abc import MutableSequence
 
@@ -20,6 +23,7 @@ class RouteState(Enum):
     """Route State values:"""
     UNKNOWUN			= -1	# No operations performed
     OK 		            = 1	    # Last operation OK
+    PENDING             = 99    # Last operation is pending
     FAIL                = 0     # Last operation FAILED       
 
 class ReservationState(Enum):
@@ -41,6 +45,7 @@ class Route(MutableSequence[NodeRef]):
         self.__nodes: list[NodeRef] = list()
         self.state: RouteState = RouteState.UNKNOWUN
         self.reservation: ReservationState = ReservationState.UNKNOWN
+        self.__lock: threading.Lock = threading.Lock()
 
         # If an iterable is passed create the List
         if iterable is not None:
@@ -178,3 +183,56 @@ class Route(MutableSequence[NodeRef]):
 
     def __str__(self):
         return str(self.__nodes)
+
+    def __setRequest(self) -> bool:
+        """
+        Check if a previous request is pending. If not, set it
+        """
+        # Acquire exclusive access to state
+        self.__lock.acquire()
+        try:
+            # Operations pendind ?
+            if self.state == RouteState.PENDING: return False
+
+            # If not set it
+            self.state = RouteState.PENDING
+            pub.sendMessage('route.update.state', route=self)
+
+            return True
+        
+        finally:
+            self.__lock.release()
+
+    def resetRequest(self, state: RouteState) -> None:
+        """
+        Set the new state, reset current pending operation and notify 
+        """
+        # Acquire exclusive access to state
+        self.__lock.acquire()
+        try:
+            # Set new state
+            self.state = state
+            pub.sendMessage('route.update.state', route=self)
+
+        finally:
+            self.__lock.release()    
+    
+    def request(self, hostIP: bytes) -> bool:
+        """
+        Send route request to First node and wait for a reply (TRAINOK/TRAINNOK)
+        """
+        import message
+        # Other operations pending ?
+        if not self.__setRequest(): return False
+        
+        # Start the request in a new thread
+        try:
+            t = threading.Thread(target=message.sendRequest, kwargs={'hostIP':hostIP,'route': self}) 
+            t.start()
+
+        except Exception as ex:
+            # Reset current operation if FAIL to create the thread
+            self.resetRequest(RouteState.FAIL)
+
+            # Rethrow the exception    
+            raise ex    

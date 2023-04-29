@@ -38,20 +38,27 @@ class NodeConfig(Sequence[NodeConfigItem]):
         self._dict.clear()
 
     # Add or Update a NodeConfigItem
-    def RouteSet(self, routeId: int, prev: 'Node', next: 'Node', position: NodePosition, requestedPos: 'PointPosition' = 'PointPosition.UNDEFINED') -> None:
+    def RouteSet(self, routeId: int, prev: 'Node', next: 'Node', position: NodePosition, requestedPos: 'PointPosition' = None) -> None:
+        from model.point import PointPosition
         try:
-            # Sarch in dict
+            # Check default
+            if requestedPos: 
+                requestedPosValue = requestedPos
+            else:
+                requestedPosValue = PointPosition.UNDEFINED
+
+            # Search in dict
             itemIdx: int = self._dict.get[routeId]
             item: NodeConfigItem = self._list[itemIdx]
             item.prev = prev
             item.next = next
             item.position = position
-            item.requestedPos = requestedPos
+            item.requestedPos = requestedPosValue
 
         except:
             # Not present: create, add to list and add index to dict
             self._dict[routeId] = len(self._list)
-            self._list.append(NodeConfigItem(routeId, prev, next, position, requestedPos))
+            self._list.append(NodeConfigItem(routeId, prev, next, position, requestedPosValue))
 
 
     def RouteDel(self, routeId: int) -> None:

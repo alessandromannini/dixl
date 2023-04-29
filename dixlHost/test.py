@@ -39,7 +39,7 @@ print(json.dumps(route2, cls=JSONEncoderCustom, indent=4))
 print(json.dumps(layout, cls=JSONEncoderCustom, indent=4))
 
 # Write to disk
-# layout.WriteToFile()
+layout.WriteToFile()
 
 # Read from disk
-ll = Layout.ReadFromFile(filename="main.dixl")
+# ll = Layout.ReadFromFile(filename="main.dixl")

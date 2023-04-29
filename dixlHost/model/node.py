@@ -8,9 +8,12 @@
 # imports
 from abc import abstractproperty
 from enum import Enum
-from model.node_config import NodeConfig
+import random
 import threading
 from pubsub import pub
+
+import config
+from model.node_config import NodeConfig
 
 # Node type 
 class NodeType(Enum):
@@ -22,7 +25,9 @@ class NodeState(Enum):
     OK 		            = 1	    # Last operation OK
     PENDING 		    = 99    # Last request is pending
     FAIL                = 0     # Last operation FAILED       
-        
+
+NodeNull: bytes = b'\x00\x00\x00\x00'                
+
 class Node(object):
     """ 
     Node object
@@ -42,6 +47,8 @@ class Node(object):
             self._IP = IP
         else:
             self._IP: bytes = bytes([0, 0, 0, 0])
+        self.log: list[str] = []    
+        self.malfunction: bool = False                          # Malfunction simulation enabled        
         self.__config: NodeConfig = NodeConfig()
         self.__lock: threading.Lock = threading.Lock()
 
@@ -110,7 +117,7 @@ class Node(object):
         finally:
             self.__lock.release()
 
-    def Reset(self, hostIP: str) -> bool:
+    def reset(self, hostIP: bytes) -> bool:
         """
         Send a reset message to the node (thread safe)
         Parameters:
@@ -132,7 +139,7 @@ class Node(object):
             # Rethrow the exception    
             raise ex
         
-    def Configure(self, hostIP: str) -> bool:
+    def configure(self, hostIP: bytes) -> bool:
         """
         Send the config sequence messages to the node (thread safe)
         Parameters:
@@ -144,7 +151,7 @@ class Node(object):
         
         # Start the request in a new thread
         try:
-            t = threading.Thread(target=message.sendConfig, kwargs={'hostIP':hostIP, 'node': self}) 
+            t = threading.Thread(target=message.sendConfig, kwargs={'hostIP': hostIP, 'node': self}) 
             t.start()
 
         except Exception as ex:
@@ -154,7 +161,7 @@ class Node(object):
             # Rethrow the exception    
             raise ex
     
-    def RefreshIP(self) -> bool:
+    def refreshIP(self) -> bool:
         """
         Send ARP request to get fresh IP from MAC address (thread safe)
         """
@@ -173,7 +180,76 @@ class Node(object):
 
             # Rethrow the exception    
             raise ex
+        
     
-# TODO
-#Malfunction
-#request
+    def requestLog(self, hostIP: bytes, IDDict: dict[bytes, str]) -> bool:
+        """
+        Send a Log request to the node and wait for reply (thread safe)
+        """
+        import message
+        # Other operations pending ?
+        if not self.__setRequest(): return False
+        
+        # Start the request in a new thread
+        try:
+            t = threading.Thread(target=message.requestLog, kwargs={'hostIP': hostIP, 'node': self, 'IDDict': IDDict}) 
+            t.start()
+
+        except Exception as ex:
+            # Reset current operation if FAIL to create the thread
+            self.resetRequest(NodeState.FAIL)
+
+            # Rethrow the exception    
+            raise ex        
+    
+    def clearLog(self) -> bool:
+        """
+        Clear Log and notify (thread safe)
+        """
+        # Other operations pending ?
+        if not self.__setRequest(): return False
+        
+        # Start the request in a new thread
+        try:
+            # Clear log lines
+            self.log.clear()
+
+            # Notify
+            pub.sendMessage("node.update.log", node=self)
+
+            # Reset request
+            self.resetRequest(NodeState.OK)
+
+        except Exception as ex:
+            # Reset current operation if FAIL to create the thread
+            self.resetRequest(NodeState.FAIL)
+
+            # Rethrow the exception    
+            raise ex        
+    
+    def simulateMalfunction(self, hostIP: bytes, delayed: bool = True) -> bool:
+        """
+        Send a Malfunction simulation request to the node (thread safe)
+        """
+        import message
+        # Other operations pending ?
+        if not self.__setRequest(): return False
+        
+        # Start the request in a new thread
+        try:
+            # Random delay
+            if delayed:
+                delay: int = 0
+            else:
+                delay: int = random.randint(0, 2000)
+
+            # Spawn the thread                
+            t = threading.Thread(target=message.sendMalfunction, kwargs={'hostIP': hostIP, 'node': self, 'delay': delay}) 
+            t.start()
+
+        except Exception as ex:
+            # Reset current operation if FAIL to create the thread
+            self.resetRequest(NodeState.FAIL)
+
+            # Rethrow the exception    
+            raise ex  

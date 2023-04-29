@@ -13,6 +13,7 @@ from  model.layout import Layout
 from  model.route import Route
 from  model.node import Node
 from model.node import NodeState
+from model.route import RouteState
 from  utility import *
 
 class Main(sg.Window):
@@ -44,7 +45,7 @@ class Main(sg.Window):
         self.__layout: Layout = layout
         self.__nodeId: list[int] = list()
         self.__routeId: list[str] = list()
-        super().__init__('dixlHost',layout=layout, margins=(400,300), finalize=True)
+        super().__init__('dixlHost',layout=layout, margins=(30,20), resizable=True,finalize=True)
 
     # Properties
     @property
@@ -62,15 +63,15 @@ class Main(sg.Window):
         working_dir = os.getcwd()
 
         host_row = [ [
-                sg.Text('Host IP', font="bold"),
+                sg.Text('Host IP', font='bold'),
                 sg.Text('', key='HOST.IP', size=(15,1), pad=(7,50), text_color='black', background_color='#C9E4E7', justification='center')
             ]
         ]
 
         layout_row = [ [
-                sg.Text('Layout', font="bold"),
-                sg.Text('', expand_x=True, key='LAYOUT.ID', size=(10,1), text_color='black', background_color='#C9E4E7'),
-                sg.Text('', expand_x=True, key='LAYOUT.DESCRIPTION', size=(50,1), text_color='black', background_color='#C9E4E7'),
+                sg.Text('Layout', font='bold'),
+                sg.Text('', expand_x=False, key='LAYOUT.ID', size=(10,1), text_color='black', background_color='#C9E4E7'),
+                sg.Text('', expand_x=False, key='LAYOUT.DESCRIPTION', size=(50,1), text_color='black', background_color='#C9E4E7'),
             ],
             [
                 sg.Text('', expand_x=True, key='LAYOUT.FILE', text_color='black', background_color='#C9E4E7'),
@@ -81,28 +82,33 @@ class Main(sg.Window):
 
 
         nodes_column = [ [ 
-                sg.Frame('Nodes', expand_x=True, key='FRAME.NODES', font="bold", layout=
+                sg.Frame('Nodes', expand_x=True, key='FRAME.NODES', font=sg.DEFAULT_FONT +('bold',), layout=
                             # header
                             [[
-                                sg.Text("ID", key=f"NODE.LBL.IP", size=(5,1), pad=((36,0),(7,7)),text_color='black', background_color='#C9E4E7'),
-                                sg.Text("MAC", key=f"NODE.LBL.MAC", size=(15,1), pad=((1,0),(7,7)),text_color='black', background_color='#C9E4E7'),
-                                sg.Text("IP", key=f"NODE.LBL.IP", size=(15,1), pad=((1,0),(7,7)),text_color='black', background_color='#C9E4E7'),
-                                sg.Text("MAL", key=f"NODE.LBL.MALFUNC", size=(4,1), pad=((1,7),(7,7)),text_color='black', background_color='#C9E4E7')
+                                sg.Text("ID", key=f"NODE.LBL.IP", font=sg.DEFAULT_FONT +('bold',), size=(5,1), pad=((36,0),(7,7)),text_color='black', background_color='#C9E4E7'),
+                                sg.Text("MAC", key=f"NODE.LBL.MAC", font=sg.DEFAULT_FONT +('bold',), size=(15,1), pad=((1,0),(7,7)),text_color='black', background_color='#C9E4E7'),
+                                sg.Text("IP", key=f"NODE.LBL.IP", font=sg.DEFAULT_FONT +('bold',), size=(15,1), pad=((1,0),(7,7)),text_color='black', background_color='#C9E4E7'),
+                                sg.Text("MAL", key=f"NODE.LBL.MALFUNC", font=sg.DEFAULT_FONT +('bold',), size=(4,1), pad=((1,7),(7,7)),text_color='black', background_color='#C9E4E7')
                             ]]                                     
                         )]]    
 
-        routes_column = [ [
-                sg.Frame('Routes', expand_x=True, key='FRAME.ROUTES', font="bold", layout=
-                            # header
-                            [[
-                                sg.Text("ID", key=f"ROUTE.LBL.IP", size=(5,1), pad=((36,0),(7,7)), text_color='black', background_color='#C9E4E7'),
-                                sg.Text("DESCRIPTION", key=f"NODE.LBL.DESC", size=(30,1), pad=((1,7),(7,7)),text_color='black', background_color='#C9E4E7')                            ]]                                     
-                        )]]    
+        routes_column = [[
+            sg.Frame('Routes', expand_x=True, key='FRAME.ROUTES', font='bold', layout=
+                # header
+                [[
+                    sg.Text("ID", key=f"ROUTE.LBL.IP", font=sg.DEFAULT_FONT +('bold',), size=(5,1), pad=((36,0),(7,7)), text_color='black', background_color='#C9E4E7'),
+                    sg.Text("DESCRIPTION", font=sg.DEFAULT_FONT +('bold',), key=f"NODE.LBL.DESC", size=(30,1), pad=((1,7),(7,7)),text_color='black', background_color='#C9E4E7')                            
+                ]]                                     
+        )]]    
 
-        log_row = [ [
-                sg.Frame('Log',layout=[[]], expand_x=True, key='FRAME.LOG'),
-            ]
-        ]
+        log_row = [[
+                sg.Frame('Log', expand_x=True, font=sg.DEFAULT_FONT +('bold',), key='FRAME.LOG',
+                    layout = [[
+                        sg.Multiline(   "", key=f"NODE.TXT.LOG", autoscroll=True, font=('Courier new', 11), size=(20,20), expand_x= True, expand_y=True,
+                                        text_color='black', background_color='#FFFFFF')        
+                    ]]
+                ),
+        ]]
 
         layout =    [   host_row,
                         layout_row,
@@ -138,6 +144,12 @@ class Main(sg.Window):
                 case 'NODE.UPDATE.IP':
                     self.setNodeIP(values[event])
 
+                case 'ROUTE.UPDATE.STATE':
+                    self.setRouteStatus(values[event])
+
+                case 'NODE.UPDATE.LOG':
+                    self.setNodeLog(values[event])
+
                 case _:
                     # NODE Reset
                     if event.startswith('NODE.BTN.RESET.'):
@@ -151,12 +163,15 @@ class Main(sg.Window):
                     # NODE Log
                     elif event.startswith('NODE.BTN.LOG.'):
                         pub.sendMessage('view.node.log', nodeId=event.rsplit(".", 1)[1])
+                    # NODE Clear Log
+                    elif event.startswith('NODE.BTN.CLEARLOG.'):
+                        pub.sendMessage('view.node.clearlog', nodeId=event.rsplit(".", 1)[1])
                     # NODE Malfunction
-                    elif event.startswith('NODE.BTN.MALFUNC.'):
-                        pub.sendMessage('view.node.malfunction', nodeId=event.rsplit(".", 1)[1])
+                    elif event.startswith('NODE.CHK.MALFUNC.'):
+                        pub.sendMessage('view.node.malfunction', nodeId= event.rsplit(".", 1)[1], state= values[event])
                     # ROUTE Request
                     elif event.startswith('ROUTE.BTN.REQUEST.'):
-                        pub.sendMessage('view.route.request', nodeId=event.rsplit(".", 1)[1])
+                        pub.sendMessage('view.route.request', routeId=int(event.rsplit(".", 1)[1]))
                     pass
 
         # Close the window
@@ -181,7 +196,7 @@ class Main(sg.Window):
         # Prepare the row
         route_id = route.id
         route_row = [   
-                         sg.Image(filename=Main.absolutePath('../images/status_led_inactive.png'), size=(20,20), subsample=2, key=f"ROUTE.{route_id}"),
+                        sg.Image(filename=Main.absolutePath('../images/status_led_inactive.png'), size=(20,20), subsample=2, key=f"ROUTE.IMG.{route_id}"),
                         sg.Text(route_id, key=f"ROUTE.TXT.ID.{route_id}", size=(5,1), pad=((6,0),(3,1)), text_color='black', background_color='#EEF292'),
                         sg.Text(route.description, key=f"ROUTE.TXT.DESC.{route_id}", size=(30,1), pad=((1,7),(3,1)), text_color='black', background_color='#EEF292'),
                         sg.Button("REQUEST", key=f"ROUTE.BTN.REQUEST.{route_id}")
@@ -200,11 +215,12 @@ class Main(sg.Window):
                         sg.Text(node_id, key=f"NODE.TXT.ID.{node_id}", size=(5,1), pad=((6,0),(3,1)), text_color='black', background_color='#34D1BF'),
                         sg.Text(MAC2str(node.MAC), key=f"NODE.TXT.MAC.{node_id}", size=(15,1), pad=((1,0),(3,1)), text_color='black', background_color='#34D1BF'),
                         sg.Text(IP2str(node.IP), key=f"NODE.TXT.IP.{node_id}", size=(15,1), pad=((1,0),(3,1)), text_color='black', background_color='#34D1BF'),
-                        sg.Checkbox('',key=f"NODE.CHK.MALFUNC.{node_id}", pad=((10,7),(3,1)), text_color='black'),
+                        sg.Checkbox('',key=f"NODE.CHK.MALFUNC.{node_id}", pad=((10,7),(3,1)),enable_events=True, text_color='black', checkbox_color='#ffffff'),
                         sg.Button("IP", key=f"NODE.BTN.IP.{node_id}"),
                         sg.Button("RESET", key=f"NODE.BTN.RESET.{node_id}"),
                         sg.Button("CONFIG", key=f"NODE.BTN.CONFIG.{node_id}"),
-                        sg.Button("LOG", key=f"NODE.BTN.LOG.{node_id}")
+                        sg.Button("LOG", key=f"NODE.BTN.LOG.{node_id}"),
+                        sg.Button('', image_filename=Main.absolutePath('../images/trash.png'), key=f"NODE.BTN.CLEARLOG.{node_id}", image_subsample=2)
                     ]
         self.extend_layout(self['FRAME.NODES'], [ node_row ])
 
@@ -215,6 +231,7 @@ class Main(sg.Window):
         # Set host IP
         self['HOST.IP'].update(hostIP)
 
+    # NODE event handlers
     def setNodeStatus(self, node: Node) -> None:
         match node.state:
             case NodeState.PENDING:
@@ -231,3 +248,23 @@ class Main(sg.Window):
 
     def setNodeIP(self, node: Node) -> None:
         self[f'NODE.TXT.IP.{node.id}'].update(IP2str(node.IP))
+
+    def setNodeLog(self, node: Node) -> None:
+        self[f'FRAME.LOG'].update('Log ' + node.id)
+        self[f'NODE.TXT.LOG'].update("\n".join(map(lambda line: str(line), node.log)))
+
+    # ROUTE event handlers
+    def setRouteStatus(self, route: Route) -> None:
+        match route.state:
+            case RouteState.PENDING:
+                self[f'ROUTE.IMG.{route.id}'].update(filename=Main.absolutePath('../images/status_led_yellow.png'), size=(20,20), subsample=2)
+
+            case RouteState.FAIL:
+                self[f'ROUTE.IMG.{route.id}'].update(filename=Main.absolutePath('../images/status_led_red.png'), size=(20,20), subsample=2)
+
+            case RouteState.OK:
+                self[f'ROUTE.IMG.{route.id}'].update(filename=Main.absolutePath('../images/status_led_green.png'), size=(20,20), subsample=2)                
+
+            case _:
+                self[f'ROUTE.IMG.{route.id}'].update(filename=Main.absolutePath('../images/status_led_inactive.png'), size=(20,20), subsample=2)
+

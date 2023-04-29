@@ -18,14 +18,13 @@ class NodePosition(Enum):
 	LAST				= 127   # Last node of the route   
                 
 class NodeConfigItem(object):
-
     # Constructor    
-    def __init__(self, routeId: int,  prev: 'Node', next: 'Node' , position: NodePosition, requestedPos: 'PointPosition') -> None:
+    def __init__(self, routeId: int,  prev: 'Node', next: 'Node' , position: NodePosition, requestedPos: 'PointPosition' = None) -> None:
         self._routeId: int = routeId
         self._position: NodePosition = position
         self._prev: 'Node' = prev
         self._next: Node = next
-        self._requestedPos: PointPosition = requestedPos
+        self._requestedPos = requestedPos
 
     # Properties
     @property
