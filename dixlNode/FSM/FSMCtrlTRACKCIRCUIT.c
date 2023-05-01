@@ -770,7 +770,7 @@ void FSMCtrlTRACKCIRCUITEvent_NewMessage(message *pMessage, struct timespec *dea
 						break;
 					
 					case MSGTYPE_ROUTEDISAGREE:
-						if (pMessage->routeIDisagree.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
+						if (pMessage->routeDisagree.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
 							// Not necessary to test NodePosition
 							// Exit send DISAGREE to next node if is not last
 							newState = StateNotReserved;
@@ -801,7 +801,7 @@ void FSMCtrlTRACKCIRCUITEvent_NewMessage(message *pMessage, struct timespec *dea
 						break;
 					
 					case MSGTYPE_ROUTEDISAGREE:
-						if (pMessage->routeIDisagree.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
+						if (pMessage->routeDisagree.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
 							// Not necessary to test NodePosition
 							// Exit send DISAGREE to prev node or TRAINNOK to host
 							newState = StateNotReserved;
@@ -831,7 +831,7 @@ void FSMCtrlTRACKCIRCUITEvent_NewMessage(message *pMessage, struct timespec *dea
 						break;
 					
 					case MSGTYPE_ROUTEDISAGREE:
-						if (pMessage->routeIDisagree.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
+						if (pMessage->routeDisagree.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
 							// Not necessary to test NodePosition
 							// Exit send DISAGREE to next node
 							newState = StateNotReserved;

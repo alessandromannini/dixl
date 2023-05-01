@@ -483,6 +483,7 @@ static void MalfunctionStateEntry(eventData *pEventData) {
 	}
 
 	// Log	
+	logger_log(LOGTYPE_MALFUNCTION, 0, NodeNULL );			
 	logger_log(LOGTYPE_DISAGREE, pCurrentNodeState->pCurrentRoute->id, NodeNULL );			
 	
 	//Send to dixlCommTx task queue
@@ -902,7 +903,7 @@ void FSMCtrlPOINTEvent_NewMessage(message *pMessage, struct timespec *deadline) 
 						break;
 					
 					case MSGTYPE_ROUTEDISAGREE:
-						if (pMessage->routeIDisagree.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
+						if (pMessage->routeDisagree.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
 							// Not necessary to test NodePosition
 							// Exit send DISAGREE to next node if is not last
 							newState = StateNotReserved;
@@ -933,7 +934,7 @@ void FSMCtrlPOINTEvent_NewMessage(message *pMessage, struct timespec *deadline) 
 						break;
 					
 					case MSGTYPE_ROUTEDISAGREE:
-						if (pMessage->routeIDisagree.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
+						if (pMessage->routeDisagree.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
 							// Not necessary to test NodePosition
 							// Exit send DISAGREE to prev node or TRAINNOK to host
 							newState = StateNotReserved;
@@ -975,7 +976,7 @@ void FSMCtrlPOINTEvent_NewMessage(message *pMessage, struct timespec *deadline) 
 						break;
 					
 					case MSGTYPE_ROUTEDISAGREE:
-						if (pMessage->routeIDisagree.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
+						if (pMessage->routeDisagree.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
 							// Not necessary to test NodePosition
 							// Exit send DISAGREE to prev node or TRAINNOK to host
 							newState = StateNotReserved;
@@ -1011,7 +1012,7 @@ void FSMCtrlPOINTEvent_NewMessage(message *pMessage, struct timespec *deadline) 
 						break;
 					
 					case MSGTYPE_ROUTEDISAGREE:
-						if (pMessage->routeIDisagree.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
+						if (pMessage->routeDisagree.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
 							// Not necessary to test NodePosition
 							// Exit send DISAGREE to next node
 							newState = StateNotReserved;

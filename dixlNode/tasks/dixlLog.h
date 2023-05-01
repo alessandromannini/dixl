@@ -30,6 +30,7 @@ typedef enum {
 	LOGTYPE_REQNACK				= 12,	// Request NACKed
 	LOGTYPE_DISAGREE			= 13,	// Request DISAGREEed
 	LOGTYPE_RESERVED			= 14,	// Request AGREEed
+	LOGTYPE_MALFUNCTION			= 90,	// Malfunction
 	LOGTYPE_NOTRESERVED			= 99,	// Not reserved
 } eLogType;
 
