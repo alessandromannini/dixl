@@ -41,6 +41,19 @@
                     "requestedPosition": "STRAIGHT"
                 }
             ]
+        },
+        {
+            "id": 3,
+			"description": "Right-to-right straight",
+            "nodeRefs": [
+                {
+                    "id": "PT1",
+                    "requestedPosition": "STRAIGHT"
+                },
+                {
+                    "id": "TC1"
+                }
+            ]
         }
     ]
 }

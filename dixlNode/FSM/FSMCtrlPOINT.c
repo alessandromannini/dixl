@@ -127,7 +127,7 @@ static void rejectRouteRequest(message *pInMessage) {
 	nodeId *destNode = &(pInMessage->header.source);
 	message message;
 	size_t size = sizeof(msgIHeader);
-	routeId requestedRouteId = pInMessage->routeIReq.requestRouteId;
+	routeId requestedRouteId = pInMessage->routeReq.requestRouteId;
 
 	// Reply DISAGREE only to route request
 	switch (pInMessage->header.type) {
@@ -135,10 +135,8 @@ static void rejectRouteRequest(message *pInMessage) {
 			
 			// Log
 			logger_log(LOGTYPE_REQ, requestedRouteId, *destNode );			
-			logger_log(LOGTYPE_REQNACK, requestedRouteId,  *destNode );
-
 			
-			// Prepare DISAGREE message for source node			
+			// Prepare DISAGREE/NACK message for source node			
 			position = findPosition(requestedRouteId);
 			
 			// First node? Send to host
@@ -149,6 +147,7 @@ static void rejectRouteRequest(message *pInMessage) {
 				size += sizeof(msgIRouteTRAINNOK);
 				
 				// Log
+				logger_log(LOGTYPE_DISAGREE, requestedRouteId, *destNode );
 				syslog(LOG_INFO, "Sending TRAINNOK for route (%i) to host node (%d.%d.%d.%d)", pInMessage->routeReq.requestRouteId, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);			
 			} else {
 				message.iHeader.type = IMSGTYPE_ROUTENACK;
@@ -157,8 +156,8 @@ static void rejectRouteRequest(message *pInMessage) {
 				size += sizeof(msgIRouteNACK);
 	
 				// Log
-				nodeId *destNode = &(pInMessage->header.source);
-				syslog(LOG_INFO, "Sending NACK for route (%i) to node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);			
+				logger_log(LOGTYPE_REQNACK, requestedRouteId, *destNode );
+				syslog(LOG_INFO, "Sending NACK for route (%i) to node (%d.%d.%d.%d)", pInMessage->routeReq.requestRouteId, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);			
 			}		
 			
 			//Send to dixlCommTx task queue
@@ -213,10 +212,6 @@ static void WaitAckEntry(eventData *pEventData) {
 	// Prepare IROUTEREQ message for dixlCommTx
 	message message;
 	message.iHeader.type = IMSGTYPE_ROUTEREQ;
-	
-	// Log
-	nodeId *destNode = &(pCurrentNodeState->pCurrentRoute->next);
-	syslog(LOG_INFO, "Received route request (%i) propagating to next node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);
 	
 	// Send REQ to next node
 	message.routeIReq.destination = pCurrentNodeState->pCurrentRoute->next;
