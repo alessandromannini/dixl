@@ -10,7 +10,7 @@
 #ifndef VERSION_H_
 #define VERSION_H_
 
-#define DIXL_VERSION	"001.000.004"
+#define DIXL_VERSION	"001.001.000"
 
 
 #endif
