@@ -56,19 +56,19 @@ class LogLine():
 				out += f' track segment occupied by the train'					
 
 			case LogType.REQNACK:
-				out += f' route {self.routeId} request from node'
+				out += f' route {self.routeId} request'
 				if self.nodeId:
-					out += f' {self.nodeId} ({utility.IP2str(self.nodeIP)})'
-				else:
-					out += f' {utility.IP2str(self.nodeIP)}'
+					out += f' from node {self.nodeId} ({utility.IP2str(self.nodeIP)})'
+				elif self.nodeIP != b'\x00\x00\x00\x00':
+					out += f' from node {utility.IP2str(self.nodeIP)}'
 				out += ' not ACKnowledge'
 
 			case LogType.DISAGREE:
-				out += f' route {self.routeId} request from node'
+				out += f' route {self.routeId} request'
 				if self.nodeId:
-					out += f' {self.nodeId} ({utility.IP2str(self.nodeIP)})'
-				else:
-					out += f' {utility.IP2str(self.nodeIP)}'
+					out += f' from node {self.nodeId} ({utility.IP2str(self.nodeIP)})'
+				elif self.nodeIP != b'\x00\x00\x00\x00':
+					out += f' from node {utility.IP2str(self.nodeIP)}'
 				out += ' DISagreed'
 
 			case LogType.RESERVED:
