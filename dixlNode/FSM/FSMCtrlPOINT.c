@@ -246,6 +246,7 @@ static void WaitAckExit(eventData *pEventData) {
 			
 			// Log
 			nodeId *destNode = &(pCurrentNodeState->pCurrentRoute->prev);
+			logger_log(LOGTYPE_DISAGREE, pCurrentNodeState->pCurrentRoute->id, NodeNULL );			
 			syslog(LOG_INFO, "Received NACK for route (%i) sending back TRAINNOK to host node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);
 		} else {
 			message.iHeader.type = IMSGTYPE_ROUTENACK;
@@ -255,11 +256,9 @@ static void WaitAckExit(eventData *pEventData) {
 
 			// Log
 			nodeId *destNode = &(pCurrentNodeState->pCurrentRoute->prev);
+			logger_log(LOGTYPE_REQNACK, pCurrentNodeState->pCurrentRoute->id, NodeNULL );			
 			syslog(LOG_INFO, "Received NACK for route (%i) sending back NACK to previous node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);
 		}
-		
-		// Log
-		logger_log(LOGTYPE_DISAGREE, pCurrentNodeState->pCurrentRoute->id, NodeNULL );
 		
 		//Send to dixlCommTx task queue
 		msgQ_Send(msgQCommTxId, (char *) &message, size);
@@ -864,7 +863,7 @@ void FSMCtrlPOINTEvent_NewMessage(message *pMessage, struct timespec *deadline) 
 						break;
 					
 					case MSGTYPE_ROUTENACK:
-						if (pMessage->routeINAck.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
+						if (pMessage->routeNAck.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
 							// Not necessary to test NodePosition
 							// Exit send NACK to prev or TRAINNOK to host
 							newState = StateNotReserved;
