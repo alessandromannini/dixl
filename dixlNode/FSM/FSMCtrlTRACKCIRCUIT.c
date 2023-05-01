@@ -146,14 +146,14 @@ static void rejectRouteRequest(message *pInMessage) {
 				// Log
 				syslog(LOG_INFO, "Sending TRAINNOK for route (%i) to host node (%d.%d.%d.%d)", pInMessage->routeReq.requestRouteId, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);			
 			} else {
-				message.iHeader.type = IMSGTYPE_ROUTEDISAGREE;
-				message.routeIDisagree.destination = *destNode;
-				message.routeIDisagree.requestRouteId = pInMessage->routeReq.requestRouteId;
-				size += sizeof(msgIRouteDISAGREE);
+				message.iHeader.type = IMSGTYPE_ROUTENACK;
+				message.routeINAck.destination = *destNode;
+				message.routeINAck.requestRouteId = pInMessage->routeReq.requestRouteId;
+				size += sizeof(msgIRouteNACK);
 	
 				// Log
 				nodeId *destNode = &(pInMessage->header.source);
-				syslog(LOG_INFO, "Sending DISAGREE for route (%i) to node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);			
+				syslog(LOG_INFO, "Sending NACK for route (%i) to node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);			
 			}		
 						
 			//Send to dixlCommTx task queue

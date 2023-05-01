@@ -170,6 +170,18 @@ size_t socket_recvfrom(int fd, void *buffer, size_t buffer_size, struct sockaddr
 	return ret;	
 }
 
+
+size_t socket_setsockopt(int fd, int level, int optname, const void *optval, socklen_t optlen) {
+    ssize_t ret;
+
+	if ((ret = setsockopt(fd, level, optname, optval, optlen)) == SOCK_ERROR) {
+		// Error
+		int err=errno;
+        syslog(LOG_ERR, "Setting socket options error %i: %s", err, strerror(err));
+	}
+	return ret;	
+}
+
 void network_IPv4_to_str(const IPv4Address *IPv4, char *str) {	
 	snprintf(str, 16, "%d.%d.%d.%d", IPv4->bytes[0], IPv4->bytes[1], IPv4->bytes[2], IPv4->bytes[3]);	
 }
