@@ -19,6 +19,7 @@ class LogType(Enum):
 	REQNACK				= 12	# Request NACKed
 	DISAGREE			= 13	# Request DISAGREEed
 	RESERVED			= 14	# Request AGREEed
+	MALFUNCTION			= 90	# Malfunction
 	NOTRESERVED			= 99	# Not Reserved
 
 class LogLine():
@@ -73,6 +74,9 @@ class LogLine():
 
 			case LogType.RESERVED:
 				out += f' node reserved for route {self.routeId}'
+
+			case LogType.MALFUNCTION:
+				out += f' node in a MALFUNCTION state'
 
 			case LogType.NOTRESERVED:
 				out += f' node in NOT reserved state'

@@ -239,9 +239,9 @@ class Node(object):
         try:
             # Random delay
             if delayed:
-                delay: int = 0
+                delay: int = random.randint(1000, 2000)
             else:
-                delay: int = random.randint(0, 2000)
+                delay: int = 0
 
             # Spawn the thread                
             t = threading.Thread(target=message.sendMalfunction, kwargs={'hostIP': hostIP, 'node': self, 'delay': delay}) 

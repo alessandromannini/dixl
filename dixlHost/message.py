@@ -216,7 +216,10 @@ def sendMalfunction(hostIP: bytes, node: 'Node', delay: int):
 		messageToSend = getMessageToSend( MsgPointMALFUNCTION( Header( 0, MsgType.POINTMALFUNC, hostIP, node.IP) ), MsgPointMALFUNCTIONFormat)
 		
 		# If delayed ... sleep
-		if delay > 0: time.sleep(delay / 1000)
+		if delay > 0: 
+			value: float = delay / 1000
+			print(f'Simulate Malfunction: delaying for {value}')
+			time.sleep(delay / 1000)
 
 		# Create the connection to the node
 		client_socket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
