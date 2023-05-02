@@ -67,8 +67,7 @@ static void process_message(message message) {
 		case IMSGTYPE_SENSORSTATE:
 			requestedState = message.sensorIPOS.requestedState;
 			requestNonce = message.sensorIPOS.requestTimestamp;
-			
-			
+						
 			// Log
 			syslog(LOG_INFO, "Waiting for %s state with nonce %i", sensorStateStr(requestedState), requestNonce);				
 			break;
@@ -98,8 +97,11 @@ static int worker() {
 	if (currentState != requestedState) {
 		syslog(LOG_INFO,"Simulation mode: emulating SENSOR %s in 5 seconds", sensorStateStr(requestedState));
 		taskDelay(sysClkRateGet() * 5);
-		// Log occupied if it wasn't
-		if (currentState != SENSORSTATE_ON) logger_log(LOGTYPE_OCCUPIED, NULL, NodeNULL );
+		// Log occupied/freed if it wasn't
+		if (currentState != SENSORSTATE_ON)
+			logger_log(LOGTYPE_OCCUPIED, NULL, NodeNULL );
+		else
+			logger_log(LOGTYPE_FREED, NULL, NodeNULL );
 		currentState = requestedState;
 	}
 #else
@@ -113,6 +115,10 @@ static int worker() {
 		}
 		currentState = SENSORSTATE_ON;		
 	} else
+		// Log freed if it wasn't
+		if (currentState != SENSORSTATE_OFF) {
+			logger_log(LOGTYPE_FREED, NULL, NodeNULL );
+			syslog(LOG_INFO,"SENSOR is %s: track is free", sensorStateStr(SENSORSTATE_OFF));
 		currentState = SENSORSTATE_OFF;
 #endif
 
