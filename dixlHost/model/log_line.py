@@ -19,6 +19,7 @@ class LogType(Enum):
 	REQNACK				= 12	# Request NACKed
 	DISAGREE			= 13	# Request DISAGREEed
 	RESERVED			= 14	# Request AGREEed
+	FREED				= 15	# Track freed
 	MALFUNCTION			= 90	# Malfunction
 	NOTRESERVED			= 99	# Not Reserved
 
@@ -55,6 +56,9 @@ class LogLine():
 					
 			case LogType.OCCUPIED:
 				out += f' track segment occupied by the train'					
+
+			case LogType.OCCUPIED:
+				out += f' track segment freed by the train'					
 
 			case LogType.REQNACK:
 				out += f' route {self.routeId} request'
