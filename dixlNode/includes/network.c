@@ -86,7 +86,7 @@ int socket_connect(int fd, char *bind_address, int port) {
     	int err = errno;
     	close(fd);
         syslog(LOG_ERR, "Connect socket error %i: %s", err, strerror(err));
-        syslog(LOG_ERR, "Connect socket error address %s", server.sin_addr.s_addr);
+        syslog(LOG_ERR, "Connect socket error address %s", bind_address);
     }
     
     return ret;
