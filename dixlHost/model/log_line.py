@@ -57,7 +57,7 @@ class LogLine():
 			case LogType.OCCUPIED:
 				out += f' track segment occupied by the train'					
 
-			case LogType.OCCUPIED:
+			case LogType.FREED:
 				out += f' track segment freed by the train'					
 
 			case LogType.REQNACK:
