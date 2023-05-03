@@ -114,12 +114,14 @@ static int worker() {
 			syslog(LOG_INFO,"SENSOR is %s: track is occupied", sensorStateStr(SENSORSTATE_ON));
 		}
 		currentState = SENSORSTATE_ON;		
-	} else
+	} else {
 		// Log freed if it wasn't
 		if (currentState != SENSORSTATE_OFF) {
 			logger_log(LOGTYPE_FREED, NULL, NodeNULL );
 			syslog(LOG_INFO,"SENSOR is %s: track is free", sensorStateStr(SENSORSTATE_OFF));
+		}
 		currentState = SENSORSTATE_OFF;
+	}		
 #endif
 
 	// Log	
