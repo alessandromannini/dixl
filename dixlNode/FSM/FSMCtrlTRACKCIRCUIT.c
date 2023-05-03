@@ -408,7 +408,6 @@ static void ReservedEntry(eventData *pEventData) {
 		nodeId *destNode = &(pCurrentNodeState->pCurrentRoute->prev);
 		syslog(LOG_INFO, "Route request (%i) TRAIN OK reached sending back to host node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);					
 	} else {
-
 		// Prepare IROUTEAGREE message for dixlCommTx
 		message.iHeader.type = IMSGTYPE_ROUTEAGREE;
 		size = sizeof(msgIHeader);
@@ -423,6 +422,7 @@ static void ReservedEntry(eventData *pEventData) {
 		syslog(LOG_INFO, "Route request (%i) AGREEed sending back AGREE to prev node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);			
 	}
 		
+	// Log
 	logger_log(LOGTYPE_RESERVED, pCurrentNodeState->pCurrentRoute->id, NodeNULL );			
 
 	//Send to dixlCommTx task queue

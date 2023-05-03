@@ -535,7 +535,8 @@ static void ReservedStateEntry(eventData *pEventData) {
 		// Send TRAINOK to host node
 		message.routeITrainOk.destination = pCurrentNodeState->pCurrentRoute->prev;
 		message.routeITrainOk.requestRouteId = pCurrentNodeState->pCurrentRoute->id;
-	
+		size += sizeof(msgIRouteTRAINOK);
+		
 		// Log
 		nodeId *destNode = &(pCurrentNodeState->pCurrentRoute->prev);
 		syslog(LOG_INFO, "Route request (%i) TRAIN OK reached sending back to host node (%d.%d.%d.%d)", pCurrentNodeState->pCurrentRoute->id, destNode->bytes[0], destNode->bytes[1], destNode->bytes[2], destNode->bytes[3]);					
