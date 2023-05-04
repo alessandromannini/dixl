@@ -93,7 +93,7 @@ class Main(sg.Window):
                         )]]    
 
         routes_column = [[
-            sg.Frame('Routes', expand_x=True, key='FRAME.ROUTES', font='bold', layout=
+            sg.Frame('Routes', expand_x=True, key='FRAME.ROUTES', font=sg.DEFAULT_FONT +('bold',), layout=
                 # header
                 [[
                     sg.Text("ID", key=f"ROUTE.LBL.IP", font=sg.DEFAULT_FONT +('bold',), size=(5,1), pad=((36,0),(7,7)), text_color='black', background_color='#C9E4E7'),
