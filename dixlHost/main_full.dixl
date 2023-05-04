@@ -1,7 +1,7 @@
 {
     "id": "main",
     "description": "test scenarios",
-    "nodes": [
+    "nodes": [	
         {
             "id": "TC1",
             "MAC": "52:54:00:12:34:56",
@@ -9,9 +9,21 @@
             "type": "TRACKCIRCUIT"
         },
         {
+            "id": "TC2",
+            "MAC": "52:54:00:12:34:57",
+			"IP": "192.168.173.85",
+            "type": "TRACKCIRCUIT"
+        },
+        {
             "id": "PT1",
             "MAC": "e4:5f:01:6a:bc:7d",
 			"IP": "192.168.173.80",
+            "type": "POINT"
+        },
+        {
+            "id": "PT2",
+            "MAC": "dc:a6:32:40:1e:69",
+			"IP": "192.168.173.95",
             "type": "POINT"
         }
     ],
@@ -52,6 +64,36 @@
                 },
                 {
                     "id": "TC1"
+                }
+            ]
+        },
+        {
+            "id": 4,
+			"description": "STATION: red left2right straight",
+            "nodeRefs": [
+                {
+                    "id": "PT1",
+                    "requestedPosition": "STRAIGHT"
+                },
+                {
+                    "id": "TC1"
+                },
+                {
+                    "id": "PT2",
+                    "requestedPosition": "STRAIGHT"
+                }
+            ]
+        },
+        {
+            "id": 5,
+			"description": "STATION: blue right2left diverging stop",
+            "nodeRefs": [
+                {
+                    "id": "PT2",
+                    "requestedPosition": "DIVERGING"
+                },
+                {
+                    "id": "TC2"
                 }
             ]
         }
