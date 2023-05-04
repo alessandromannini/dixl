@@ -339,6 +339,7 @@ static bool client_check(client *client) {
 		client->numChecks++;
 		client->numFails++;
 		client_error = true;
+		sendToHost();
 	}
 	
 	return (ret == OK);
