@@ -721,7 +721,7 @@ void FSMCtrlTRACKCIRCUITEvent_NewMessage(message *pMessage, struct timespec *dea
 									break;
 									
 								case NODEPOS_MIDDLE:
-									newState = StateWaitAck;
+									newState = StateWaitCommit;
 									break;
 							}
 							condition = TRUE;
