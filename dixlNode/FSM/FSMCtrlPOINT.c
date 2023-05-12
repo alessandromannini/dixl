@@ -40,6 +40,7 @@ typedef enum eStates {
 
 typedef struct eventData {
 	struct message *pMessage;
+    struct timespec *deadline;   	// Next timeout or 0 = no timeout	
 } eventData;
 
 
@@ -60,7 +61,6 @@ typedef struct {
     StateMapItem *stateMap;			// Map to function for each state
 	bool eventGenerated;			// An event occured and hasn't been served
 	eventData *pEventData;			// Point to current event Data
-    struct timespec deadline;   	// Next timeout or 0 = no timeout	
 } FiniteStateMachine;
 
 /**
@@ -180,6 +180,12 @@ static void NotReservedEntry(eventData *pEventData) {
 	// Log
 	syslog(LOG_INFO, "Request cleaned");	
 	logger_log(LOGTYPE_NOTRESERVED, 0, NodeNULL);	
+	
+	// Reset timeout
+	if (pEventData) {
+		pEventData->deadline->tv_sec = 0;	
+		pEventData->deadline->tv_nsec = 0;		
+	}
 }
 static void NotReservedState(eventData *pEventData) {
 }
@@ -219,6 +225,10 @@ static void WaitAckEntry(eventData *pEventData) {
 		
 	//Send to dixlCommTx task queue
 	msgQ_Send(msgQCommTxId, (char *) &message, sizeof(msgIHeader) + sizeof(msgIRouteREQ));
+
+	// Set timeout
+	clock_gettime(CLOCK_REALTIME, pEventData->deadline);	
+	time_timespectimeout(pEventData->deadline, COMMMSGTIMEOUT);	
 }
 static void WaitAckState(eventData *pEventData) {
 
@@ -283,6 +293,10 @@ static void WaitCommitEntry(eventData *pEventData) {
 	
 	//Send to dixlCommTx task queue
 	msgQ_Send(msgQCommTxId, (char *) &message, sizeof(msgIHeader) + sizeof(msgIRouteACK));
+	
+	// Set timeout
+	clock_gettime(CLOCK_REALTIME, pEventData->deadline);	
+	time_timespectimeout(pEventData->deadline, COMMMSGTIMEOUT);	
 }
 static void WaitCommitState(eventData *pEventData) {
 }
@@ -340,6 +354,10 @@ static void WaitAgreeEntry(eventData *pEventData) {
 	
 	//Send to dixlCommTx task queue
 	msgQ_Send(msgQCommTxId, (char *) &message, sizeof(msgIHeader) + sizeof(msgIRouteCOMMIT));
+	
+	// Set timeout
+	clock_gettime(CLOCK_REALTIME, pEventData->deadline);	
+	time_timespectimeout(pEventData->deadline, COMMMSGTIMEOUT);	
 }
 static void WaitAgreeState(eventData *pEventData) {
 }
@@ -405,6 +423,10 @@ static void PositioningEntry(eventData *pEventData) {
 
 	//Send to dixlPoint task queue
 	msgQ_Send(msgQPointId, (char *) &message, size);	
+
+	// Reset timeout
+	pEventData->deadline->tv_sec = 0;	
+	pEventData->deadline->tv_nsec = 0;	
 }
 static void PositioningState(eventData *pEventData) {	
 }
@@ -509,8 +531,11 @@ static void MalfunctionStateEntry(eventData *pEventData) {
 		msgQ_Send(msgQCommTxId, (char *) &messageNext, size);
 	} else 
 		// Log
-		syslog(LOG_INFO, "Route request (%i) MALFUNCTION reached not propagating (last)", pCurrentNodeState->pCurrentRoute->id);			
-
+		syslog(LOG_INFO, "Route request (%i) MALFUNCTION reached not propagating (last)", pCurrentNodeState->pCurrentRoute->id);
+	
+	// Reset timeout
+	pEventData->deadline->tv_sec = 0;	
+	pEventData->deadline->tv_nsec = 0;		
 }
 static void MalfunctionState(eventData *pEventData) {
 	// Simply go to FailSafeState
@@ -574,7 +599,11 @@ static void ReservedStateEntry(eventData *pEventData) {
 	syslog(LOG_INFO, "Route request (%i) waiting for SENSOR ON with nonce %i", pCurrentNodeState->pCurrentRoute->id, lastSensorNonce);				
 
 	//Send to dixlSensor task queue
-	msgQ_Send(msgQSensorId, (char *) &message, size);				
+	msgQ_Send(msgQSensorId, (char *) &message, size);	
+
+	// Reset timeout
+	pEventData->deadline->tv_sec = 0;	
+	pEventData->deadline->tv_nsec = 0;	
 }
 static void ReservedState(eventData *pEventData) {	
 }
@@ -634,7 +663,11 @@ static void TrainInTransitionEntry(eventData *pEventData) {
 	syslog(LOG_INFO, "Route request (%i) waiting for SENSOR OFF with nonce %i", pCurrentNodeState->pCurrentRoute->id, lastSensorNonce);					
 
 	//Send to dixlSensor task queue
-	msgQ_Send(msgQSensorId, (char *) &message, size);				
+	msgQ_Send(msgQSensorId, (char *) &message, size);			
+
+	// Reset timeout
+	pEventData->deadline->tv_sec = 0;	
+	pEventData->deadline->tv_nsec = 0;	
 }
 static void TrainInTransitionState(eventData *pEventData) {
 }
@@ -656,6 +689,10 @@ static void TrainInTransitionExit(eventData *pEventData) {
 static void FailSafeEntry(eventData *pEventData) {
 	// Log
 	syslog(LOG_ERR, "Node is going in fail-safe mode all subsequent requests will be rejected");
+
+	// Reset timeout
+	pEventData->deadline->tv_sec = 0;	
+	pEventData->deadline->tv_nsec = 0;	
 }
 static void FailSafeState(eventData *pEventData) {
 	// Reject All reuqests
@@ -796,6 +833,8 @@ void FSMCtrlPOINTEvent_NewMessage(message *pMessage, struct timespec *deadline) 
 	// Event data
 	eventData eventData;
 	eventData.pMessage = pMessage;
+	eventData.deadline = deadline;
+	
 	// New state
 	eStates newState=NULL;
 	
@@ -844,7 +883,7 @@ void FSMCtrlPOINTEvent_NewMessage(message *pMessage, struct timespec *deadline) 
 				
 			case StateWaitAck:
 				// Accept only current requested route id
-				// Accept only ACK or NACK messages, discard others
+				// Accept only ACK or NACK or TIMOUT messages, discard others
 				switch (pMessage->header.type) {
 					case MSGTYPE_ROUTEACK:
 						if (pMessage->routeAck.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
@@ -865,7 +904,8 @@ void FSMCtrlPOINTEvent_NewMessage(message *pMessage, struct timespec *deadline) 
 						break;
 					
 					case MSGTYPE_ROUTENACK:
-						if (pMessage->routeNAck.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
+					case IMSGTYPE_TIMEOUTNOTIFY:
+						if (pMessage->routeNAck.requestRouteId == pCurrentNodeState->pCurrentRoute->id || pMessage->header.type == IMSGTYPE_TIMEOUTNOTIFY) {
 							// Not necessary to test NodePosition
 							// Exit send NACK to prev or TRAINNOK to host
 							newState = StateNotReserved;
@@ -883,7 +923,7 @@ void FSMCtrlPOINTEvent_NewMessage(message *pMessage, struct timespec *deadline) 
 				
 			case StateWaitCommit:
 				// Accept only current requested route id
-				// Accept only COMMIT or DISAGREE messages, discard others
+				// Accept only COMMIT or DISAGREE or TIMEOUT messages, discard others
 				switch (pMessage->header.type) {
 					case MSGTYPE_ROUTECOMMIT:
 						if (pMessage->routeCommit.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
@@ -904,7 +944,8 @@ void FSMCtrlPOINTEvent_NewMessage(message *pMessage, struct timespec *deadline) 
 						break;
 					
 					case MSGTYPE_ROUTEDISAGREE:
-						if (pMessage->routeDisagree.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
+					case IMSGTYPE_TIMEOUTNOTIFY:
+						if (pMessage->routeDisagree.requestRouteId == pCurrentNodeState->pCurrentRoute->id  || pMessage->header.type == IMSGTYPE_TIMEOUTNOTIFY) {
 							// Not necessary to test NodePosition
 							// Exit send DISAGREE to next node if is not last
 							newState = StateNotReserved;
@@ -922,7 +963,7 @@ void FSMCtrlPOINTEvent_NewMessage(message *pMessage, struct timespec *deadline) 
 				
 			case StateWaitAgree:
 				// Accept only current requested route id
-				// Accept only AGREE or DISAGREE messages, discard others
+				// Accept only AGREE or DISAGREE or TIMEOUT messages, discard others
 				switch (pMessage->header.type) {
 					case MSGTYPE_ROUTEAGREE:
 						if (pMessage->routeCommit.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
@@ -935,7 +976,8 @@ void FSMCtrlPOINTEvent_NewMessage(message *pMessage, struct timespec *deadline) 
 						break;
 					
 					case MSGTYPE_ROUTEDISAGREE:
-						if (pMessage->routeDisagree.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
+					case IMSGTYPE_TIMEOUTNOTIFY:
+						if (pMessage->routeDisagree.requestRouteId == pCurrentNodeState->pCurrentRoute->id  || pMessage->header.type == IMSGTYPE_TIMEOUTNOTIFY) {
 							// Not necessary to test NodePosition
 							// Exit send DISAGREE to prev node or TRAINNOK to host
 							newState = StateNotReserved;
@@ -952,7 +994,7 @@ void FSMCtrlPOINTEvent_NewMessage(message *pMessage, struct timespec *deadline) 
 				break;
 				
 			case StatePositioning:
-				// Accept only POINTNOTIFY and DISAGREE, discard others
+				// Accept only POINTNOTIFY and DISAGREE or TIMEOUT, discard others
 				switch (pMessage->header.type) {
 					case IMSGTYPE_POINTNOTIFY:
 						// Malfunction? 
@@ -977,7 +1019,8 @@ void FSMCtrlPOINTEvent_NewMessage(message *pMessage, struct timespec *deadline) 
 						break;
 					
 					case MSGTYPE_ROUTEDISAGREE:
-						if (pMessage->routeDisagree.requestRouteId == pCurrentNodeState->pCurrentRoute->id) {
+					case IMSGTYPE_TIMEOUTNOTIFY:
+						if (pMessage->routeDisagree.requestRouteId == pCurrentNodeState->pCurrentRoute->id || pMessage->header.type == IMSGTYPE_TIMEOUTNOTIFY) {
 							// Not necessary to test NodePosition
 							// Exit send DISAGREE to prev node or TRAINNOK to host
 							newState = StateNotReserved;
@@ -1062,7 +1105,15 @@ void FSMCtrlPOINTEvent_NewMessage(message *pMessage, struct timespec *deadline) 
 	}	
 }
 
-// TODO
+// Manage the timeout creating a dummy message
 void FSMCtrlPOINTEvent_TimerExpired(struct timespec *deadline) {
+	// Dummy message
+	message message;
+	
+	// Prepare the message
+	message.iHeader.type = IMSGTYPE_TIMEOUTNOTIFY;
+	
+	// Call the message handler
+	FSMCtrlPOINTEvent_NewMessage(&message, deadline);	
 }
 

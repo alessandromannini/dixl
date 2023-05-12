@@ -167,6 +167,16 @@ double time_timespecdiff(const struct timespec *time1, const struct timespec *ti
       + (time1->tv_nsec - time0->tv_nsec) / 1000000000.0;
 }
 
+void time_timespecadd(struct timespec *time1, const struct timespec *time2) {
+	time1->tv_sec +=  time2->tv_sec;
+	time1->tv_nsec +=  time2->tv_nsec;
+}
+
+void time_timespectimeout(struct timespec *time1, const int seconds) {
+	time1->tv_sec +=  seconds;
+}
+
+
 _Vx_ticks_t time_ticksToDeadline(const struct timespec deadline) {
 	// if deadline not valued, return WAIT_FOREVER
 	if (deadline.tv_sec == 0 && deadline.tv_nsec == 0) return 0;
@@ -176,7 +186,7 @@ _Vx_ticks_t time_ticksToDeadline(const struct timespec deadline) {
 	clock_gettime(CLOCK_REALTIME, &current);
 	
 	// Compute difference
-	double period = time_timespecdiff(&current, &deadline);
+	double period = time_timespecdiff(&deadline, &current);
 	
 	// If zero or negative return WAIT_FOREVER
 	if (period <=0) return 0;

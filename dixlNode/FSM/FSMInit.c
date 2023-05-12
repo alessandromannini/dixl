@@ -39,6 +39,7 @@ typedef enum eStates {
 
 typedef struct eventData {
 	struct message *pMessage;
+    struct timespec *deadline;   	// Next timeout or 0 = no timeout		
 } eventData;
 
 
@@ -59,7 +60,6 @@ typedef struct {
     StateMapItem *stateMap;			// Map to function for each state
 	bool eventGenerated;			// An event occured and hasn't been served
 	eventData *pEventData;			// Point to current event Data
-    struct timespec deadline;   	// Next timeout or 0 = no timeout	
 } FiniteStateMachine;
 
 /**

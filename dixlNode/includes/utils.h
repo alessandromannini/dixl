@@ -73,6 +73,23 @@ int math_ceil(int num, int den);
  */
 double time_timespecdiff(const struct timespec *time1, const struct timespec *time0);
 
+
+/**
+ * Add time0 to time1
+ * @param time1 timespec
+ * @param time0 timespec
+ * @return
+ */
+void time_timespecadd(struct timespec *time1, const struct timespec *time0);
+
+/**
+ * Compute deadline adding seconds to time1
+ * @param time1 starting time
+ * @param seconds unmber of seconds to add
+ * @return
+ */
+void time_timespectimeout(struct timespec *time1, const int seconds);
+
 /**
  * Get the period of time between a timespec and the current timestamp, in ticks
  * @param deadline timespec

@@ -86,6 +86,9 @@ typedef enum {
 	IMSGTYPE_POINTRESET			= 195,   // Point position reset
 	IMSGTYPE_POINTPOS			= 196,   // Point position request
 	IMSGTYPE_POINTNOTIFY		= 197,   // Point position or malfunction notify
+
+	// Timeout messate
+	IMSGTYPE_TIMEOUTNOTIFY		= 199    // Point position or malfunction notify
 } eMsgType;
 
 /***************************************
@@ -278,6 +281,11 @@ typedef struct msgIDIAGERRCOMM {
 	nodeId node;
 } msgIDiagErrComm;
 
+/** message TIMEOUT types */
+typedef struct msgITIMEOUTNOTIFY {
+} msgITimeoutNotify;
+
+
 /**
  *  message GENERIC 
  */
@@ -351,6 +359,9 @@ typedef struct message {
 				// DIAG
 				msgIDiagErrTask			diagIErrTask;
 				msgIDiagErrComm			diagIErrComm;
+
+				// TIMEOUT
+				msgITimeoutNotify		timeoutNotify;
 			};
 		};
 	};

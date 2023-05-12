@@ -140,6 +140,7 @@
 #define COMMSOCKPROTOCOL    		IPPROTO_TCP				/* TCP  /use IPPROTO_UDP for UDP */
 #define COMMSOCKPORT        		256		        		/* port, IANA unassigned */
 #define COMMBUFFERSIZE		        2 * MSG_MAXLENGTH		/* Comm buffer size to receive messages */
+#define COMMMSGTIMEOUT				30						/* timeout on msg receive (sec) */
 
 /**
  * Configurations parameters

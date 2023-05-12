@@ -73,7 +73,10 @@ void dixlCtrl() {
 			ret = msgQReceive(msgQCtrlId, (char *  ) &message, sizeof(message), WAIT_FOREVER);
 		
 		// Check if timedout
-		if (ret == S_objLib_OBJ_TIMEOUT) {
+		if (ret == ERROR && errno == S_objLib_OBJ_TIMEOUT) {
+			// Log
+			syslog(LOG_INFO, "Timeout reacted");
+			
 			// If Event handler configured, notify the message
 			if (FSMTimeout)
 				// Notify the new message to the FSM
@@ -149,7 +152,7 @@ void dixlCtrl() {
 				// If Event handler configured, notify the message
 				if (FSMNewMessage)
 					// Notify the new message to the FSM
-					FSMNewMessage(&message, NULL);
+					FSMNewMessage(&message, &deadline);
 				else
 					// Log and error and ignore the message
 					syslog(LOG_ERR, "Node not configured: message discarted");

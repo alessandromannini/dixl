@@ -24,7 +24,7 @@
 /* Message type */
 typedef enum {
 	/** TYPES*/
-	// Service messages - Init task
+	// Service messages - Log task
 	LOGTYPE_REQ 				= 10,	// Request received
 	LOGTYPE_OCCUPIED			= 11,	// Track occupied
 	LOGTYPE_REQNACK				= 12,	// Request NACKed
